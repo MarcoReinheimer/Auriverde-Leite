@@ -2606,13 +2606,84 @@
     .pd-bol-item { flex-direction: column; align-items: flex-start; gap: 0; }
   }
 
+  /* =====================================================================
+     INTEGRAÇÕES: venda de equipamento, vínculos e "entrar como" na demonstração
+     ===================================================================== */
+  /* ---------- item da venda: produto/peça ou equipamento ---------- */
+  .item-venda .field[hidden], .vi-equip[hidden], .vi-qtd-dica[hidden] { display: none !important; }
+  .vi-tipo-field { margin-bottom: 12px; }
+  .vi-tipo button { flex: 1; }
+  .vi-equip { margin: 0 0 4px; padding: 12px 12px 2px; border-radius: 12px; background: var(--surface-2, color-mix(in srgb, var(--ink) 4%, transparent));
+    border: 1px solid var(--line); }
+  .vi-equip .os-chips { gap: 6px; }
+  .vi-equip .eq-extras-grade { margin-bottom: 4px; }
+  .vi-instalar button { flex: 1; }
+  .vi-vinculo { margin: 0 0 12px; padding: 8px 10px; border-radius: 10px; background: var(--info-bg); color: var(--info-txt); font-size: var(--fs-legenda); line-height: 1.4; }
+  .it-qtd:disabled { opacity: 0.7; }
+
+  /* ---------- detalhe da venda: item de equipamento e vínculo ---------- */
+  .vd-tag-eq { display: inline-flex; margin-left: 8px; padding: 1px 8px; border-radius: 999px; vertical-align: 2px; font-size: 11.5px; font-weight: 700;
+    background: color-mix(in srgb, var(--s-manutencao) 14%, transparent); color: var(--info-txt); letter-spacing: 0.01em; }
+  .vd-item-eq { margin-top: 2px; }
+  .vd-eq-link { display: flex; align-items: center; gap: 10px; width: 100%; margin: 10px 0 2px; padding: 10px 12px; text-align: left; font-family: inherit;
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; }
+  button.vd-eq-link { cursor: pointer; }
+  button.vd-eq-link:active { transform: scale(0.99); }
+  .vd-eq-ico { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    background: color-mix(in srgb, var(--s-manutencao) 14%, transparent); color: var(--s-manutencao); }
+  .vd-eq-ico .ic { width: 18px; height: 18px; }
+  .vd-eq-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .vd-eq-tit { font-weight: 700; font-size: var(--fs-texto); }
+  .vd-eq-st { font-size: var(--fs-legenda); color: var(--ink-soft); line-height: 1.35; }
+  .vd-eq-link.st-aguardando .vd-eq-st { color: var(--soon); font-weight: 600; }
+  .vd-eq-link.st-defeito .vd-eq-st { color: var(--tax); font-weight: 600; }
+  .vd-eq-link.arquivado { opacity: 0.7; }
+  .vd-eq-seta { width: 18px; height: 18px; color: var(--ink-soft); flex-shrink: 0; }
+  .vd-troca { margin-top: 6px; font-size: var(--fs-legenda); color: var(--accent-txt); font-weight: 600; }
+
+  /* ---------- equipamento: aguardando instalação e compra ---------- */
+  .eq-sit.aguardando { background: var(--soon-bg); color: var(--soon); }
+  .eq-compra { display: block; font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+  #eq-situacao [data-s="aguardando"][hidden] { display: none !important; }
+  .dado.dado-link { width: 100%; border: none; background: none; font-family: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .dado.dado-link .dado-val { color: var(--accent-txt); font-weight: 600; display: inline-flex; align-items: center; gap: 2px; justify-content: flex-end; }
+  .dado.dado-link .dado-val .ic { width: 16px; height: 16px; flex-shrink: 0; }
+  .pd-sit-agu { background: var(--soon-bg); color: var(--soon); }
+  .pd-eq-txt .pd-sit { display: inline-flex; margin-top: 6px; margin-left: 0 !important; }
+  .pd-eq-compra { font-size: 14px; color: var(--ink-soft); }
+  .pd-eq-inst { font-size: 14px; color: var(--soon); font-weight: 600; }
+
+  /* ---------- peça do plano preventivo: foi trocada agora? ---------- */
+  .it-troca-lista { display: grid; gap: 12px; margin: 14px 0 6px; }
+  .it-troca-item { padding: 10px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+  .it-troca-peca { font-weight: 700; margin-bottom: 8px; }
+  .it-troca-item .os-chips { gap: 6px; }
+
+  /* ---------- demonstração: entrar como qualquer setor ---------- */
+  .ap-como { gap: 0; }
+  .ap-como-tit { font-size: var(--fs-secao); font-weight: 700; margin: 0 0 10px; }
+  .ap-como-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ap-como-op { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 112px; padding: 12px; text-align: left; cursor: pointer;
+    background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); border-radius: var(--raio); font-family: inherit; position: relative; overflow: hidden; }
+  .ap-como-op::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--cor); }
+  .ap-como-op:active { transform: scale(0.98); }
+  .ap-como-op.largo { grid-column: 1 / -1; flex-direction: row; align-items: center; min-height: 72px; }
+  .ap-como-ico { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+    background: color-mix(in srgb, var(--cor) 14%, transparent); color: var(--cor); }
+  .ap-como-ico .ic { width: 22px; height: 22px; }
+  .ap-como-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .ap-como-nome { font-weight: 700; font-size: var(--fs-texto); line-height: 1.25; }
+  .ap-como-sub { font-size: 12.5px; color: var(--ink-soft); line-height: 1.3; }
+  .ap-como-desligar { display: block; margin: 14px auto 0; }
+  @media (max-width: 350px) { .ap-como-sub { display: none; } .ap-como-op { min-height: 84px; } }
+
 </style>
 </head>
 <body>
 <svg id="ic-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><symbol id="i-alarm-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/> <path d="M12 9v4l2 2"/> <path d="M5 3 2 6"/> <path d="m22 6-3-3"/> <path d="M6.38 18.7 4 21"/> <path d="M17.64 18.67 20 21"/></symbol><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/> <path d="m19 12-7 7-7-7"/></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/> <path d="m12 5 7 7-7 7"/></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/> <path d="M12 19V5"/></symbol><symbol id="i-award" viewBox="0 0 24 24"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/> <circle cx="12" cy="8" r="6"/></symbol><symbol id="i-baby" viewBox="0 0 24 24"><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/> <path d="M15 12h.01"/> <path d="M19.38 6.813A9 9 0 0 1 20.8 10.2a2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/> <path d="M9 12h.01"/></symbol><symbol id="i-badge-check" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/> <path d="m16 9-5.5 5.5L8 12"/></symbol><symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M4.929 4.929 19.07 19.071"/></symbol><symbol id="i-banknote" viewBox="0 0 24 24"><rect width="20" height="12" x="2" y="6" rx="2"/> <circle cx="12" cy="12" r="2"/> <path d="M6 12h.01M18 12h.01"/></symbol><symbol id="i-bed-double" viewBox="0 0 24 24"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/> <path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/> <path d="M12 4v6"/> <path d="M2 18h20"/></symbol><symbol id="i-beef" viewBox="0 0 24 24"><path d="M16.4 13.7A6.5 6.5 0 1 0 6.28 6.6c-1.1 3.13-.78 3.9-3.18 6.08A3 3 0 0 0 5 18c4 0 8.4-1.8 11.4-4.3"/> <path d="m18.5 6 1.754 3.5a6.48 6.48 0 0 1-1.854 8.2C15.4 20.2 11 22 7 22a3 3 0 0 1-2.68-1.66L2.4 16.5"/> <circle cx="12.5" cy="8.5" r="2.5"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></symbol><symbol id="i-building-2" viewBox="0 0 24 24"><path d="M10 12h4"/> <path d="M10 8h4"/> <path d="M14 21v-3a2 2 0 0 0-4 0v3"/> <path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/> <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/></symbol><symbol id="i-calculator" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/> <line x1="8" x2="16" y1="6" y2="6"/> <line x1="16" x2="16" y1="14" y2="18"/> <path d="M16 10h.01"/> <path d="M12 10h.01"/> <path d="M8 10h.01"/> <path d="M12 14h.01"/> <path d="M8 14h.01"/> <path d="M12 18h.01"/> <path d="M8 18h.01"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v3"/> <path d="M16 2v3"/> <rect x="3" y="3" width="18" height="18" rx="2"/> <path d="M3 9h18"/></symbol><symbol id="i-calendar-check" viewBox="0 0 24 24"><path d="M8 2v3"/> <path d="M16 2v3"/> <rect x="3" y="3" width="18" height="18" rx="2"/> <path d="M3 9h18"/> <path d="m9 15 2 2 4-4"/></symbol><symbol id="i-calendar-clock" viewBox="0 0 24 24"><path d="M16 14v2.2l1.6 1"/> <path d="M16 2v3"/> <path d="M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"/> <path d="M3 9h5.859"/> <path d="M8 2v3"/> <circle cx="16" cy="16" r="6"/></symbol><symbol id="i-camera" viewBox="0 0 24 24"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/> <circle cx="12" cy="13" r="3"/></symbol><symbol id="i-chart-line" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/> <path d="m19 9-5 5-4-4-3 3"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <line x1="12" x2="12" y1="8" y2="12"/> <line x1="12" x2="12.01" y1="16" y2="16"/></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="m16 9-5.5 5.5L8 12"/></symbol><symbol id="i-circle-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M17 12h.01"/> <path d="M12 12h.01"/> <path d="M7 12h.01"/></symbol><symbol id="i-circle-plus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M8 12h8"/> <path d="M12 8v8"/></symbol><symbol id="i-clipboard-check" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/> <path d="m9 14 2 2 4-4"/></symbol><symbol id="i-clipboard-list" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/> <path d="M12 11h4"/> <path d="M12 16h4"/> <path d="M8 11h.01"/> <path d="M8 16h.01"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M12 6v6l4 2"/></symbol><symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="M10.94 5.274A7 7 0 0 1 15.71 10h1.79a4.5 4.5 0 0 1 4.222 6.057"/> <path d="M18.796 18.81A4.5 4.5 0 0 1 17.5 19H9A7 7 0 0 1 5.79 5.78"/> <path d="m2 2 20 20"/></symbol><symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/> <path d="M3 5V19A9 3 0 0 0 21 19V5"/> <path d="M3 12A9 3 0 0 0 21 12"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3"/> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/> <path d="m7 10 5 5 5-5"/></symbol><symbol id="i-droplets" viewBox="0 0 24 24"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/> <path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></symbol><symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/> <path d="M10 14 21 3"/> <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/> <circle cx="12" cy="12" r="3"/></symbol><symbol id="i-fan" viewBox="0 0 24 24"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/> <path d="M12 12v.01"/></symbol><symbol id="i-file-down" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/> <path d="M14 2v5a1 1 0 0 0 1 1h5"/> <path d="M12 18v-6"/> <path d="m9 15 3 3 3-3"/></symbol><symbol id="i-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/> <path d="M14 2v5a1 1 0 0 0 1 1h5"/> <path d="M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></symbol><symbol id="i-file-spreadsheet" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/> <path d="M14 2v5a1 1 0 0 0 1 1h5"/> <path d="M8 13h2"/> <path d="M14 13h2"/> <path d="M8 17h2"/> <path d="M14 17h2"/></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/> <path d="M14 2v5a1 1 0 0 0 1 1h5"/> <path d="M10 9H8"/> <path d="M16 13H8"/> <path d="M16 17H8"/></symbol><symbol id="i-file-up" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/> <path d="M14 2v5a1 1 0 0 0 1 1h5"/> <path d="M12 12v6"/> <path d="m15 15-3-3-3 3"/></symbol><symbol id="i-flask-conical" viewBox="0 0 24 24"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/> <path d="M6.453 15h11.094"/> <path d="M8.5 2h7"/></symbol><symbol id="i-forward" viewBox="0 0 24 24"><path d="m15 17 5-5-5-5"/> <path d="M4 18v-2a4 4 0 0 1 4-4h12"/></symbol><symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4"/> <path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol><symbol id="i-hard-drive-download" viewBox="0 0 24 24"><path d="M12 2v8"/> <path d="m16 6-4 4-4-4"/> <rect width="20" height="8" x="2" y="14" rx="2"/> <path d="M6 18h.01"/> <path d="M10 18h.01"/></symbol><symbol id="i-hard-hat" viewBox="0 0 24 24"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/> <path d="M14 6a6 6 0 0 1 6 6v3"/> <path d="M4 15v-3a6 6 0 0 1 6-6"/> <rect x="2" y="15" width="20" height="4" rx="1"/></symbol><symbol id="i-headset" viewBox="0 0 24 24"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z"/> <path d="M21 16v2a4 4 0 0 1-4 4h-5"/></symbol><symbol id="i-heart-pulse" viewBox="0 0 24 24"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/> <path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"/> <path d="M5 2h14"/> <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/> <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></symbol><symbol id="i-house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/> <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/> <circle cx="9" cy="9" r="2"/> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol><symbol id="i-inbox" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/> <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol><symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M12 16v-4"/> <path d="M12 8h.01"/></symbol><symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/> <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/> <rect width="7" height="7" x="14" y="3" rx="1"/> <rect width="7" height="7" x="14" y="14" rx="1"/> <rect width="7" height="7" x="3" y="14" rx="1"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol><symbol id="i-list-checks" viewBox="0 0 24 24"><path d="M13 5h8"/> <path d="M13 12h8"/> <path d="M13 19h8"/> <path d="m3 17 2 2 4-4"/> <path d="m3 7 2 2 4-4"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/> <path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5"/> <path d="M21 12H9"/> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></symbol><symbol id="i-mail" viewBox="0 0 24 24"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/> <rect x="2" y="4" width="20" height="16" rx="2"/></symbol><symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/> <path d="M15 5.764v15"/> <path d="M9 3.236v15"/></symbol><symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/> <circle cx="12" cy="10" r="3"/></symbol><symbol id="i-medal" viewBox="0 0 24 24"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/> <path d="M11 12 5.12 2.2"/> <path d="m13 12 5.88-9.8"/> <path d="M8 7h8"/> <circle cx="12" cy="17" r="5"/> <path d="M12 18v-2h-.5"/></symbol><symbol id="i-message-circle" viewBox="0 0 24 24"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></symbol><symbol id="i-message-square-warning" viewBox="0 0 24 24"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/> <path d="M12 15h.01"/> <path d="M12 7v4"/></symbol><symbol id="i-microscope" viewBox="0 0 24 24"><path d="M6 18h8"/> <path d="M3 22h18"/> <path d="M14 22a7 7 0 1 0 0-14h-1"/> <path d="M9 14h2"/> <path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/> <path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></symbol><symbol id="i-milk" viewBox="0 0 24 24"><path d="M8 2h8"/> <path d="M9 2v2.789a4 4 0 0 1-.672 2.219l-.656.984A4 4 0 0 0 7 10.212V20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9.789a4 4 0 0 0-.672-2.219l-.656-.984A4 4 0 0 1 15 4.788V2"/> <path d="M7 15a6.472 6.472 0 0 1 5 0 6.47 6.47 0 0 0 5 0"/></symbol><symbol id="i-package" viewBox="0 0 24 24"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/> <path d="M12 22V12"/> <polyline points="3.29 7 12 12 20.71 7"/> <path d="m7.5 4.27 9 5.15"/></symbol><symbol id="i-party-popper" viewBox="0 0 24 24"><path d="M5.8 11.3 2 22l10.7-3.79"/> <path d="M4 3h.01"/> <path d="M22 8h.01"/> <path d="M15 2h.01"/> <path d="M22 20h.01"/> <path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/> <path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/> <path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/> <path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1"/> <rect x="5" y="3" width="5" height="18" rx="1"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/> <path d="m15 5 4 4"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/> <path d="M12 5v14"/></symbol><symbol id="i-presentation" viewBox="0 0 24 24"><path d="M2 3h20"/> <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/> <path d="m7 21 5-5 5 5"/></symbol><symbol id="i-receipt" viewBox="0 0 24 24"><path d="M12 17V7"/> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"/></symbol><symbol id="i-refresh-cw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/> <path d="M21 3v5h-5"/> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/> <path d="M8 16H3v5"/></symbol><symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/> <path d="M3 11v-1a4 4 0 0 1 4-4h14"/> <path d="m7 22-4-4 4-4"/> <path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol><symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="3"/> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/> <circle cx="18" cy="5" r="3"/></symbol><symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/> <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/> <path d="M7 3v4a1 1 0 0 0 1 1h7"/></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18"/> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M7 21h10"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/> <circle cx="11" cy="11" r="8"/></symbol><symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/> <path d="m21.854 2.147-10.94 10.939"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/> <circle cx="12" cy="12" r="3"/></symbol><symbol id="i-share" viewBox="0 0 24 24"><path d="M12 2v13"/> <path d="m16 6-4-4-4 4"/> <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></symbol><symbol id="i-share-2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/> <circle cx="6" cy="12" r="3"/> <circle cx="18" cy="19" r="3"/> <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/> <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></symbol><symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/> <path d="m9 12 2 2 4-4"/></symbol><symbol id="i-shopping-bag" viewBox="0 0 24 24"><path d="M16 10a4 4 0 0 1-8 0"/> <path d="M3.103 6.034h17.794"/> <path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/></symbol><symbol id="i-shopping-cart" viewBox="0 0 24 24"><path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"/> <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"/> <circle cx="18" cy="20" r="2"/> <circle cx="8" cy="20" r="2"/></symbol><symbol id="i-signature" viewBox="0 0 24 24"><path d="m21 17-2.156-1.868A.5.5 0 0 0 18 15.5v.5a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1c0-2.545-3.991-3.97-8.5-4a1 1 0 0 0 0 5c4.153 0 4.745-11.295 5.708-13.5a2.5 2.5 0 1 1 3.31 3.284"/> <path d="M3 21h18"/></symbol><symbol id="i-sliders-horizontal" viewBox="0 0 24 24"><path d="M10 5H3"/> <path d="M12 19H3"/> <path d="M14 3v4"/> <path d="M16 17v4"/> <path d="M21 12h-9"/> <path d="M21 19h-5"/> <path d="M21 5h-7"/> <path d="M8 10v4"/> <path d="M8 12H3"/></symbol><symbol id="i-smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/> <path d="M12 18h.01"/></symbol><symbol id="i-snowflake" viewBox="0 0 24 24"><path d="m10 20-1.25-2.5L6 18"/> <path d="M10 4 8.75 6.5 6 6"/> <path d="m14 20 1.25-2.5L18 18"/> <path d="m14 4 1.25 2.5L18 6"/> <path d="m17 21-3-6h-4"/> <path d="m17 3-3 6 1.5 3"/> <path d="M2 12h6.5L10 9"/> <path d="m20 10-1.5 2 1.5 2"/> <path d="M22 12h-6.5L14 15"/> <path d="m4 10 1.5 2L4 14"/> <path d="m7 21 3-6-1.5-3"/> <path d="m7 3 3 6h4"/></symbol><symbol id="i-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></symbol><symbol id="i-stethoscope" viewBox="0 0 24 24"><path d="M11 2v2"/> <path d="M5 2v2"/> <path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/> <path d="M8 15a6 6 0 0 0 12 0v-3"/> <circle cx="20" cy="10" r="2"/></symbol><symbol id="i-syringe" viewBox="0 0 24 24"><path d="m18 2 4 4"/> <path d="m17 7 3-3"/> <path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/> <path d="m9 11 4 4"/> <path d="m5 19-3 3"/> <path d="m14 4 6 6"/></symbol><symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/> <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol><symbol id="i-test-tube" viewBox="0 0 24 24"><path d="M14.5 2v17.5c0 1.4-1.1 2.5-2.5 2.5c-1.4 0-2.5-1.1-2.5-2.5V2"/> <path d="M8.5 2h7"/> <path d="M14.5 16h-5"/></symbol><symbol id="i-thermometer" viewBox="0 0 24 24"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></symbol><symbol id="i-thumbs-up" viewBox="0 0 24 24"><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/> <path d="M7 10v12"/></symbol><symbol id="i-timer" viewBox="0 0 24 24"><line x1="10" x2="14" y1="2" y2="2"/> <line x1="12" x2="15" y1="14" y2="11"/> <circle cx="12" cy="14" r="8"/></symbol><symbol id="i-tractor" viewBox="0 0 24 24"><path d="m10 11 11 .9a1 1 0 0 1 .8 1.1l-.665 4.158a1 1 0 0 1-.988.842H20"/> <path d="M16 18h-5"/> <path d="M18 5a1 1 0 0 0-1 1v5.573"/> <path d="M3 4h8.129a1 1 0 0 1 .99.863L13 11.246"/> <path d="M4 11V4"/> <path d="M7 15h.01"/> <path d="M8 10.1V4"/> <circle cx="18" cy="18" r="2"/> <circle cx="7" cy="15" r="5"/></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M10 11v6"/> <path d="M14 11v6"/> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/> <path d="M3 6h18"/> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol><symbol id="i-trending-down" viewBox="0 0 24 24"><path d="M16 17h6v-6"/> <path d="m22 17-8.5-8.5-5 5L2 7"/></symbol><symbol id="i-trending-up" viewBox="0 0 24 24"><path d="M16 7h6v6"/> <path d="m22 7-8.5 8.5-5-5L2 17"/></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/> <path d="M12 9v4"/> <path d="M12 17h.01"/></symbol><symbol id="i-trophy" viewBox="0 0 24 24"><path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"/> <path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"/> <path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"/> <path d="M4 22h16"/> <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/> <path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"/></symbol><symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/> <path d="M15 18H9"/> <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/> <circle cx="17" cy="18" r="2"/> <circle cx="7" cy="18" r="2"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/> <circle cx="12" cy="7" r="4"/></symbol><symbol id="i-user-round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/> <path d="M20 21a8 8 0 0 0-16 0"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/> <path d="M16 3.128a4 4 0 0 1 0 7.744"/> <path d="M22 21v-2a4 4 0 0 0-3-3.87"/> <circle cx="9" cy="7" r="4"/></symbol><symbol id="i-warehouse" viewBox="0 0 24 24"><path d="M18 21V10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v11"/> <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 1.132-1.803l7.95-3.974a2 2 0 0 1 1.837 0l7.948 3.974A2 2 0 0 1 22 8z"/> <path d="M6 13h12"/> <path d="M6 17h12"/></symbol><symbol id="i-wheat" viewBox="0 0 24 24"><path d="M2 22 16 8"/> <path d="M3.47 12.53 5 11l1.53 1.53a3.5 3.5 0 0 1 0 4.94L5 19l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z"/> <path d="M7.47 8.53 9 7l1.53 1.53a3.5 3.5 0 0 1 0 4.94L9 15l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z"/> <path d="M11.47 4.53 13 3l1.53 1.53a3.5 3.5 0 0 1 0 4.94L13 11l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z"/> <path d="M20 2h2v2a4 4 0 0 1-4 4h-2V6a4 4 0 0 1 4-4Z"/> <path d="M11.47 17.47 13 19l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L5 19l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z"/> <path d="M15.47 13.47 17 15l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L9 15l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z"/> <path d="M19.47 9.47 21 11l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L13 11l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z"/></symbol><symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/> <path d="m6 6 12 12"/></symbol></svg>
 <div class="fx" id="fx" hidden>
   <div class="fx-demo" id="fx-demo" hidden>
-    <svg class="ic" aria-hidden="true"><use href="#i-presentation"/></svg><span class="fx-txt">Dados de demonstração</span>
+    <svg class="ic" aria-hidden="true"><use id="fx-demo-ico" href="#i-presentation"/></svg><span class="fx-txt" id="fx-demo-txt">Dados de demonstração</span>
     <button type="button" class="fx-btn" id="fx-demo-desligar">Desligar</button>
   </div>
   <div class="fx-prod" id="fx-prod" hidden>
@@ -2730,7 +2801,7 @@
 
     <div class="card" id="adm-demo-card">
       <div class="bloco-topo"><div class="section-label">Modo demonstração</div><span class="adm-demo-st" id="adm-demo-st">Desligado</span></div>
-      <div class="leite-ficha-sub">Para apresentações. Liga um conjunto de dados fictícios (6 produtores do oeste de SC com equipamentos, OS, preventivas, qualidade do leite, médias, encaminhamentos e chamados) e o app inteiro, técnico e produtor, passa a mostrar só esses dados. Vale só neste aparelho. Os dados reais não são apagados nem misturados, nem nos relatórios e backups.</div>
+      <div class="leite-ficha-sub">Para apresentações. Liga um conjunto de dados fictícios (6 produtores do oeste de SC com equipamentos, OS, preventivas, qualidade do leite, médias, encaminhamentos, vendas e chamados) e o app inteiro, técnico e produtor, passa a mostrar só esses dados. Vale só neste aparelho. Os dados reais não são apagados nem misturados, nem nos relatórios e backups. Com ele ligado, a entrada deixa escolher o setor (Manutenção, Veterinária, Comercial…) para mostrar cada visão.</div>
       <button type="button" class="add-record-btn adm-demo-btn" id="adm-demo-ligar"><svg class="ic" aria-hidden="true"><use href="#i-presentation"/></svg><span id="adm-demo-ligar-txt">Ligar modo demonstração</span></button>
       <button type="button" class="btn-secondary adm-demo-btn" id="adm-demo-recriar" hidden><svg class="ic" aria-hidden="true"><use href="#i-refresh-cw"/></svg>Recriar dados de demonstração</button>
     </div>
@@ -3990,6 +4061,19 @@
   </div>
 </div>
 
+<!-- MODAL: peça do plano preventivo vendida (foi trocada agora?) -->
+<div class="modal-backdrop" id="modal-integ-troca" hidden>
+  <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="it-troca-tit">
+    <h2 id="it-troca-tit">Essa peça foi trocada no produtor agora?</h2>
+    <div class="leite-ficha-sub" id="it-troca-sub"></div>
+    <div class="it-troca-lista" id="it-troca-lista"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="it-troca-nao">Não, só vendi</button>
+      <button type="button" class="btn-primary" id="it-troca-sim">Sim, registrar a troca</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: animais do produtor (lista) -->
 <div class="modal-backdrop" id="modal-animais" hidden>
   <div class="modal-sheet">
@@ -4450,7 +4534,7 @@
       <div class="field"><label for="par-ituAmarelo">Amarelo até</label><input type="text" inputmode="decimal" id="par-ituAmarelo" class="mono-input"></div>
       <div class="field"><label for="par-ituLaranja">Laranja até</label><input type="text" inputmode="decimal" id="par-ituLaranja" class="mono-input"></div>
     </div>
-    <div class="campo-dica" style="margin-top:-4px">Acima do último valor fica vermelho.</div>
+    <div class="campo-dica" style="margin-top:-4px">Verde: sem estresse · amarelo: estresse leve · laranja: estresse moderado. Acima do último valor fica vermelho: estresse severo.</div>
     <div class="field"><label for="par-frMax">Frequência respiratória: alerta acima de (mov/min)</label><input type="text" inputmode="numeric" id="par-frMax" class="mono-input"></div>
 
     <div class="modal-actions">
@@ -5212,7 +5296,7 @@
     </div>
     <div class="field">
       <label>Situação</label>
-      <div class="toggle" id="eq-situacao"><button type="button" data-s="funcionando">Funcionando</button><button type="button" data-s="defeito">Com defeito</button><button type="button" data-s="desativado">Desativado</button></div>
+      <div class="toggle" id="eq-situacao"><button type="button" data-s="funcionando">Funcionando</button><button type="button" data-s="defeito">Com defeito</button><button type="button" data-s="desativado">Desativado</button><button type="button" data-s="aguardando" hidden>Aguardando</button></div>
     </div>
     <div class="field">
       <label>Foto</label>
@@ -7948,6 +8032,7 @@
       if (formItens.length === 1) { formItens = [novoItem()]; } else { formItens.splice(i, 1); }
       renderItensVenda();
     });
+    integItemCard(card, it, i, atualizar);
     atualizar(!it.precoUnit);
     return card;
   }
@@ -7971,6 +8056,7 @@
   });
 
   async function salvarVenda() {
+    if (!integValidarItens(formItens)) return;
     if (!vendaProdutorId) { avisar('Escolha o produtor na lista (ou toque em "+ Novo produtor").'); return; }
     const data = $('venda-data').value;
     if (!data) { avisar('Informe a data da venda.'); return; }
@@ -7986,7 +8072,7 @@
         produto: i.produto.trim(), marcaId: i.marcaId || '', marcaNome: marca ? marca.name : '',
         origem: i.origem === 'fora' ? 'fora' : 'dentro', aliquota: aliquotaDaOrigem(i.origem),
         quantidade: Number(i.quantidade), custoUnit: r2(i.custoUnit), margem: Number(i.margem) || 0,
-        precoUnit: r2(i.precoUnit), precoManual: !!i.precoManual
+        precoUnit: r2(i.precoUnit), precoManual: !!i.precoManual, ...integCamposItem(i)
       };
     });
     const tot = totaisDosItens(itensSalvos);
@@ -7999,6 +8085,7 @@
       comissaoPct: pct, comissaoBase: formComissaoBase, comissaoValor: r2(calcComissao(tot, pct, formComissaoBase))
     };
 
+    const integ = await integAntesDeGravar(registro, editandoVendaId);
     let id = editandoVendaId;
     if (id) {
       gravar('update', 'vendas/' + id, { ...registro, atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
@@ -8008,9 +8095,11 @@
       gravar('set', 'vendas/' + id, registro);
     }
     registrarAtividade(editandoVendaId ? 'editou' : 'criou', 'venda', id, (p ? p.nome : '') + ' · ' + fmt(registro.valorTotal));
+    const criadas = integDepoisDeGravar(id, registro, integ);
     const voltar = vendaVoltarPara === 'venda' ? vdVoltarPara : vendaVoltarPara;
     editandoVendaId = null;
     abrirVendaDetalhe(id, voltar);
+    await integPerguntasDepois(id, registro, criadas);
   }
   $('venda-salvar').addEventListener('click', salvarVenda);
   $('back-venda-form').addEventListener('click', async () => {
@@ -8043,7 +8132,7 @@
     }
     const p = produtores.find(x => x.id === v.produtorId);
     $('vd-produtor').textContent = nomeProdutorDaVenda(v);
-    $('vd-sub').textContent = fmtDate(v.data) + (localDoProdutor(p) ? ' · ' + localDoProdutor(p) : '');
+    $('vd-sub').textContent = (Number(v.numero) > 0 ? numVenda(v.numero) + ' · ' : '') + fmtDate(v.data) + (localDoProdutor(p) ? ' · ' + localDoProdutor(p) : '');
 
     const box = $('vd-itens');
     box.innerHTML = '';
@@ -8059,6 +8148,7 @@
       ].join(' · ');
       el.querySelector('.a').textContent = fmtQtd(i.quantidade) + ' × ' + fmt(i.precoUnit);
       el.querySelector('.b').textContent = fmt((Number(i.quantidade) || 0) * (Number(i.precoUnit) || 0));
+      integItemDetalhe(el, v, i);
       box.appendChild(el);
     });
     $('vd-total').textContent = fmt(v.valorTotal);
@@ -8122,6 +8212,7 @@
     const r = await removerRegistro({ modulo: 'vendas', caminho: 'vendas/' + id, criadoPor: v.criadoPor,
       rotulo: 'a venda de ' + fmtDate(v.data) + ' para ' + nomeProdutorDaVenda(v), tipo: 'venda', alvoId: id, alvoNome: nomeProdutorDaVenda(v) + ' · ' + fmt(v.valorTotal) });
     if (!r) return;
+    await integAoRemoverVenda(v);
     vendaAbertaId = null;
     irParaDestinoVendas(vdVoltarPara);
   });
@@ -8349,7 +8440,7 @@
       const prod = v => produtores.find(x => x.id === v.produtorId) || {};
       const vendedor = v => v.criadoPor ? nomeVendedor(v.criadoPor) : '';
       const linhasVendas = lista.map(v => ({
-        data: v.data, produtor: nomeProdutorDaVenda(v), linha: prod(v).linha || '', cidade: prod(v).cidade || '',
+        numero: Number(v.numero) > 0 ? Number(v.numero) : null, data: v.data, produtor: nomeProdutorDaVenda(v), linha: prod(v).linha || '', cidade: prod(v).cidade || '',
         itens: (v.itens || []).length, custo: r2(v.custoTotal), venda: r2(v.valorTotal), lucro: r2(v.lucro),
         margem: Number(v.margem) || 0, pagamento: PAGAMENTOS[v.pagamento] || '',
         comissao: r2(v.comissaoValor), recebida: v.comissaoRecebida ? 'Sim' : 'Não',
@@ -8361,7 +8452,8 @@
         const valor = q * (Number(i.precoUnit) || 0);
         const custo = q * (Number(i.custoUnit) || 0);
         linhasItens.push({
-          data: v.data, produtor: nomeProdutorDaVenda(v), produto: i.produto, marca: i.marcaNome || '',
+          numero: Number(v.numero) > 0 ? Number(v.numero) : null, data: v.data, produtor: nomeProdutorDaVenda(v), produto: i.produto,
+          tipo: ehItemEquip(i) ? 'Equipamento' : 'Produto/peça', marca: i.marcaNome || '',
           origem: i.origem === 'fora' ? 'Fora de SC' : 'Dentro de SC', qtd: q,
           custoUnit: r2(i.custoUnit), precoUnit: r2(i.precoUnit), custo: r2(custo), valor: r2(valor),
           lucro: r2(valor - custo), margem: valor > 0 ? Math.round((valor - custo) / valor * 10000) / 10000 : 0
@@ -8381,6 +8473,7 @@
         {
           nome: 'Vendas', total: true, linhas: linhasVendas,
           colunas: [
+            { titulo: 'Venda nº', key: 'numero', fmt: '0' },
             { titulo: 'Data', key: 'data', fmt: XLSX_DATA },
             { titulo: 'Produtor', key: 'produtor', max: 30 },
             { titulo: 'Linha', key: 'linha', max: 25 },
@@ -8400,9 +8493,11 @@
         {
           nome: 'Itens vendidos', total: true, linhas: linhasItens,
           colunas: [
+            { titulo: 'Venda nº', key: 'numero', fmt: '0' },
             { titulo: 'Data', key: 'data', fmt: XLSX_DATA },
             { titulo: 'Produtor', key: 'produtor', max: 30 },
             { titulo: 'Produto', key: 'produto', max: 35 },
+            { titulo: 'Tipo', key: 'tipo' },
             { titulo: 'Marca/fornecedor', key: 'marca', max: 25 },
             { titulo: 'Origem', key: 'origem' },
             { titulo: 'Quantidade', key: 'qtd', soma: true },
@@ -10315,6 +10410,7 @@
     else if (v === 'medias') { renderMediasTabela(); showView('medias'); }
     else if (v === 'rota') abrirRota();
     else if (v === 'vendas') abrirVendas();
+    else if (v === 'venda') { renderVendaDetalhe(); showView('venda'); }
     else if (v === 'leite') { calcularLeite(); showView('leite'); }
     else if (v === 'ordens') abrirOrdens();
     else showView(v || 'produtores');
@@ -11150,6 +11246,7 @@
       const admin = meu.papel === 'admin';
       acesso = { estado: 'ativo', admin, dono: false, papel: meu.papel, perm: admin ? { ...TUDO } : permDoUsuario(meu), soProprias: !admin && !!meu.soProprias, apelido: meu.apelido || '', setores: setoresDoUsuario(meu) };
     } else acesso = { estado: 'pendente' };
+    acesso = integAcessoDemo(acesso);
     if (JSON.stringify(acesso) !== antes) aplicarAcesso();
   }
   // nome para cumprimentar: o que a pessoa escolheu ("como quer ser chamado") ou o primeiro nome da conta
@@ -14047,7 +14144,7 @@
   // ---------- textos e regras da OS ----------
   const OS_STATUS = { aberta: 'Aberta', agendada: 'Agendada', andamento: 'Em andamento', concluida: 'Concluída', cancelada: 'Cancelada' };
   const OS_TIPOS = { preventiva: 'Preventiva', corretiva: 'Corretiva', instalacao: 'Instalação', visita: 'Visita técnica' };
-  const EQ_SITUACAO = { funcionando: 'Funcionando', defeito: 'Com defeito', desativado: 'Desativado' };
+  const EQ_SITUACAO = { funcionando: 'Funcionando', defeito: 'Com defeito', desativado: 'Desativado', aguardando: 'Aguardando instalação' };
   function statusOS(o) { return o && OS_STATUS[o.status] ? o.status : 'concluida'; }   // visita antiga = OS concluída
   function osConcluida(o) { return statusOS(o) === 'concluida'; }
   function osAtiva(o) { const st = statusOS(o); return st === 'aberta' || st === 'agendada' || st === 'andamento'; }
@@ -14145,6 +14242,7 @@
     const caminho = 'produtores/' + pid + '/visitas/' + id;
     const r = mudancas ? gravar('update', caminho, mudancas) : gravar('set', caminho, completo);
     gravar('set', 'ordens/' + id, indiceDaOS(pid, id, completo));
+    integAposGravarOS(pid, id, completo, mudancas);
     return r;
   }
 
@@ -14415,6 +14513,7 @@
       b.querySelector('.eq-sub').textContent = subEquip(e) || 'Sem marca/modelo cadastrados';
       const g = textoGarantia(e);
       if (g) { const el = b.querySelector('.eq-garantia'); el.textContent = g.txt; el.className = 'eq-garantia ' + g.cls; el.hidden = false; }
+      integEquipCardExtra(b, e);
       const sit = b.querySelector('.eq-sit');
       sit.textContent = EQ_SITUACAO[e.situacao] || 'Funcionando';
       sit.classList.add(e.situacao || 'funcionando');
@@ -14517,6 +14616,7 @@
     eqSituacao = e ? (e.situacao || 'funcionando') : 'funcionando';
     pintarTipoEquip();
     pintarSituacaoEquip();
+    document.querySelector('#eq-situacao [data-s="aguardando"]').hidden = eqSituacao !== 'aguardando';
     $('eq-marca').value = e ? (e.marca || '') : '';
     $('eq-modelo').value = e ? (e.modelo || '') : '';
     $('eq-serie').value = e ? (e.serie || '') : '';
@@ -14609,6 +14709,7 @@
         l.querySelector('.dado-val').textContent = v;
         dados.appendChild(l);
       });
+    integEquipVerExtra(e, dados);
     const pode = podeLancar('visitas');
     $('eqv-editar').hidden = !pode;
     $('eqv-remover').hidden = !podeEditarRegistro('visitas', e.criadoPor);
@@ -16537,12 +16638,13 @@
 
   // ---------- uso do produtor: vacas, ordenhas por dia, conjuntos ----------
   var conjCache = {};   // pid → nº de conjuntos lido dos equipamentos nesta sessão
+  function soInstalados(l) { return l.some(e => e.situacao !== 'aguardando') ? l.filter(e => e.situacao !== 'aguardando') : l; }
   function conjuntosDeEquip(lista) {
-    return (lista || []).filter(e => !e.arquivado && e.tipo === 'ordenhadeira' && e.situacao !== 'desativado')
+    return soInstalados((lista || []).filter(e => !e.arquivado && e.tipo === 'ordenhadeira' && e.situacao !== 'desativado'))
       .reduce((s, e) => s + (Math.round(Number(e.extras && e.extras.conjuntos)) || 0), 0);
   }
   function vazaoNominalDeEquip(lista) {
-    return (lista || []).filter(e => !e.arquivado && e.tipo === 'bomba' && e.situacao !== 'desativado')
+    return soInstalados((lista || []).filter(e => !e.arquivado && e.tipo === 'bomba' && e.situacao !== 'desativado'))
       .reduce((s, e) => s + (Number(e.extras && e.extras.vazao) || 0), 0) || null;
   }
   function conjuntosDoProdutor(p) {
@@ -16644,7 +16746,7 @@
     const manual = (p && p.prevManual) || {}, ignorar = (p && p.prevIgnorar) || {};
     const todos = compsAtivos().map(c => {
       let ultima = trocas[c.id] || null;
-      if (manual[c.id] && (!ultima || manual[c.id] > ultima.data)) ultima = { data: manual[c.id], fonte: 'manual' };
+      if (manual[c.id] && (!ultima || manual[c.id] > ultima.data)) ultima = integUltimaManual(p, c.id, manual[c.id]);
       const it = { comp: c, ultima, ignorado: !!ignorar[c.id], osAtiva: ativas[c.id] || null, proxima: null, dias: null, cls: 'semregistro', calculo: '', aviso: '' };
       if (!ultima) return it;
       const pr = proximaTrocaComp(c, ultima.data, uso);
@@ -16666,7 +16768,7 @@
   }
   function ultimaTxt(it) {
     if (!it.ultima) return 'Nenhuma troca registrada';
-    return 'Última troca ' + fmtDate(it.ultima.data) + (it.ultima.fonte === 'manual' ? ' (informada)' : it.ultima.numero ? ' · ' + numOS(it.ultima.numero) : '');
+    return 'Última troca ' + fmtDate(it.ultima.data) + (it.ultima.fonte === 'venda' ? integTxtFonte(it.ultima) : it.ultima.fonte === 'manual' ? ' (informada)' : it.ultima.numero ? ' · ' + numOS(it.ultima.numero) : '');
   }
   // itens que o botão "Gerar OS preventiva" leva: os vencidos (ou, sem vencidos, os que vencem em 15 dias)
   function itensParaGerarOS(plano) {
@@ -16823,7 +16925,7 @@
     const dados = $('pvc-dados');
     dados.innerHTML = '';
     [['Vida útil', vidaTxt(c)],
-      ['Última troca', it.ultima ? fmtDate(it.ultima.data) + (it.ultima.fonte === 'manual' ? ' (informada à mão)' : it.ultima.numero ? ' · ' + numOS(it.ultima.numero) : '') : 'nenhuma registrada'],
+      ['Última troca', it.ultima ? fmtDate(it.ultima.data) + (it.ultima.fonte === 'venda' ? integTxtFonte(it.ultima) : it.ultima.fonte === 'manual' ? ' (informada à mão)' : it.ultima.numero ? ' · ' + numOS(it.ultima.numero) : '') : 'nenhuma registrada'],
       ['Cálculo', it.calculo], ['Atenção', it.aviso],
       ['OS em aberto', it.osAtiva ? numOS(it.osAtiva.numero) + ' · ' + OS_STATUS[statusOS(it.osAtiva)].toLowerCase() + (it.osAtiva.agendadaPara ? ' p/ ' + fmtDate(it.osAtiva.agendadaPara) : '') : '']]
       .filter(([, v]) => v).forEach(([r, v]) => {
@@ -17721,7 +17823,7 @@
       ['Fases a · b · c · d', ['faseA', 'faseB', 'faseC', 'faseD'].map(k => faixaTxt(r[k]) || '—').join(' · ') + ' ms'],
       ['Resfriador', 'leite a 4 °C em até ' + fmtN(cfgPrev.resfriamentoMax, 0) + ' min'],
       ['Duração padrão da ordenha', fmtN(cfgPrev.horasPorOrdenha, 2) + ' h'],
-      ['ITU', 'verde até ' + fmtN(cf.ituVerde) + ' · amarelo até ' + fmtN(cf.ituAmarelo) + ' · laranja até ' + fmtN(cf.ituLaranja) + ' · vermelho acima'],
+      ['ITU', 'sem estresse até ' + fmtN(cf.ituVerde) + ' · estresse leve até ' + fmtN(cf.ituAmarelo) + ' · estresse moderado até ' + fmtN(cf.ituLaranja) + ' · estresse severo acima'],
       ['Frequência respiratória', 'alerta acima de ' + fmtN(cf.frMax, 0) + ' mov/min']].forEach(([rt, v]) => {
         const l = document.createElement('div');
         l.className = 'dado';
@@ -17967,7 +18069,7 @@
   const CF_ASP_SERV = [['bicos', 'Troca de bicos'], ['filtro', 'Limpeza de filtro'], ['bomba', 'Bomba'], ['timer', 'Timer'], ['vazamento', 'Vazamento']];
   const CF_CAMA = { compost: 'Compost barn', areia: 'Areia', colchao: 'Colchão' };
   const CF_LISTAS = { ventCheck: CF_VENT_CHECK, ventServ: CF_VENT_SERV, aspLocal: CF_ASP_LOCAL, aspCheck: CF_ASP_CHECK, aspServ: CF_ASP_SERV };
-  const ITU_FAIXAS = { verde: 'Conforto', amarelo: 'Alerta', laranja: 'Perigo', vermelho: 'Emergência' };
+  const ITU_FAIXAS = { verde: 'Sem estresse', amarelo: 'Estresse leve', laranja: 'Estresse moderado', vermelho: 'Estresse severo' };
   const ITU_COR_PDF = { verde: [0, 129, 63], amarelo: [168, 128, 0], laranja: [204, 106, 18], vermelho: [181, 72, 47] };
   const rotuloDe = (lista, id) => (lista.find(x => x[0] === id) || [])[1] || id;
   // ITU = (1,8×T + 32) − (0,55 − 0,0055×UR) × (1,8×T − 26)
@@ -18029,11 +18131,11 @@
   })();
   function ventiladoresCadastrados() {
     if (equipPid !== currentProdutorId) return [];
-    return equipamentosTodos.filter(e => !e.arquivado && e.tipo === 'ventilador' && e.situacao !== 'desativado');
+    return equipamentosTodos.filter(e => !e.arquivado && e.tipo === 'ventilador' && e.situacao !== 'desativado' && e.situacao !== 'aguardando');
   }
   function bicosCadastrados() {
     if (equipPid !== currentProdutorId) return null;
-    const l = equipamentosTodos.filter(e => !e.arquivado && e.tipo === 'aspersao' && e.situacao !== 'desativado');
+    const l = equipamentosTodos.filter(e => !e.arquivado && e.tipo === 'aspersao' && e.situacao !== 'desativado' && e.situacao !== 'aguardando');
     const n = l.reduce((s, e) => s + (Math.round(Number(e.extras && e.extras.bicos)) || 0), 0);
     return { lista: l, bicos: n || null };
   }
@@ -18153,7 +18255,7 @@
       resM.textContent = ''; resM.className = 'cf-res';
     }
     const cf = cfgPrev.conforto;
-    $('cf-itu-faixas').textContent = 'Verde até ' + fmtN(cf.ituVerde) + ' · amarelo até ' + fmtN(cf.ituAmarelo) + ' · laranja até ' + fmtN(cf.ituLaranja) + ' · vermelho acima. ITU = (1,8×T + 32) − (0,55 − 0,0055×UR) × (1,8×T − 26).';
+    $('cf-itu-faixas').textContent = 'Sem estresse até ' + fmtN(cf.ituVerde) + ' · estresse leve até ' + fmtN(cf.ituAmarelo) + ' · estresse moderado até ' + fmtN(cf.ituLaranja) + ' · estresse severo acima. ITU = (1,8×T + 32) − (0,55 − 0,0055×UR) × (1,8×T − 26).';
     const fr = m ? m.fr : null;
     const frAlto = fr != null && fr > cf.frMax;
     $('cf-fr').classList.toggle('fora', frAlto);
@@ -18298,7 +18400,7 @@
         pdfTabelaCor(ctx, cols, l);
         if (m.itu != null) {
           const lim = m.limites || cfgPrev.conforto;
-          ctx.paragrafo('ITU = (1,8 x T + 32) - (0,55 - 0,0055 x UR) x (1,8 x T - 26). Faixas: verde até ' + fmtN(lim.ituVerde) + ', amarelo até ' + fmtN(lim.ituAmarelo) + ', laranja até ' + fmtN(lim.ituLaranja) + ', vermelho acima.', { tam: 8.3, cor: SUAVE });
+          ctx.paragrafo('ITU = (1,8 x T + 32) - (0,55 - 0,0055 x UR) x (1,8 x T - 26). Faixas: sem estresse até ' + fmtN(lim.ituVerde) + ', estresse leve até ' + fmtN(lim.ituAmarelo) + ', estresse moderado até ' + fmtN(lim.ituLaranja) + ', estresse severo acima.', { tam: 8.3, cor: SUAVE });
         }
       }
       const k = c.cama;
@@ -18751,7 +18853,19 @@
     const prod = document.body.classList.contains('modo-produtor');
     const tem = DEMO_ATIVO || prod;
     $('fx-demo').hidden = !DEMO_ATIVO;
-    $('fx-prod').hidden = !prod;
+    $('fx-prod').hidden = !prod || DEMO_ATIVO;   // na demonstração a faixa é uma só
+    if (DEMO_ATIVO) {
+      const c = demoComo ? demoComoInfo(demoComo) : null;
+      let txt = 'Dados de demonstração';
+      if (c) {
+        txt = 'Demonstração · Entrando como ' + c.nome;
+      }
+      $('fx-demo-txt').textContent = txt;
+      $('fx-demo-desligar').textContent = c ? 'Trocar' : 'Desligar';
+      $('fx-demo-desligar').setAttribute('aria-label', c ? 'Trocar de setor' : 'Desligar o modo demonstração');
+      $('fx-demo-ico').setAttribute('href', '#i-' + (c ? c.ic : 'presentation'));
+      $('fx-demo').dataset.como = c ? c.id : '';
+    }
     $('fx').hidden = !tem;
     document.documentElement.classList.toggle('com-faixas', tem);
     const medir = () => document.documentElement.style.setProperty('--fx-h', (tem ? Math.round($('fx').getBoundingClientRect().height) : 0) + 'px');
@@ -18759,7 +18873,7 @@
     requestAnimationFrame(medir);
   }
   window.addEventListener('resize', () => { if (!$('fx').hidden) apFaixas(); });
-  $('fx-demo-desligar').addEventListener('click', () => demoDesligar());
+  $('fx-demo-desligar').addEventListener('click', () => { if (DEMO_ATIVO && demoComo) integTrocar(); else demoDesligar(); });
   $('fx-prod-sair').addEventListener('click', () => pdSair());
 
   // ---------- modo demonstração ----------
@@ -19026,9 +19140,18 @@
         eq.push({ id: 'e' + P.id + 'a', tipo: 'aspersao', marca: 'Netafim', modelo: 'Linha de nebulização', extras: { tipoAsp: 'Aspersão + nebulização', bicos: 24, bomba: '1/2 cv, 3 bar' },
           instalacao: d(-480), situacao: 'funcionando' });
       }
+      // vendidos pelo Comercial: ventiladores novos (aguardando instalação) e pulsadores (sem instalação)
+      if (P.id === 'dp5') eq.push({ id: 'edp5v2', tipo: 'ventilador', marca: 'Casp', modelo: 'Ventilador 1,20 m', serie: '', extras: { diametro: '1,20 m', potencia: '1 cv', quantidade: 4 },
+        instalacao: '', garantiaMeses: 12, garantiaAte: addMonthsISO(d(-9), 12), garantiaDesde: 'venda', situacao: 'aguardando', compradoEm: d(-9), vendaId: 'dv4', vendaNumero: 4, osInstalacaoId: 'do54' });
+      if (P.id === 'dp4') eq.push({ id: 'edp4p', tipo: 'pulsadores', marca: 'Interpuls', modelo: 'LE20', serie: '', extras: { tipoPuls: 'Eletrônico', quantidade: 2 },
+        instalacao: d(-25), garantiaMeses: 12, garantiaAte: addMonthsISO(d(-25), 12), garantiaDesde: 'venda', situacao: 'funcionando', compradoEm: d(-25), vendaId: 'dv3', vendaNumero: 3, osInstalacaoId: null });
       equipDe[P.id] = eq;
       eq.forEach(({ id, ...e }, j) => put('demo_produtores/' + P.id + '/equipamentos/' + id, { ...e, criadoPor: eu, criadoEm: em(-600 + j) }));
     });
+
+    // Ivo Mattei: pulsadores novos e óleo da bomba trocados pela venda (o plano preventivo conta daí)
+    prodDocs.dp4.prevManual = { 'reparo-pulsador': d(-25), 'oleo-bomba': d(-25) };
+    prodDocs.dp4.prevManualVenda = { 'reparo-pulsador': { vendaId: 'dv3', numero: 3, data: d(-25) }, 'oleo-bomba': { vendaId: 'dv3', numero: 3, data: d(-25) } };
 
     // ordens de serviço dos últimos 6 meses (e as próximas)
     const prodDe = Object.fromEntries(DEMO_PRODUTORES.map(P => [P.id, P]));
@@ -19105,6 +19228,11 @@
     OS('dp6', 'do62', { status: 'aberta', tipo: 'corretiva', categoria: 'ordenha', data: d(0), urgencia: 'normal', equipamentos: ['edp6o'], equipamentoProblema: 'edp6o',
       motivo: 'A ordenhadeira está perdendo vácuo no meio da ordenha e as teteiras caem.', origem: 'produtor', historico: hist([['abriu', 'aberta', 0]], eu), criadoPor: eu, criadoEm: em(0) });
 
+    // instalação dos ventiladores vendidos (Venda nº 4), já agendada
+    OS('dp5', 'do54', { status: 'agendada', tipo: 'instalacao', categoria: 'conforto', data: d(-9), agendadaPara: d(4), tecnicoId: tec(1),
+      motivo: 'Instalação: Ventilador / exaustor Casp Ventilador 1,20 m (Venda nº 4).', equipamentos: ['edp5v2'], origem: 'venda', vendaId: 'dv4', vendaNumero: 4, vendaData: d(-9),
+      equipamentoInstalarId: 'edp5v2', garantiaMeses: 12, historico: hist([['criou', 'aberta', -9], ['agendou', 'agendada', -8]], eu), criadoPor: eu, criadoEm: em(-9) });
+
     // numeração pela data, fotos e assinaturas
     lista.sort((a, b) => (a.o.data || '').localeCompare(b.o.data || '') || (a.o.criadoEm || 0) - (b.o.criadoEm || 0));
     let n = 0;
@@ -19141,6 +19269,30 @@
         proximaRevisao: ultRev ? addMonthsISO(ultRev.data, MESES_ATE_REVISAO) : null, ultimaTempLeite: temp ? temp.valor : null, ultimaTempLeiteData: temp ? temp.data : null });
     });
 
+    // vendas do Comercial (com a troca de peça registrada e os equipamentos ligados ao cadastro do produtor)
+    const pctV = Number(config.comissaoPct) || 0, baseV = config.comissaoBase === 'lucro' ? 'lucro' : 'venda';
+    const itemV = (produto, qtd, custo, margem, extra) => {
+      const preco = r2(precoPelaFormula(custo, 'dentro', margem)) || r2(custo * 1.45);
+      return { produto, marcaId: '', marcaNome: '', origem: 'dentro', aliquota: aliquotaDaOrigem('dentro'), quantidade: qtd, custoUnit: custo, margem, precoUnit: preco, precoManual: false, tipoItem: 'produto', ...(extra || {}) };
+    };
+    const venda = (id, numero, pid, dia, itens, pagamento, obs) => {
+      const tot = totaisDosItens(itens);
+      put('demo_vendas/' + id, { numero, produtorId: pid, produtorNome: prodDe[pid].nome, data: d(dia), itens, pagamento, observacao: obs || '',
+        custoTotal: r2(tot.custo), valorTotal: r2(tot.venda), lucro: r2(tot.lucro), margem: Math.round(tot.margem * 10000) / 10000,
+        comissaoPct: pctV, comissaoBase: baseV, comissaoValor: r2(calcComissao(tot, pctV, baseV)),
+        criadoPor: eu, criadoEm: em(dia), comissaoRecebida: dia < -30, comissaoRecebidaEm: dia < -30 ? d(dia + 20) : null });
+    };
+    venda('dv1', 1, 'dp2', -62, [itemV('Motor do ventilador do condensador', 1, 420, 25)], 'avista');
+    venda('dv2', 2, 'dp1', -40, [itemV('Detergente alcalino clorado 5 L', 3, 62, 30), itemV('Teteira de borracha (jogo com 4)', 2, 145, 28, { trocaPerguntada: true })], 'folha', 'Para o estoque da propriedade.');
+    venda('dv3', 3, 'dp4', -25, [
+      itemV('Pulsadores Interpuls LE20', 2, 690, 25, { tipoItem: 'equipamento', produto: 'Pulsadores Interpuls LE20',
+        equip: { tipo: 'pulsadores', marca: 'Interpuls', modelo: 'LE20', serie: '', garantiaMeses: 12, extras: { tipoPuls: 'Eletrônico', quantidade: 2 }, instalar: false }, equipamentoId: 'edp4p', osInstalacaoId: null }),
+      itemV('Óleo para bomba de vácuo 1 L', 2, 38, 30, { trocaPerguntada: true, trocaComps: ['oleo-bomba'] })], 'prazo');
+    venda('dv4', 4, 'dp5', -9, [
+      itemV('Ventilador / exaustor Casp Ventilador 1,20 m', 4, 2350, 22, { tipoItem: 'equipamento', produto: 'Ventilador / exaustor Casp Ventilador 1,20 m',
+        equip: { tipo: 'ventilador', marca: 'Casp', modelo: 'Ventilador 1,20 m', serie: '', garantiaMeses: 12, extras: { diametro: '1,20 m', potencia: '1 cv', quantidade: 4 }, instalar: true }, equipamentoId: 'edp5v2', osInstalacaoId: 'do54' }),
+      itemV('Suporte e cabo de aço para ventilador', 4, 180, 30)], 'prazo', 'Instalar no lado do compost barn que pega o sol da tarde.');
+
     // encaminhamentos entre os setores
     const enc = (id, pid, setor, motivo, prioridade, status, dia, extra) => put('demo_encaminhamentos/' + id, {
       produtorId: pid, produtorNome: prodDe[pid].nome, setor, para: null, motivo, prioridade, prazo: prioridade === 'urgente' ? d(2) : null, status,
@@ -19167,6 +19319,7 @@
   function apMontarEscolha(bloco) {
     const box = bloco.querySelector('.ap-escolha');
     if (!box) return;
+    if (DEMO_ATIVO && adminReal()) { integMontarEntrarComo(bloco); return; }
     const sub = bloco.querySelector('.entrada-sub');
     if (sub) sub.textContent = 'Como você quer entrar?';
     const OPCOES = [
@@ -19197,7 +19350,7 @@
   // ---------- login do produtor (demonstração) ----------
   var plEscolhido = null;
   function apAbrirLoginProdutor() {
-    const admin = ehAdmin();
+    const admin = adminReal();
     plEscolhido = null;
     $('pl-cel').value = ''; $('pl-senha').value = ''; $('pl-busca').value = '';
     $('pl-form').hidden = !admin;
@@ -19246,7 +19399,7 @@
     if (p && p.id !== plEscolhido) { plEscolhido = p.id; renderPlLista(); }
   });
   $('pl-entrar').addEventListener('click', () => {
-    if (!ehAdmin()) return;
+    if (!adminReal()) return;
     if (!plEscolhido || !produtores.some(p => p.id === plEscolhido)) { avisar('Escolha na lista qual produtor você quer simular.'); return; }
     pdEntrar(plEscolhido);
   });
@@ -19274,6 +19427,7 @@
     pdDesligar.push(assinar('produtores/' + pid + '/visitas', l => { pdVisitas = l.filter(naoArquivado); pdRender(); }));
     pdDesligar.push(assinar('produtores/' + pid + '/equipamentos', l => { pdEquip = l.filter(naoArquivado); pdRender(); }));
     pdIr('inicio');
+    apFaixas();
   }
   function pdSairDados() {
     pdDesligar.forEach(f => { try { f(); } catch (e) {} });
@@ -19299,6 +19453,8 @@
   // chamada pelo showView (design): mantém as abas e redesenha a tela do produtor
   function apAoMostrar(nome) {
     if (nome === 'admin') renderDemoAdmin();
+    // voltou para a entrada: a escolha de setor da demonstração recomeça
+    if (nome === 'entrada' && demoComo) { demoComo = null; recalcularAcesso(); apFaixas(); }
     const noProdutor = document.body.classList.contains('modo-produtor');
     if (noProdutor && !nome.startsWith('p-')) { pdSair(true); return; }
     if (nome.startsWith('p-') && nome !== 'p-login') {
@@ -19495,9 +19651,17 @@
       t.appendChild(pdEl('div', 'pd-eq-nome', nomeEquip(e)));
       const sub = subEquip(e); if (sub) t.appendChild(pdEl('div', 'pd-eq-sub', sub));
       const g = textoGarantia(e); if (g) t.appendChild(pdEl('div', 'pd-eq-gar' + (g.cls ? ' vencida' : ''), g.txt));
+      if (e.compradoEm) t.appendChild(pdEl('div', 'pd-eq-compra', 'Comprado em ' + fmtDate(e.compradoEm) + (e.instalacao && e.situacao !== 'aguardando' ? ' · instalado em ' + fmtDate(e.instalacao) : '')));
+      if (e.situacao === 'aguardando') {
+        const os = pdVisitas.find(v => v.id === e.osInstalacaoId && !v.arquivado);
+        const st = os ? statusOS(os) : '';
+        t.appendChild(pdEl('div', 'pd-eq-inst', st === 'agendada' && (os.agendadaPara || os.data) ? 'Instalação marcada para ' + fmtDate(os.agendadaPara || os.data)
+          : st === 'andamento' ? 'Técnico instalando agora' : 'A equipe vai agendar a instalação'));
+      }
       r.appendChild(t);
-      const def = e.situacao === 'defeito';
-      r.appendChild(pdEl('span', 'pd-sit ' + (def ? 'pd-sit-def' : 'pd-sit-ok'), EQ_SITUACAO[e.situacao] || 'Funcionando'));
+      const def = e.situacao === 'defeito', agu = e.situacao === 'aguardando';
+      // "Aguardando instalação" é comprido: vai embaixo do nome, sem espremer o texto
+      (agu ? t : r).appendChild(pdEl('span', 'pd-sit ' + (def ? 'pd-sit-def' : agu ? 'pd-sit-agu' : 'pd-sit-ok'), EQ_SITUACAO[e.situacao] || 'Funcionando'));
       c1.appendChild(r);
     });
     box.appendChild(c1);
@@ -19752,6 +19916,726 @@
     pdIr('cham');
     avisar('Chamado enviado: ' + numOS(doc.numero) + '. ' + (r && r.naFila ? 'Sem sinal agora: ele vai para a manutenção assim que a conexão voltar.' : 'A equipe de manutenção já recebeu e vai agendar a visita.'));
   });
+
+
+  // =====================================================================
+  // INTEGRAÇÕES (2026)
+  //  · venda de equipamento → cadastro do produtor → OS de instalação → plano preventivo
+  //  · peça do plano preventivo vendida → pergunta se já foi trocada no produtor
+  //  · demonstração: entrar como qualquer setor (só o Administrador, só no modo demonstração)
+  // =====================================================================
+  // o app troca de tela sozinho: ao recarregar (ligar/desligar a demonstração) volta sempre ao topo
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+  function itEl(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  // ---------- venda: item "Produto/peça" ou "Equipamento" ----------
+  const ITEM_EQUIP_PADRAO = () => ({ tipo: 'ordenhadeira', marca: '', modelo: '', serie: '', garantiaMeses: null, extras: {}, instalar: true });
+  const ehItemEquip = i => !!i && i.tipoItem === 'equipamento';
+  const tipoTemQtd = t => (EQ_TIPOS[t] || EQ_TIPOS.outro).campos.some(c => c.k === 'quantidade');
+  function equipDoItem(i) {
+    const e = (i && i.equip) || {};
+    const tipo = EQ_TIPOS[e.tipo] ? e.tipo : 'ordenhadeira';
+    const g = Math.round(Number(e.garantiaMeses));
+    return { tipo, marca: String(e.marca || '').trim(), modelo: String(e.modelo || '').trim(), serie: String(e.serie || '').trim(),
+      garantiaMeses: g > 0 ? g : null, extras: { ...(e.extras || {}) }, instalar: e.instalar !== false };
+  }
+  function nomeDoItemEquip(i) {
+    const e = equipDoItem(i);
+    return [nomeEquip({ tipo: e.tipo, extras: e.extras }), e.marca, e.modelo].filter(Boolean).join(' ');
+  }
+  function numVenda(n) { return Number(n) > 0 ? 'Venda nº ' + Math.round(Number(n)) : 'Venda'; }
+  // nº da venda: segue o maior já usado; vendas antigas (sem nº) também contam
+  function proximoNumeroVenda() {
+    let max = 0;
+    vendasTodas.forEach(v => { const n = Number(v.numero); if (n > max) max = n; });
+    return Math.max(max, vendasTodas.length) + 1;
+  }
+  function itListaMarcas() {
+    let dl = $('lista-eq-marcas-venda');
+    if (!dl) { dl = document.createElement('datalist'); dl.id = 'lista-eq-marcas-venda'; document.body.appendChild(dl); }
+    dl.innerHTML = '';
+    [...new Set(brands.map(b => (b.name || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)).forEach(n => { const o = document.createElement('option'); o.value = n; dl.appendChild(o); });
+  }
+
+  // monta, no cartão do item da venda, a escolha do tipo e os campos do cadastro de equipamento
+  function integItemCard(card, it, i, atualizar) {
+    // o item do formulário é cópia rasa da venda: o equipamento precisa ser cópia própria (senão editar muda a venda gravada na memória)
+    if (it.equip && !it.equipCopiado) { it.equip = clonar(it.equip); it.equipCopiado = true; }
+    const pre = 'item-' + i + '-';
+    const q = s => card.querySelector(s);
+    const campoProduto = q('.it-produto').closest('.field');
+    const rotMarca = q('label[for="' + pre + 'marca"]');
+    const qtd = q('.it-qtd');
+    const tipoBox = itEl('div', 'field vi-tipo-field');
+    tipoBox.innerHTML = '<div class="toggle vi-tipo" role="group" aria-label="Tipo do item"><button type="button" data-t="produto">Produto/peça</button><button type="button" data-t="equipamento">Equipamento</button></div>';
+    q('.item-topo').after(tipoBox);
+    const eqBox = itEl('div', 'vi-equip');
+    tipoBox.after(eqBox);
+    const dicaQtd = itEl('div', 'campo-dica vi-qtd-dica');
+    qtd.closest('.field').appendChild(dicaQtd);
+    const nomear = () => { it.produto = nomeDoItemEquip(it); };
+
+    function campoTexto(k, rot, val, ph, aoMudar, o = {}) {
+      const f = itEl('div', 'field');
+      const id = pre + 'eq-' + k;
+      const lab = itEl('label', '', rot); lab.htmlFor = id; f.appendChild(lab);
+      const inp = itEl('input', o.mono ? 'mono-input' : '');
+      inp.type = 'text'; inp.id = id; inp.autocomplete = 'off';
+      if (o.num) inp.inputMode = 'numeric';
+      if (o.list) inp.setAttribute('list', o.list);
+      if (ph) inp.placeholder = ph;
+      inp.value = val || '';
+      inp.addEventListener('input', () => aoMudar(inp.value.trim()));
+      f.appendChild(inp);
+      if (o.dica) f.appendChild(itEl('div', 'campo-dica', o.dica));
+      return f;
+    }
+    function renderEquip() {
+      const e = it.equip;
+      eqBox.innerHTML = '';
+      // tipo de equipamento (os mesmos do cadastro do produtor)
+      const fTipo = itEl('div', 'field');
+      fTipo.appendChild(itEl('label', '', 'Tipo de equipamento'));
+      const chips = itEl('div', 'os-chips vi-eq-tipo');
+      chips.setAttribute('role', 'group');
+      chips.setAttribute('aria-label', 'Tipo de equipamento');
+      Object.entries(EQ_TIPOS).forEach(([k, t]) => {
+        const b = itEl('button', 'os-chip', t.ico + ' ' + t.nome);
+        b.type = 'button';
+        b.dataset.tipo = k;
+        const on = e.tipo === k;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        b.addEventListener('click', () => {
+          if (e.tipo === k) return;
+          e.tipo = k;
+          if (!tipoTemQtd(k)) { it.quantidade = 1; qtd.value = fmtQtd(1); }
+          nomear(); pintar(); atualizar();
+        });
+        chips.appendChild(b);
+      });
+      fTipo.appendChild(chips);
+      eqBox.appendChild(fTipo);
+      // campos extras do tipo (a quantidade de ventiladores/pulsadores é a do item)
+      const campos = (EQ_TIPOS[e.tipo] || EQ_TIPOS.outro).campos.filter(c => c.k !== 'quantidade');
+      if (campos.length) {
+        const grade = itEl('div', 'eq-extras-grade');
+        campos.forEach(c => {
+          const f = itEl('div', 'field' + (c.op || c.largo ? ' largo' : ''));
+          const lab = itEl('label', '', c.t);
+          f.appendChild(lab);
+          if (c.op) {
+            const ch = itEl('div', 'os-chips');
+            ch.dataset.k = c.k;
+            const pintarOp = () => ch.querySelectorAll('.os-chip').forEach(x => { const o = x.textContent === e.extras[c.k]; x.classList.toggle('on', o); x.setAttribute('aria-pressed', o ? 'true' : 'false'); });
+            c.op.forEach(op => {
+              const b = itEl('button', 'os-chip', op);
+              b.type = 'button';
+              b.addEventListener('click', () => { e.extras[c.k] = e.extras[c.k] === op ? '' : op; pintarOp(); nomear(); });
+              ch.appendChild(b);
+            });
+            pintarOp();
+            f.appendChild(ch);
+          } else {
+            const inp = itEl('input', c.num ? 'mono-input' : '');
+            inp.type = 'text';
+            inp.id = pre + 'eqx-' + c.k;
+            inp.dataset.k = c.k;
+            lab.htmlFor = inp.id;
+            inp.autocomplete = 'off';
+            if (c.num) inp.inputMode = c.dec ? 'decimal' : 'numeric';
+            if (c.ph) inp.placeholder = c.ph;
+            const v = e.extras[c.k];
+            inp.value = v == null ? '' : (typeof v === 'number' ? numTxt(v) : String(v));
+            inp.addEventListener('input', () => {
+              const t = inp.value.trim();
+              e.extras[c.k] = c.num ? (t === '' ? null : (c.dec ? parseNum(t) : Math.round(parseNum(t)))) : t;
+              nomear();
+            });
+            f.appendChild(inp);
+          }
+          grade.appendChild(f);
+        });
+        eqBox.appendChild(grade);
+      }
+      // marca, modelo, nº de série, garantia
+      const l1 = itEl('div', 'rate-row');
+      l1.appendChild(campoTexto('marca', 'Marca', e.marca, '', v => { e.marca = v; nomear(); }, { list: 'lista-eq-marcas-venda' }));
+      l1.appendChild(campoTexto('modelo', 'Modelo', e.modelo, '', v => { e.modelo = v; nomear(); }));
+      eqBox.appendChild(l1);
+      const l2 = itEl('div', 'rate-row');
+      l2.appendChild(campoTexto('serie', 'Nº de série', e.serie, 'Opcional', v => { e.serie = v; }, { mono: 1, dica: 'Pode preencher depois.' }));
+      l2.appendChild(campoTexto('garantia', 'Garantia (meses)', e.garantiaMeses ? String(e.garantiaMeses) : '', 'Ex.: 12', v => { const n = Math.round(parseNum(v)); e.garantiaMeses = n > 0 ? n : null; }, { mono: 1, num: 1, dica: 'Conta da data da venda.' }));
+      eqBox.appendChild(l2);
+      // precisa de instalação?
+      const fi = itEl('div', 'field');
+      fi.appendChild(itEl('label', '', 'Precisa de instalação?'));
+      const tg = itEl('div', 'toggle vi-instalar');
+      tg.setAttribute('role', 'group');
+      tg.setAttribute('aria-label', 'Precisa de instalação?');
+      [['sim', 'Sim'], ['nao', 'Não']].forEach(([k, t]) => {
+        const b = itEl('button', '', t);
+        b.type = 'button';
+        b.dataset.v = k;
+        b.addEventListener('click', () => { e.instalar = k === 'sim'; pintarInst(); });
+        tg.appendChild(b);
+      });
+      fi.appendChild(tg);
+      const dica = itEl('div', 'campo-dica');
+      fi.appendChild(dica);
+      const pintarInst = () => {
+        tg.querySelectorAll('button').forEach(b => { const on = (b.dataset.v === 'sim') === e.instalar; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+        dica.textContent = e.instalar
+          ? 'Ao salvar, o equipamento entra no cadastro do produtor como "Aguardando instalação" e abre uma OS de instalação para a Manutenção.'
+          : 'Ao salvar, o equipamento entra no cadastro do produtor como "Funcionando".';
+      };
+      pintarInst();
+      eqBox.appendChild(fi);
+      if (it.equipamentoId) eqBox.appendChild(itEl('div', 'vi-vinculo', 'Já está no cadastro do produtor. Se mudar algo aqui, o app pergunta antes de atualizar o equipamento.'));
+    }
+    function pintar() {
+      const eq = ehItemEquip(it);
+      tipoBox.querySelectorAll('button').forEach(b => { const on = b.dataset.t === (eq ? 'equipamento' : 'produto'); b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+      campoProduto.hidden = eq;
+      eqBox.hidden = !eq;
+      if (rotMarca) rotMarca.textContent = eq ? 'Fornecedor (para o ICMS)' : 'Marca / fornecedor';
+      const trava = eq && !tipoTemQtd(it.equip.tipo);
+      qtd.disabled = trava;
+      dicaQtd.hidden = !trava;
+      dicaQtd.textContent = trava ? 'Um equipamento por item. Para vender outro, adicione mais um item.' : '';
+      q('.item-titulo').textContent = 'Item ' + (i + 1) + (eq ? ' · Equipamento' : '');
+      if (eq) renderEquip(); else eqBox.innerHTML = '';
+    }
+    tipoBox.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      const eq = b.dataset.t === 'equipamento';
+      if (eq === ehItemEquip(it)) return;
+      if (eq) {
+        it.tipoItem = 'equipamento';
+        if (!it.equip) it.equip = ITEM_EQUIP_PADRAO();
+        it.produtoAntes = it.produto || '';
+        const marca = brands.find(x => x.id === it.marcaId);
+        if (marca && !it.equip.marca) it.equip.marca = marca.name || '';
+        if (!tipoTemQtd(it.equip.tipo)) { it.quantidade = 1; qtd.value = fmtQtd(1); }
+        nomear();
+      } else {
+        it.tipoItem = 'produto';
+        it.produto = it.produtoAntes || '';
+        q('.it-produto').value = it.produto;
+      }
+      pintar();
+      atualizar();
+    }));
+    itListaMarcas();
+    pintar();
+  }
+
+  // antes de gravar: nome do item de equipamento e o que é obrigatório
+  function integValidarItens(itens) {
+    for (let k = 0; k < itens.length; k++) {
+      const i = itens[k];
+      if (!ehItemEquip(i)) continue;
+      i.equip = equipDoItem(i);
+      if (i.equip.tipo === 'outro' && !String(i.equip.extras.descricao || '').trim()) { avisar('Confira o item ' + (k + 1) + ': diga qual é o equipamento.'); return false; }
+      if (!tipoTemQtd(i.equip.tipo)) i.quantidade = 1;
+      i.produto = nomeDoItemEquip(i);
+    }
+    return true;
+  }
+  // campos a mais que cada item leva para o banco
+  function integCamposItem(i) {
+    if (!ehItemEquip(i)) {
+      const o = { tipoItem: 'produto' };
+      if (i.trocaPerguntada) o.trocaPerguntada = true;
+      if (Array.isArray(i.trocaComps) && i.trocaComps.length) o.trocaComps = i.trocaComps.slice();
+      return o;
+    }
+    const e = equipDoItem(i);
+    const extras = {};
+    (EQ_TIPOS[e.tipo] || EQ_TIPOS.outro).campos.forEach(c => { const v = e.extras[c.k]; if (v != null && v !== '') extras[c.k] = v; });
+    if (tipoTemQtd(e.tipo)) extras.quantidade = Math.max(1, Math.round(Number(i.quantidade) || 1));
+    return { tipoItem: 'equipamento', equip: { ...e, extras }, equipamentoId: i.equipamentoId || null, osInstalacaoId: i.osInstalacaoId || null };
+  }
+
+  // decide o que muda no cadastro do produtor (pergunta quando a venda editada já tinha equipamento)
+  async function integAntesDeGravar(registro, vendaIdEdit) {
+    const antes = vendaIdEdit ? (vendasTodas.find(v => v.id === vendaIdEdit) || null) : null;
+    registro.numero = antes && Number(antes.numero) > 0 ? Number(antes.numero) : proximoNumeroVenda();
+    const plano = { criar: [], atualizar: [], remover: [], aplicar: true, antes };
+    const eqAntes = antes ? (antes.itens || []).filter(i => ehItemEquip(i) && i.equipamentoId) : [];
+    const mudouProdutor = !!antes && antes.produtorId !== registro.produtorId;
+    registro.itens.forEach(i => {
+      if (!ehItemEquip(i)) return;
+      const velho = !mudouProdutor && i.equipamentoId ? eqAntes.find(x => x.equipamentoId === i.equipamentoId) : null;
+      if (!velho) {
+        i.equipamentoId = novoId();
+        i.osInstalacaoId = i.equip.instalar ? novoId() : null;
+        plano.criar.push(i);
+      } else if (JSON.stringify(equipDoItem(velho)) !== JSON.stringify(equipDoItem(i)) || antes.data !== registro.data || Number(velho.quantidade) !== Number(i.quantidade)) {
+        plano.atualizar.push({ novo: i, velho });
+      }
+    });
+    eqAntes.forEach(v => { if (mudouProdutor || !registro.itens.some(i => ehItemEquip(i) && i.equipamentoId === v.equipamentoId)) plano.remover.push(v); });
+    if (plano.atualizar.length || plano.remover.length) {
+      const nomes = [...plano.atualizar.map(x => nomeDoItemEquip(x.novo)), ...plano.remover.map(nomeDoItemEquip)];
+      let msg = 'Esta venda tem equipamento no cadastro do produtor (' + nomes.join(', ') + '). ';
+      if (plano.atualizar.length && plano.remover.length) msg += 'Atualizar também o equipamento e a OS de instalação, e arquivar o que saiu da venda?';
+      else if (plano.remover.length) msg += mudouProdutor ? 'O produtor da venda mudou. Arquivar também o equipamento e a OS de instalação no cadastro do produtor anterior?' : 'Arquivar também o equipamento e a OS de instalação do item que saiu da venda?';
+      else msg += 'Atualizar também o equipamento e a OS de instalação?';
+      plano.aplicar = await abrirDialogo(msg, { ok: plano.remover.length && !plano.atualizar.length ? 'Arquivar também' : 'Atualizar também', cancelar: 'Só a venda' });
+    }
+    // passou a precisar de instalação: a OS nova já ganha id aqui (vai junto no item da venda)
+    if (plano.aplicar) plano.atualizar.forEach(x => {
+      if (!equipDoItem(x.velho).instalar && equipDoItem(x.novo).instalar && !x.novo.osInstalacaoId) { x.novo.osInstalacaoId = novoId(); x.criarOS = true; }
+    });
+    return plano;
+  }
+
+  async function integLerEquip(pid, eid) {
+    if (pid === equipPid) { const e = equipamentosTodos.find(x => x.id === eid); if (e) return e; }
+    if (typeof pdPid !== 'undefined' && pid === pdPid) { const e = pdEquip.find(x => x.id === eid); if (e) return e; }
+    const l = (brutos['produtores/' + pid + '/equipamentos'] ? listaAtual('produtores/' + pid + '/equipamentos') : null);
+    if (l) { const e = l.find(x => x.id === eid); if (e) return e; }
+    return lerDocumento('produtores/' + pid + '/equipamentos/' + eid);
+  }
+  function nomeProdutorPid(pid) { const p = produtoresTodos.find(x => x.id === pid) || produtores.find(x => x.id === pid); return (p && p.nome) || ''; }
+  function garantiaCalc(meses, compra, instalacao) {
+    if (!(meses > 0)) return null;
+    const gV = compra ? addMonthsISO(compra, meses) : '';
+    const gI = instalacao ? addMonthsISO(instalacao, meses) : '';
+    return gI > gV ? { garantiaAte: gI, garantiaDesde: 'instalacao' } : { garantiaAte: gV, garantiaDesde: 'venda' };
+  }
+
+  // componentes do plano preventivo de cada tipo de equipamento
+  function integCompsDoEquip(tipo, pid) {
+    const p = produtoresTodos.find(x => x.id === pid);
+    const ign = (p && p.prevIgnorar) || {};
+    const txt = c => normalizarBusca(c.id + ' ' + c.nome);
+    const ehBomba = c => c.checklist.includes('oleoBomba') || /bomba/.test(txt(c));
+    const ehPuls = c => c.checklist.includes('pulsadores') || /pulsador/.test(txt(c));
+    let l = compsAtivos().filter(c => !ign[c.id]);
+    if (tipo === 'bomba') l = l.filter(ehBomba);
+    else if (tipo === 'pulsadores') l = l.filter(ehPuls);
+    else if (tipo === 'ordenhadeira') l = l.filter(c => !ehBomba(c));
+    else return [];
+    // teteiras de borracha ou de silicone: fica com a que o produtor já usa (ou a de borracha)
+    const tet = l.filter(c => c.checklist.includes('teteiras'));
+    if (tet.length > 1) {
+      const lista = pid === currentProdutorId && visitasConfiavel ? visitas : ordensIndice.filter(o => o.produtorId === pid && !o.arquivado);
+      const trocas = ultimasTrocas(lista);
+      const man = (p && p.prevManual) || {};
+      const data = c => (trocas[c.id] && trocas[c.id].data) || man[c.id] || '';
+      const usadas = tet.filter(c => data(c)).sort((a, b) => data(b).localeCompare(data(a)));
+      const fica = usadas[0] || tet.find(c => c.id === 'teteira-borracha') || tet[0];
+      l = l.filter(c => !tet.includes(c) || c === fica);
+    }
+    return l.map(c => c.id);
+  }
+  // troca registrada fora de uma OS (peça vendida e trocada, equipamento sem instalação): vale a partir de "data"
+  function integRegistrarTroca(pid, ids, data, vendaId, numero) {
+    const p = produtoresTodos.find(x => x.id === pid);
+    if (!p || !ids.length) return;
+    const manual = { ...(p.prevManual || {}) }, mv = { ...(p.prevManualVenda || {}) };
+    let mudou = false;
+    ids.forEach(c => { if (!manual[c] || manual[c] <= data) { manual[c] = data; mv[c] = { vendaId, numero: numero || null, data }; mudou = true; } });
+    if (!mudou) return;
+    updateProdutor(pid, { prevManual: manual, prevManualVenda: mv });
+    registrarAtividade('editou', 'preventiva', pid, (p.nome || '') + ' · ' + ids.map(id => (compPorId(id) || {}).nome || id).join(', '), 'troca registrada pela ' + numVenda(numero));
+  }
+  function integUltimaManual(p, compId, data) {
+    const mv = ((p && p.prevManualVenda) || {})[compId];
+    if (mv && mv.data === data) return { data, fonte: 'venda', vendaNumero: mv.numero || null, vendaId: mv.vendaId || null };
+    return { data, fonte: 'manual' };
+  }
+  function integTxtFonte(u) { return u && u.fonte === 'venda' ? ' · ' + numVenda(u.vendaNumero) : ''; }
+
+  function integDocOSInstalacao(pid, vendaId, registro, item, eq, numero) {
+    const agora = Date.now();
+    const categoria = categoriaDoEquip(eq) || 'ordenha';
+    const comps = categoria === 'ordenha' ? integCompsDoEquip(eq.tipo, pid) : [];
+    const eid = item.equipamentoId;
+    const doc = {
+      numero, status: 'aberta', tipo: 'instalacao', categoria, data: todayISO(),
+      motivo: 'Instalação: ' + [nomeEquip(eq), eq.marca, eq.modelo].filter(Boolean).join(' ') + ' (' + numVenda(registro.numero) + ').',
+      urgencia: 'normal', equipamentoProblema: null, equipamentos: [eid], equipamentosNomes: { [eid]: nomeEquip(eq) + (eq.marca ? ' ' + eq.marca : '') },
+      pecas: [], totalPecas: 0, maoDeObra: 0, total: 0, fotos: [],
+      origem: 'venda', vendaId, vendaNumero: registro.numero, vendaData: registro.data, equipamentoInstalarId: eid, garantiaMeses: eq.garantiaMeses || null,
+      criadoPor: viewerId || null, criadoEm: agora, historico: [{ acao: 'criou', status: 'aberta', por: viewerId || null, em: agora }]
+    };
+    if (comps.length) { doc.componentesTrocados = comps; doc.componentesNomes = Object.fromEntries(comps.map(id => [id, (compPorId(id) || {}).nome || 'Componente'])); }
+    return doc;
+  }
+  function integCriarEquipamento(pid, vendaId, registro, item, numeroOS) {
+    const e = equipDoItem(item);
+    const eid = item.equipamentoId;
+    const g = garantiaCalc(e.garantiaMeses, registro.data, '');
+    const dados = {
+      tipo: e.tipo, extras: e.extras, marca: e.marca, modelo: e.modelo, serie: e.serie,
+      instalacao: e.instalar ? '' : registro.data, garantiaAte: g ? g.garantiaAte : '', garantiaMeses: e.garantiaMeses, garantiaDesde: g ? g.garantiaDesde : null,
+      situacao: e.instalar ? 'aguardando' : 'funcionando', foto: null, obs: '',
+      compradoEm: registro.data, vendaId, vendaNumero: registro.numero, osInstalacaoId: e.instalar ? item.osInstalacaoId : null,
+      criadoPor: viewerId || null, criadoEm: Date.now()
+    };
+    gravar('set', 'produtores/' + pid + '/equipamentos/' + eid, dados);
+    const alvo = nomeProdutorPid(pid) + ' · ' + nomeEquip(dados);
+    registrarAtividade('criou', 'equipamento', eid, alvo, 'pela ' + numVenda(registro.numero));
+    if (!e.instalar) { integRegistrarTroca(pid, integCompsDoEquip(e.tipo, pid), registro.data, vendaId, registro.numero); return null; }
+    const os = integDocOSInstalacao(pid, vendaId, registro, item, dados, numeroOS);
+    gravarOS(pid, item.osInstalacaoId, os);
+    registrarAtividade('criou', 'os', item.osInstalacaoId, nomeProdutorPid(pid) + ' · ' + numOS(numeroOS), 'instalação da ' + numVenda(registro.numero));
+    return { numero: numeroOS, nome: nomeEquip(dados) + (dados.marca ? ' ' + dados.marca : '') };
+  }
+  async function integAtualizarEquipamento(pid, vendaId, registro, x, pegarNumeroOS) {
+    const novo = x.novo, e = equipDoItem(novo), ev = equipDoItem(x.velho);
+    const nOS = x.criarOS ? pegarNumeroOS() : null;
+    const eid = novo.equipamentoId;
+    const atual = await integLerEquip(pid, eid);
+    if (atual === null) return;           // tirado do cadastro: nada a atualizar
+    const base = atual || {};
+    const aguardando = base.situacao === 'aguardando';
+    const mud = {
+      tipo: e.tipo, extras: e.extras, marca: e.marca, modelo: e.modelo, serie: e.serie || base.serie || '',
+      compradoEm: registro.data, vendaNumero: registro.numero, garantiaMeses: e.garantiaMeses, atualizadoPor: viewerId || null, atualizadoEm: Date.now()
+    };
+    let inst = aguardando ? '' : (base.instalacao || '');
+    // não precisa mais de instalação: a OS ainda aberta é arquivada e o equipamento passa a funcionar
+    const osIdx = novo.osInstalacaoId ? ordensIndice.find(o => o.id === novo.osInstalacaoId) : null;
+    if (ev.instalar && !e.instalar && aguardando) {
+      mud.situacao = 'funcionando';
+      inst = inst || registro.data;
+      mud.instalacao = inst;
+      if (osIdx && osAtiva(osIdx)) integArquivarOS(pid, osIdx.id);
+    }
+    const g = garantiaCalc(e.garantiaMeses, registro.data, inst);
+    if (g) Object.assign(mud, g);
+    else if (ev.garantiaMeses) Object.assign(mud, { garantiaAte: '', garantiaDesde: null });
+    // passou a precisar de instalação: OS nova
+    if (x.criarOS) {
+      if (!inst) mud.situacao = 'aguardando';
+      mud.osInstalacaoId = novo.osInstalacaoId;
+      const n = nOS;
+      gravarOS(pid, novo.osInstalacaoId, integDocOSInstalacao(pid, vendaId, registro, novo, { ...base, ...mud }, n));
+      registrarAtividade('criou', 'os', novo.osInstalacaoId, nomeProdutorPid(pid) + ' · ' + numOS(n), 'instalação da ' + numVenda(registro.numero));
+    } else if (osIdx && osAtiva(osIdx) && e.instalar) {
+      // OS de instalação ainda aberta: acompanha o que mudou na venda
+      const full = await lerDocumento('produtores/' + pid + '/visitas/' + osIdx.id);
+      if (full) {
+        const eq = { ...base, ...mud };
+        const m = {
+          motivo: 'Instalação: ' + [nomeEquip(eq), eq.marca, eq.modelo].filter(Boolean).join(' ') + ' (' + numVenda(registro.numero) + ').',
+          categoria: categoriaDoEquip(eq) || 'ordenha', equipamentosNomes: { ...(full.equipamentosNomes || {}), [eid]: nomeEquip(eq) + (eq.marca ? ' ' + eq.marca : '') },
+          vendaData: registro.data, vendaNumero: registro.numero, garantiaMeses: e.garantiaMeses || null, atualizadoPor: viewerId || null, atualizadoEm: Date.now()
+        };
+        gravarOS(pid, osIdx.id, { ...full, ...m }, m);
+      }
+    }
+    gravar('update', 'produtores/' + pid + '/equipamentos/' + eid, mud);
+    registrarAtividade('editou', 'equipamento', eid, nomeProdutorPid(pid) + ' · ' + nomeEquip(mud), 'pela ' + numVenda(registro.numero));
+  }
+  function integArquivarOS(pid, osId) {
+    const agora = Date.now();
+    gravar('update', 'produtores/' + pid + '/visitas/' + osId, { arquivado: true, arquivadoPor: viewerId || null, arquivadoEm: agora });
+    gravar('update', 'ordens/' + osId, { arquivado: true });
+  }
+  // equipamento de um item que saiu da venda (ou venda arquivada): arquiva o equipamento e a OS de instalação ainda aberta
+  function integArquivarDoItem(pid, item) {
+    if (!pid || !item.equipamentoId) return;
+    const agora = Date.now();
+    gravar('update', 'produtores/' + pid + '/equipamentos/' + item.equipamentoId, { arquivado: true, arquivadoPor: viewerId || null, arquivadoEm: agora });
+    registrarAtividade('arquivou', 'equipamento', item.equipamentoId, nomeProdutorPid(pid) + ' · ' + nomeDoItemEquip(item));
+    const o = item.osInstalacaoId ? ordensIndice.find(x => x.id === item.osInstalacaoId) : null;
+    if (item.osInstalacaoId && (!o || (!o.arquivado && osAtiva(o)))) integArquivarOS(pid, item.osInstalacaoId);
+  }
+
+  // depois de gravar a venda: cria/atualiza/arquiva o que está no cadastro do produtor
+  function integDepoisDeGravar(vendaId, registro, plano) {
+    const pid = registro.produtorId;
+    let nOS = proximoNumeroOS();
+    const pegar = () => { const n = nOS; nOS = Math.max(nOS + 1, proximoNumeroOS()); return n; };
+    const criadas = [];
+    plano.criar.forEach(i => {
+      const r = integCriarEquipamento(pid, vendaId, registro, i, equipDoItem(i).instalar ? pegar() : null);
+      if (r) criadas.push(r);
+    });
+    if (plano.aplicar) {
+      plano.atualizar.forEach(x => { integAtualizarEquipamento(pid, vendaId, registro, x, pegar).catch(e => console.error(e)); });
+      plano.remover.forEach(v => integArquivarDoItem(plano.antes ? plano.antes.produtorId : pid, v));
+    }
+    return criadas;
+  }
+  // já no detalhe da venda: avisa o que foi criado e pergunta das peças do plano preventivo
+  async function integPerguntasDepois(vendaId, registro, criadas) {
+    if (criadas && criadas.length) {
+      await abrirDialogo(criadas.map(c => c.nome + ' entrou no cadastro do produtor como "Aguardando instalação" e a ' + numOS(c.numero) + ' de instalação foi aberta para a Manutenção.').join('\n'), { ok: 'OK' });
+    }
+    await integPerguntarTroca(vendaId, registro);
+  }
+
+  // ---------- peça do plano preventivo vendida: "Essa peça foi trocada no produtor agora?" ----------
+  const PALAVRAS_VAZIAS = new Set(['de', 'da', 'do', 'das', 'dos', 'para', 'pra', 'com', 'kit', 'jogo', 'par', 'und', 'unid', 'un', 'cx', 'pct', 'litro', 'litros', 'ml']);
+  function tokensPeca(s) {
+    return normalizarBusca(s).split(/[^a-z0-9]+/).filter(w => w.length > 1 && !PALAVRAS_VAZIAS.has(w) && !/^\d/.test(w))
+      .map(w => w.length > 4 ? w.replace(/(or|ar|er)es$/, '$1').replace(/s$/, '') : w);
+  }
+  const casaToken = (a, b) => a === b || (a.length >= 4 && b.length >= 4 && (a.startsWith(b) || b.startsWith(a)));
+  function integCompsDaPeca(nome) {
+    const it = tokensPeca(nome);
+    if (!it.length) return [];
+    const cands = [];
+    compsAtivos().forEach(c => {
+      const ct = tokensPeca(c.nome);
+      if (!ct.length || !it.some(w => casaToken(w, ct[0]))) return;
+      const resto = ct.slice(1);
+      const acertos = resto.filter(t => it.some(w => casaToken(w, t))).length;
+      cands.push({ comp: c.id, cheio: acertos === resto.length });
+    });
+    const cheios = cands.filter(c => c.cheio);
+    return cheios.length ? cheios : cands;
+  }
+  async function integPerguntarTroca(vendaId, registro) {
+    const cands = [];
+    registro.itens.forEach((i, k) => {
+      if (ehItemEquip(i) || i.trocaPerguntada) return;
+      const comps = integCompsDaPeca(i.produto);
+      if (comps.length) cands.push({ k, item: i, comps });
+    });
+    if (!cands.length) return;
+    const escolhidos = await integDialogoTroca(cands, registro);
+    const itens = registro.itens.map((i, k) => {
+      if (!cands.some(c => c.k === k)) return i;
+      const trocaComps = escolhidos.filter(e => e.k === k).map(e => e.comp);
+      return { ...i, trocaPerguntada: true, ...(trocaComps.length ? { trocaComps } : {}) };
+    });
+    registro.itens = itens;
+    atualizarVenda(vendaId, { itens });
+    const ids = [...new Set(escolhidos.map(e => e.comp))];
+    if (ids.length) integRegistrarTroca(registro.produtorId, ids, registro.data, vendaId, registro.numero);
+  }
+  var integTrocaResolver = null;
+  function integDialogoTroca(cands, registro) {
+    const p = produtoresTodos.find(x => x.id === registro.produtorId);
+    const lista = registro.produtorId === currentProdutorId && visitasConfiavel ? visitas : ordensIndice.filter(o => o.produtorId === registro.produtorId && !o.arquivado);
+    const trocas = ultimasTrocas(lista);
+    const usa = id => !!(trocas[id] || (p && p.prevManual && p.prevManual[id]));
+    const sel = [];
+    const box = $('it-troca-lista');
+    box.innerHTML = '';
+    cands.forEach(c => {
+      const g = itEl('div', 'it-troca-item');
+      g.appendChild(itEl('div', 'it-troca-peca', c.item.produto));
+      const chips = itEl('div', 'os-chips');
+      // um só candidato certo já vem marcado; na dúvida, o que o produtor já usa
+      const usados = c.comps.filter(x => usa(x.comp));
+      c.comps.forEach(x => {
+        const cheios = c.comps.filter(y => y.cheio);
+        const marcado = cheios.length === 1 ? cheios[0] === x : (usados.length === 1 && usados[0] === x);
+        const reg = { k: c.k, comp: x.comp, on: marcado };
+        sel.push(reg);
+        const b = itEl('button', 'check-chip', (compPorId(x.comp) || {}).nome || x.comp);
+        b.type = 'button';
+        const pint = () => { b.classList.toggle('on', reg.on); b.setAttribute('aria-pressed', reg.on ? 'true' : 'false'); };
+        b.addEventListener('click', () => { reg.on = !reg.on; pint(); });
+        pint();
+        chips.appendChild(b);
+      });
+      g.appendChild(chips);
+      box.appendChild(g);
+    });
+    $('it-troca-sub').textContent = 'Se foi, a troca fica registrada em ' + fmtDate(registro.data) + ' (data da venda) e a contagem do plano preventivo de ' + ((p && p.nome) || 'produtor') + ' recomeça. Marque o que foi trocado:';
+    $('modal-integ-troca').hidden = false;
+    return new Promise(res => { integTrocaResolver = sim => { integTrocaResolver = null; $('modal-integ-troca').hidden = true; res(sim ? sel.filter(r => r.on) : []); }; });
+  }
+  $('it-troca-sim').addEventListener('click', () => { if (integTrocaResolver) integTrocaResolver(true); });
+  $('it-troca-nao').addEventListener('click', () => { if (integTrocaResolver) integTrocaResolver(false); });
+
+  // ---------- venda arquivada/excluída: e o equipamento? ----------
+  async function integAoRemoverVenda(v) {
+    const itens = (v.itens || []).filter(i => ehItemEquip(i) && i.equipamentoId);
+    if (!itens.length) return;
+    const ok = await abrirDialogo('Arquivar também ' + itens.map(nomeDoItemEquip).join(', ') + ' no cadastro do produtor e a OS de instalação que ainda estiver aberta?', { ok: 'Arquivar também', cancelar: 'Manter' });
+    if (!ok) return;
+    itens.forEach(i => integArquivarDoItem(v.produtorId, i));
+  }
+
+  // ---------- OS de instalação concluída: equipamento funcionando, instalação e garantia ----------
+  function integAposGravarOS(pid, id, completo, mudancas) {
+    const eid = completo && completo.equipamentoInstalarId;
+    if (!eid || statusOS(completo) !== 'concluida' || !(mudancas || completo).concluidaEm || completo.arquivado) return;
+    const inst = completo.data || todayISO();
+    integLerEquip(pid, eid).then(eq => {
+      if (eq === null) return;
+      const mud = { instalacao: inst, osInstalacaoId: id, atualizadoPor: viewerId || null, atualizadoEm: Date.now() };
+      if (!eq || !eq.situacao || eq.situacao === 'aguardando') mud.situacao = 'funcionando';
+      const meses = Number(completo.garantiaMeses) > 0 ? Number(completo.garantiaMeses) : Number(eq && eq.garantiaMeses) || 0;
+      const g = garantiaCalc(meses, (eq && eq.compradoEm) || completo.vendaData || '', inst);
+      if (g) Object.assign(mud, g);
+      gravar('update', 'produtores/' + pid + '/equipamentos/' + eid, mud);
+    }).catch(() => {});
+  }
+
+  // ---------- vínculo venda ↔ equipamento ----------
+  function integAbrirEquipamento(pid, eid, voltar) {
+    if (!produtores.some(p => p.id === pid)) { avisar('O produtor desta venda não está na lista (pode ter sido arquivado).'); return; }
+    openProdutor(pid, { aba: 'visitas', voltar });
+    manutSub = 'equip';
+    renderManutSub();
+    let n = 0;
+    const tentar = () => {
+      if (equipPid === pid && equipamentosTodos.some(x => x.id === eid)) { abrirEquipVer(eid); return; }
+      if (++n < 40) setTimeout(tentar, 100);
+      else avisar('Não encontrei este equipamento no cadastro do produtor (pode ter sido arquivado).');
+    };
+    tentar();
+  }
+  function integItemDetalhe(el, v, i) {
+    if (!ehItemEquip(i)) {
+      if (Array.isArray(i.trocaComps) && i.trocaComps.length) {
+        el.appendChild(itEl('div', 'vd-troca', 'Troca registrada no plano preventivo: ' + i.trocaComps.map(id => ((compPorId(id) || {}).nome || id).toLowerCase()).join(', ')));
+      }
+      return;
+    }
+    const e = equipDoItem(i);
+    const nome = el.querySelector('.vd-item-nome');
+    if (nome) nome.appendChild(itEl('span', 'vd-tag-eq', 'Equipamento'));
+    const extra = [e.serie ? 'Nº de série ' + e.serie : '', e.garantiaMeses ? 'garantia de ' + plural(e.garantiaMeses, 'mês', 'meses') : 'sem garantia informada', e.instalar ? 'com instalação' : 'sem instalação'].filter(Boolean).join(' · ');
+    el.insertBefore(itEl('div', 'vd-item-sub vd-item-eq', extra), el.querySelector('.vd-item-valores'));
+    if (!i.equipamentoId) return;
+    const pode = podeVer('visitas');
+    const lk = itEl(pode ? 'button' : 'div', 'vd-eq-link');
+    if (pode) lk.type = 'button';
+    lk.innerHTML = '<span class="vd-eq-ico">' + iconeHtml('wrench') + '</span><span class="vd-eq-txt"><span class="vd-eq-tit">No cadastro do produtor</span><span class="vd-eq-st">Conferindo…</span></span>' + (pode ? iconeHtml('chevron-right', 'vd-eq-seta') : '');
+    el.appendChild(lk);
+    const st = lk.querySelector('.vd-eq-st');
+    integLerEquip(v.produtorId, i.equipamentoId).then(eq => {
+      if (eq === null || (eq && eq.arquivado)) { st.textContent = 'Tirado do cadastro do produtor'; lk.classList.add('arquivado'); return; }
+      if (!eq) { st.textContent = 'Sem conexão para conferir agora'; return; }
+      const os = eq.osInstalacaoId ? ordensIndice.find(o => o.id === eq.osInstalacaoId) : (i.osInstalacaoId ? ordensIndice.find(o => o.id === i.osInstalacaoId) : null);
+      const partes = [EQ_SITUACAO[eq.situacao] || 'Funcionando'];
+      if (eq.situacao === 'aguardando' && os && !os.arquivado) partes.push(numOS(os.numero) + ' ' + OS_STATUS[statusOS(os)].toLowerCase() + (statusOS(os) === 'agendada' && os.agendadaPara ? ' p/ ' + fmtDate(os.agendadaPara) : ''));
+      if (eq.situacao !== 'aguardando' && eq.instalacao) partes.push('instalado em ' + fmtDate(eq.instalacao));
+      if (eq.garantiaAte) partes.push('garantia até ' + fmtDate(eq.garantiaAte));
+      st.textContent = partes.join(' · ');
+      lk.classList.add('st-' + (eq.situacao || 'funcionando'));
+    }).catch(() => { st.textContent = ''; });
+    if (pode) lk.addEventListener('click', () => integAbrirEquipamento(v.produtorId, i.equipamentoId, 'venda'));
+  }
+  // ficha do equipamento: compra (leva para a venda), de onde conta a garantia e a OS de instalação
+  function integEquipVerExtra(e, dados) {
+    const linha = (rot, val, fn) => {
+      const l = itEl(fn ? 'button' : 'div', 'dado' + (fn ? ' dado-link' : ''));
+      if (fn) { l.type = 'button'; l.addEventListener('click', fn); }
+      l.appendChild(itEl('span', 'dado-rot', rot));
+      const v = itEl('span', 'dado-val', val);
+      if (fn) v.insertAdjacentHTML('beforeend', iconeHtml('chevron-right'));
+      l.appendChild(v);
+      dados.insertBefore(l, dados.firstChild);
+    };
+    if (e.situacao === 'aguardando' && e.osInstalacaoId) {
+      const o = ordensIndice.find(x => x.id === e.osInstalacaoId);
+      if (o && !o.arquivado) linha('Instalação', numOS(o.numero) + ' · ' + OS_STATUS[statusOS(o)].toLowerCase() + (statusOS(o) === 'agendada' && o.agendadaPara ? ' p/ ' + fmtDate(o.agendadaPara) : ''),
+        () => { $('modal-equip-ver').hidden = true; manutSub = 'os'; renderManutSub(); destacarOS(o.id); });
+    }
+    if (e.garantiaDesde && e.garantiaMeses) {
+      [...dados.querySelectorAll('.dado')].forEach(d => {
+        const r = d.querySelector('.dado-rot');
+        if (r && r.textContent === 'Garantia') d.querySelector('.dado-val').textContent += ' (' + plural(e.garantiaMeses, 'mês', 'meses') + ' a partir da ' + (e.garantiaDesde === 'instalacao' ? 'instalação' : 'compra') + ')';
+      });
+    }
+    if (e.vendaId || e.compradoEm) {
+      const v = vendas.find(x => x.id === e.vendaId);
+      const txt = [e.compradoEm ? fmtDate(e.compradoEm) : '', e.vendaNumero ? numVenda(e.vendaNumero) : ''].filter(Boolean).join(' · ');
+      linha('Compra', txt, v && podeVer('vendas') ? () => { $('modal-equip-ver').hidden = true; abrirVendaDetalhe(v.id, 'produtor'); } : null);
+    }
+  }
+  function integEquipCardExtra(card, e) {
+    if (!e.compradoEm && !e.vendaNumero) return;
+    const s = itEl('span', 'eq-compra', ['Comprado em ' + (e.compradoEm ? fmtDate(e.compradoEm) : '—'), e.vendaNumero ? numVenda(e.vendaNumero) : ''].filter(Boolean).join(' · '));
+    const sit = card.querySelector('.eq-sit');
+    if (sit) sit.before(s); else card.querySelector('.eq-txt').appendChild(s);
+  }
+
+  // =====================================================================
+  // DEMONSTRAÇÃO: entrar como qualquer setor
+  // Só o Administrador, só com o modo demonstração ligado. As permissões do setor valem só
+  // neste aparelho e até "Trocar"; o cadastro das pessoas não muda.
+  // =====================================================================
+  var demoComo = null, acessoReal = null;
+  const DEMO_COMO = [
+    { id: 'admin', nome: 'Administrador', sub: 'Tudo, inclusive a Administração', ic: 'shield-check', cor: 'var(--ink)' },
+    { id: 'manutencao', nome: 'Manutenção', ic: 'wrench', cor: 'var(--s-manutencao)' },
+    { id: 'veterinaria', nome: 'Veterinária', ic: 'stethoscope', cor: 'var(--s-veterinaria)' },
+    { id: 'qualidade', nome: 'Qualidade do leite', ic: 'milk', cor: 'var(--s-qualidade)' },
+    { id: 'nutricao', nome: 'Nutrição', ic: 'wheat', cor: 'var(--s-nutricao)' },
+    { id: 'comercial', nome: 'Comercial', ic: 'shopping-bag', cor: 'var(--s-comercial)' },
+    { id: 'produtor', nome: 'Produtor', sub: 'A área do produtor, simulando um da lista', ic: 'tractor', cor: 'var(--accent-txt)' }
+  ];
+  const demoComoInfo = id => DEMO_COMO.find(x => x.id === id) || null;
+  function adminReal() { const a = acessoReal || acesso; return !!(a && a.estado === 'ativo' && a.admin); }
+  // permissões do papel do setor, como a Administração monta ao marcar só esse setor para a pessoa
+  function acessoDoSetor(setorId, real) {
+    const papel = setorId === 'comercial' ? 'vendedor' : 'tecnico';
+    const P = PAPEIS[papel];
+    const perm = {};
+    MODULOS.forEach(([k]) => { perm[k] = 0; });
+    MODULOS_GERAIS.forEach(k => { perm[k] = P.perm[k] || 0; });
+    SETOR[setorId].modulos.forEach(k => { perm[k] = P.perm[k] > 0 ? P.perm[k] : P.nivelSetor; });
+    return { estado: 'ativo', admin: false, dono: false, papel, perm, soProprias: !!P.soProprias, apelido: (real && real.apelido) || '', setores: [setorId], demoComo: setorId };
+  }
+  function integAcessoDemo(a) {
+    acessoReal = a;
+    if (DEMO_ATIVO && demoComo && SETOR[demoComo] && a && a.estado === 'ativo' && a.admin) return acessoDoSetor(demoComo, a);
+    return a;
+  }
+  function integMontarEntrarComo(bloco) {
+    const box = bloco.querySelector('.ap-escolha');
+    const sub = bloco.querySelector('.entrada-sub');
+    if (sub) sub.textContent = 'Modo demonstração: escolha como quer entrar.';
+    const btn = bloco.querySelector('#btn-entrar');
+    if (btn) btn.hidden = true;
+    box.className = 'ap-escolha ap-como';
+    box.setAttribute('role', 'group');
+    box.setAttribute('aria-label', 'Entrar como');
+    box.innerHTML = '<div class="ap-como-tit">Entrar como:</div><div class="ap-como-grade"></div>';
+    const grade = box.querySelector('.ap-como-grade');
+    DEMO_COMO.forEach(c => {
+      const b = itEl('button', 'ap-como-op' + (c.id === 'admin' ? ' largo' : ''));
+      b.type = 'button';
+      b.dataset.como = c.id;
+      b.style.setProperty('--cor', c.cor);
+      b.innerHTML = '<span class="ap-como-ico">' + iconeHtml(c.ic) + '</span><span class="ap-como-txt"><span class="ap-como-nome"></span><span class="ap-como-sub"></span></span>';
+      b.querySelector('.ap-como-nome').textContent = c.nome;
+      b.querySelector('.ap-como-sub').textContent = c.sub || (SETOR[c.id] ? SETOR[c.id].sub : '');
+      b.setAttribute('aria-label', 'Entrar como ' + c.nome);
+      b.addEventListener('click', () => integEntrarComo(c.id));
+      grade.appendChild(b);
+    });
+    const des = itEl('button', 'link-btn ap-como-desligar', 'Desligar o modo demonstração');
+    des.type = 'button';
+    des.addEventListener('click', () => demoDesligar());
+    box.appendChild(des);
+  }
+  function integEntrarComo(id) {
+    if (!DEMO_ATIVO || !adminReal() || !demoComoInfo(id)) return;
+    clearTimeout(timerEntrada);
+    entrouNestaSessao = true;
+    gravarLS(chaveEntrou(), Date.now());
+    if (viewerId) gravar('set', 'acessos/' + viewerId, { em: Date.now() });
+    demoComo = id;
+    recalcularAcesso();          // aplica as permissões do setor (Administrador e Produtor ficam com as reais)
+    apFaixas();
+    if (id === 'produtor') { apAbrirLoginProdutor(); return; }
+    if (id === 'admin' || id === 'manutencao') { showView('home'); try { renderResumoHome(); } catch (e) {} return; }
+    abrirSetor(id);
+  }
+  function integTrocar() {
+    if (document.body.classList.contains('modo-produtor')) pdSair(true);
+    if (currentProdutorId) closeProdutorDetail();
+    document.querySelectorAll('.modal-backdrop').forEach(m => { if (m.id !== 'dialogo') m.hidden = true; });
+    demoComo = null;
+    recalcularAcesso();
+    showView('entrada');
+    apFaixas();
+    window.scrollTo(0, 0);
+  }
 
   apFaixas();
 

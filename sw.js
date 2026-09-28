@@ -1,6 +1,6 @@
 // Deixa o app abrir sem internet. Guarda os arquivos do app e as bibliotecas
 // (Excel, PDF, fontes). NUNCA guarda os dados do Supabase: esses vêm sempre do banco.
-const VERSAO = 'auriverde-v2';
+const VERSAO = 'auriverde-v3';
 const ARQUIVOS = ['./', './index.html', './config.js', './supabase.js', './claude-supabase.js', './claude-local.js',
   './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 const BIBLIOTECAS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
