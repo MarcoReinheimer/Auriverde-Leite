@@ -1935,6 +1935,52 @@
   .tt-card.ok { color: var(--accent-txt); }
   .tt-card.fora { color: var(--tax); }
   .tt-card-vals { font-size: 13px; color: var(--ink-soft); margin-top: 3px; font-family: var(--fonte); }
+  /* Limp do pulsador */
+  .tt-limp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; align-items: end; }
+  .tt-limp-sinal { min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .tt-limp-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 8px; }
+  .tt-limp-info:empty { display: none; }
+  .limp-selo { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; line-height: 1.3; }
+  .limp-selo::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .limp-selo.ok { color: var(--accent-txt); background: var(--accent-suave); }
+  .limp-selo.atencao { color: var(--soon); background: var(--soon-bg); }
+  .limp-selo.fora { color: var(--tax); background: color-mix(in srgb, var(--tax) 13%, transparent); }
+  .limp-canal { font-size: 13px; color: var(--ink-soft); }
+  .tt-c-tit { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 2px 0 6px; display: flex; align-items: center; gap: 8px; }
+  .tt-c-tit .link-btn { margin-left: auto; }
+  .tt-c2 { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .tt-pul-acoes { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; }
+  .tt-pul-foto { width: 40px; height: 40px; border: none; border-radius: 10px; background: none; color: var(--ink-soft); font-size: 18px; cursor: pointer; }
+  .tt-gim-nota { font-size: 13px; color: var(--info-txt); font-weight: 600; margin-top: 8px; }
+  .tt-gim { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 10px; }
+  .tt-gim-st { font-size: 13px; color: var(--ink-soft); }
+  .tt-card.limp { color: var(--tax); }
+  /* histórico do Limp na ficha */
+  .limp-ficha { margin-bottom: 12px; }
+  .limp-ficha-sub { font-size: 13px; color: var(--ink-soft); margin: 2px 0 6px; line-height: 1.35; }
+  .limp-linha { display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .limp-nome { font-weight: 700; font-size: 15px; }
+  .limp-det { font-size: 13px; color: var(--ink-soft); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+  .limp-spark { width: 140px; height: 48px; display: block; overflow: visible; }
+  /* lista de pulsadores com Limp fora */
+  .limp-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer; }
+  .limp-item-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .limp-item-nome { font-weight: 700; font-size: 15px; }
+  .limp-item-sub { font-size: 13px; color: var(--ink-soft); }
+  .limp-item-val { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .limp-item-val b { color: var(--tax); font-size: 17px; }
+  .limp-item-val span { font-size: 12px; color: var(--ink-soft); }
+  /* agenda do celular */
+  .agenda-linha { display: flex; justify-content: flex-end; margin: -4px 0 12px; }
+  .agenda-linha .agenda-btn, .pv-lembrete .agenda-btn, .pvc-agenda .agenda-btn { margin-top: 0; }
+  .pv-lembrete { margin: 0 0 12px; }
+  .pv-lembrete:empty, .pvc-agenda:empty { display: none; }
+  .pvc-agenda { margin: 4px 0 12px; }
+  @media (max-width: 599px) {
+    .ini-kpis.n5 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .ini-kpis.n5 > * { grid-column: span 2; }
+    .ini-kpis.n5 > :nth-child(n+4) { grid-column: span 3; }
+  }
 
   /* sim / não */
   .sn-linha { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
@@ -3416,6 +3462,7 @@
         <button type="button" class="seg-btn" role="tab" data-sub="prev">Preventiva<span class="seg-n" id="manut-n-prev"></span></button>
       </div>
       <div id="manut-sub-os">
+        <div class="card limp-ficha" id="limp-ficha" hidden></div>
         <div id="visita-list"></div>
         <div class="empty-state" id="visita-empty" hidden>Nenhuma ordem de serviço ainda.</div>
       </div>
@@ -3427,6 +3474,7 @@
       <div id="manut-sub-prev" hidden>
         <div class="pv-uso" id="pv-uso"></div>
         <button type="button" class="add-record-btn" id="pv-gerar-os" data-perm="visitas:2">🛠 Gerar OS preventiva</button>
+        <div class="pv-lembrete" id="pv-lembrete"></div>
         <div id="pv-ficha-lista"></div>
         <div class="empty-state" id="pv-ficha-vazio" hidden>Nenhum componente no plano. O Administrador cadastra em Administração → Plano de manutenção preventiva.</div>
         <div id="pv-ficha-ignorados"></div>
@@ -4454,6 +4502,7 @@
     <div class="leite-ficha-sub" id="pvc-prod"></div>
     <div class="pvc-status" id="pvc-status"></div>
     <div class="pvc-dados" id="pvc-dados"></div>
+    <div class="pvc-agenda" id="pvc-agenda"></div>
     <div class="field" id="pvc-manual-field">
       <label for="pvc-data">Última troca feita sem OS no app</label>
       <input type="date" id="pvc-data">
@@ -4521,6 +4570,14 @@
     </div>
     <div class="field"><label for="par-vazaoPct">Vazão da bomba: mínimo (% da vazão nominal cadastrada)</label><input type="text" inputmode="numeric" id="par-vazaoPct" class="mono-input"></div>
 
+    <div class="cfg-grupo">Limp do pulsador</div>
+    <div class="rate-row">
+      <div class="field"><label for="par-limpPct">Limp máximo (%)</label><input type="text" inputmode="decimal" id="par-limpPct" class="mono-input"></div>
+      <div class="field"><label for="par-limpMs">Limp máximo (ms) <span class="opcional">(opcional)</span></label><input type="text" inputmode="decimal" id="par-limpMs" class="mono-input" placeholder="não usa"></div>
+    </div>
+    <div class="field"><label for="par-limpAtencao">Faixa de atenção (% do limite)</label><input type="text" inputmode="decimal" id="par-limpAtencao" class="mono-input">
+      <div class="campo-dica">O Limp é comparado sempre em valor absoluto (−5,5% e +5,5% contam igual). Com limite de 5% e atenção em 80%, o selo fica amarelo a partir de 4% e vermelho acima de 5%. Deixe o limite em ms em branco para não usar.</div></div>
+
     <div class="cfg-grupo">Resfriador</div>
     <div class="field"><label for="par-resfriamentoMax">Tempo máximo para o leite chegar a 4 °C (min)</label><input type="text" inputmode="numeric" id="par-resfriamentoMax" class="mono-input"></div>
 
@@ -4541,6 +4598,19 @@
       <button type="button" class="btn-secondary" id="par-padrao">Voltar ao padrão</button>
       <button type="button" class="btn-secondary" id="par-cancelar">Cancelar</button>
       <button type="button" class="btn-primary" id="par-salvar">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: pulsadores com Limp fora do padrão (Início) -->
+<div class="modal-backdrop" id="modal-limp" hidden>
+  <div class="modal-sheet" role="dialog" aria-labelledby="limp-lista-tit">
+    <h2 id="limp-lista-tit">Pulsadores com Limp fora</h2>
+    <div class="campo-dica" style="margin-top:0" id="limp-lista-dica"></div>
+    <div id="limp-lista"></div>
+    <div class="empty-state" id="limp-lista-vazio" hidden>Nenhum pulsador com Limp fora do padrão no teste mais recente.</div>
+    <div class="modal-actions">
+      <button type="button" class="btn-primary" id="limp-lista-fechar">Fechar</button>
     </div>
   </div>
 </div>
@@ -5044,6 +5114,12 @@
         <div class="cf-corpo" hidden>
           <div class="tt-grade" id="tt-principais"></div>
           <div class="tt-sub">Pulsadores</div>
+          <div class="tt-gim" id="tt-gim">
+            <button type="button" class="btn-secondary" id="tt-gim-btn">📷 Ler fotos do pulsógrafo Gimenez</button>
+            <span class="tt-gim-st" id="tt-gim-st" aria-live="polite"></span>
+            <div class="campo-dica" style="margin:0;flex-basis:100%">Uma foto por pulsador, com a tela inteira. O número do pulsador na tela decide onde os valores entram. Confira antes de salvar.</div>
+          </div>
+          <input type="file" id="tt-gim-arq" accept="image/*" multiple hidden>
           <div id="tt-puls"></div>
           <button type="button" class="os-add-linha" id="tt-add-puls">+ Pulsador</button>
           <div class="tt-conclusao" id="tt-conclusao"></div>
@@ -6439,6 +6515,18 @@
         if (c.fmt) col.numFmt = c.fmt;
         col.alignment = c.wrap ? { wrapText: true, vertical: 'top' } : { vertical: 'top' };
       });
+      // células coloridas por faixa (ex.: Limp dentro / atenção / fora do padrão): linha.__cor = { chave: 'ok' | 'atencao' | 'fora' }
+      const XLSX_FAIXA = { ok: ['FFE3F1E9', 'FF007A3D'], atencao: ['FFFBF0DA', 'FF9A6410'], fora: ['FFF6DED8', 'FFB5412B'] };
+      linhas.forEach((l, ri) => {
+        if (!l || !l.__cor) return;
+        colunas.forEach((c, ci) => {
+          const f = XLSX_FAIXA[l.__cor[c.key]];
+          if (!f) return;
+          const cell = ws.getRow(ri + 2).getCell(ci + 1);
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: f[0] } };
+          cell.font = { name: 'IBM Plex Sans', size: 10, bold: true, color: { argb: f[1] } };
+        });
+      });
 
       const cab = ws.getRow(1);
       cab.height = 22;
@@ -6910,6 +6998,7 @@
 
   async function initAgenda() {
     try {
+      if (typeof claude === 'undefined' || !claude || !claude.use) throw new Error('fora do Claude');
       const mcp = await claude.use('mcp');
       if (!mcp) return;
       const res = await mcp.listTools(AGENDA_SERVER);
@@ -6919,6 +7008,7 @@
       agendaDisponivel = false;
     }
     if (currentProdutorId) renderVisitas();
+    try { if (!$('view-ordens').hidden) renderAgendaSemana(osVisiveis()); } catch (e) {}
   }
 
   function addDaysISO(iso, n) {
@@ -7019,6 +7109,181 @@
         restaurar();
         avisar('Não deu para confirmar se o evento foi criado. Confira sua agenda antes de tentar de novo, para não duplicar.');
     }
+  }
+
+  // =====================================================
+  // AGENDA DO CELULAR — arquivo de evento .ics (iPhone e Android)
+  // =====================================================
+  // Sem o conector do Google Agenda (ou fora do Claude), o botão gera um arquivo
+  // .ics que a agenda do próprio celular abre: título, data, local, descrição e
+  // lembrete na véspera. Com o conector, o mesmo botão cria o evento no Google Agenda.
+  function horaLocalISO(iso, hhmm) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const [h, mi] = hhmm.split(':').map(Number);
+    const off = -new Date(y, m - 1, d, h, mi).getTimezoneOffset();
+    const a = Math.abs(off);
+    return iso + 'T' + String(h).padStart(2, '0') + ':' + String(mi).padStart(2, '0') + ':00' + (off >= 0 ? '+' : '-') +
+      String(Math.floor(a / 60)).padStart(2, '0') + ':' + String(a % 60).padStart(2, '0');
+  }
+  function somarHora(hhmm, min) {
+    const [h, m] = hhmm.split(':').map(Number);
+    const t = Math.min(h * 60 + m + min, 23 * 60 + 59);
+    return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+  }
+  const horaValida = h => typeof h === 'string' && /^\d{2}:\d{2}$/.test(h);
+  function localAgenda(p) {
+    if (!p) return '';
+    return [p.propriedade, p.linha, p.cidade ? p.cidade + (p.estado ? ' - ' + p.estado : '') : ''].filter(Boolean).join(', ');
+  }
+  function icsTxt(v) { return String(v == null ? '' : v).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  // linhas de no máximo 75 bytes (regra do formato), continuando com um espaço
+  function icsDobrar(linha) {
+    const enc = new TextEncoder();
+    const out = [];
+    let atual = '', bytes = 0;
+    for (const ch of linha) {
+      const b = enc.encode(ch).length;
+      if (bytes + b > 75) { out.push(atual); atual = ' '; bytes = 1; }
+      atual += ch; bytes += b;
+    }
+    out.push(atual);
+    return out.join('\r\n');
+  }
+  function gerarIcs(ev) {
+    const d = iso => iso.replace(/-/g, '');
+    const dh = (iso, h) => d(iso) + 'T' + h.replace(':', '') + '00';
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Auriverde//App Auriverde//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+      'UID:' + String(ev.uid || novoId()).replace(/[^\w.-]/g, '') + '@auriverde.app', 'DTSTAMP:' + stamp];
+    if (horaValida(ev.hora)) {
+      L.push('DTSTART:' + dh(ev.data, ev.hora), 'DTEND:' + dh(ev.data, horaValida(ev.horaFim) ? ev.horaFim : somarHora(ev.hora, 60)));
+    } else {
+      L.push('DTSTART;VALUE=DATE:' + d(ev.data), 'DTEND;VALUE=DATE:' + d(addDaysISO(ev.data, 1)));
+    }
+    L.push('SUMMARY:' + icsTxt(ev.titulo));
+    if (ev.local) L.push('LOCATION:' + icsTxt(ev.local));
+    if (ev.descricao) L.push('DESCRIPTION:' + icsTxt(ev.descricao));
+    // lembrete 1 dia antes (evento de dia inteiro: na véspera, às 9h)
+    L.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsTxt(ev.titulo), 'TRIGGER:' + (horaValida(ev.hora) ? '-P1D' : '-PT15H'), 'END:VALARM');
+    L.push('END:VEVENT', 'END:VCALENDAR');
+    return L.map(icsDobrar).join('\r\n') + '\r\n';
+  }
+  function nomeArqIcs(t) {
+    return (String(t || 'evento').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase().slice(0, 60) || 'evento');
+  }
+  async function salvarIcs(ev, btn) {
+    const txt = gerarIcs(ev);
+    const nome = nomeArquivoDemo(nomeArqIcs(ev.titulo) + '.ics');
+    const blob = new Blob([txt], { type: 'text/calendar;charset=utf-8' });
+    const feito = () => { if (btn) { btn.textContent = '📅 Agenda do celular ✓'; btn.classList.add('done'); } };
+    // dentro do Claude: o arquivo sai pelo download do app
+    const downloads = null; // versão do GitHub: sempre pelo navegador
+    if (downloads) {
+      try {
+        await downloads.save({ filename: nome, data: blob });
+        feito();
+        avisar('Evento salvo no arquivo ' + nome + '. Abra o arquivo no celular e toque em "Adicionar" para colocar na agenda (com lembrete na véspera).');
+        return;
+      } catch (e) {
+        const code = e && e.code;
+        if (code === 'declined') return;
+        if (code === 'rate_limited') { avisar('Já tem um download aberto. Conclua ou feche ele e tente de novo.'); return; }
+        // sem o download do Claude: segue pelo navegador
+      }
+    }
+    // fora do Claude: o iPhone abre o .ics direto na agenda; o Android baixa e abre na agenda
+    try {
+      const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (ios) {
+        window.location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(txt);
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = nome; a.rel = 'noopener';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
+      feito();
+    } catch (e) {
+      avisar('Não consegui gerar o arquivo da agenda neste aparelho.');
+    }
+  }
+  async function adicionarGoogleEvento(ev, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Adicionando…';
+    try {
+      const mcp = await claude.use('mcp');
+      if (!mcp) throw { code: 'capability_disabled' };
+      const args = {
+        summary: ev.titulo,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo',
+        description: ev.descricao || '',
+        overrideReminders: [{ method: 'popup', minutes: horaValida(ev.hora) ? 1440 : 900 }]
+      };
+      if (ev.local) args.location = ev.local;
+      if (horaValida(ev.hora)) {
+        args.startTime = horaLocalISO(ev.data, ev.hora);
+        args.endTime = horaLocalISO(ev.data, horaValida(ev.horaFim) ? ev.horaFim : somarHora(ev.hora, 60));
+      } else {
+        args.allDay = true;
+        args.startTime = meiaNoiteLocal(ev.data);
+        args.endTime = meiaNoiteLocal(addDaysISO(ev.data, 1));
+      }
+      await mcp.callTool(AGENDA_SERVER, 'create_event', args);
+    } catch (e) {
+      tratarErroAgenda(e, btn);
+      return;
+    }
+    btn.textContent = 'Adicionado à agenda ✓';
+    btn.classList.add('done');
+  }
+  // um botão só: Google Agenda quando o conector existe; senão, a agenda do celular (.ics)
+  function botaoAgenda(ev, rotulo) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'agenda-btn';
+    if (agendaDisponivel) {
+      b.textContent = rotulo || '📅 Adicionar ao Google Agenda';
+      b.addEventListener('click', e => { e.stopPropagation(); adicionarGoogleEvento(ev, b); });
+    } else {
+      b.textContent = rotulo || '📅 Adicionar à agenda do celular';
+      b.addEventListener('click', e => { e.stopPropagation(); salvarIcs(ev, b); });
+    }
+    return b;
+  }
+  function eventoDaOS(o, p) {
+    const nome = (p && p.nome) || o.produtorNome || 'Produtor';
+    const tec = o.tecnicoId ? nomeReal(o.tecnicoId) : '';
+    const linhas = [
+      numOS(o.numero) + ' · ' + [OS_TIPOS[tipoOS(o)], CAT_LABEL[o.categoria]].filter(Boolean).join(' · '),
+      o.motivo ? 'Motivo: ' + o.motivo : '',
+      tec ? 'Técnico: ' + tec : '',
+      p && p.telefone ? 'Telefone do produtor: ' + p.telefone : '',
+      p && p.referencia ? 'Referência: ' + p.referencia : ''
+    ].filter(Boolean);
+    return {
+      uid: 'os-' + o.id + '-' + o.agendadaPara,
+      titulo: (CAT_LABEL[o.categoria] || 'OS') + ' – ' + nome + ' (' + numOS(o.numero) + ')',
+      data: o.agendadaPara, hora: horaValida(o.horaInicio) ? o.horaInicio : null,
+      local: localAgenda(p) || o.produtorLocal || '',
+      descricao: linhas.join('\n') + '\n\nCriado pelo app Auriverde.'
+    };
+  }
+  function eventoPreventiva(p, itens) {
+    const data = itens[0].proxima;
+    return {
+      uid: 'prev-' + p.id + '-' + data,
+      titulo: 'Troca preventiva – ' + (p.nome || '') + ': ' + itens.map(i => i.comp.nome).join(', '),
+      data, local: localAgenda(p),
+      descricao: ['Próxima troca prevista pelo plano preventivo:'].concat(itens.map(i => '• ' + i.comp.nome + ' (' + vidaTxt(i.comp) + (i.ultima ? '; última troca em ' + fmtDate(i.ultima.data) : '') + ')'))
+        .concat(['', 'Criado pelo app Auriverde.']).join('\n')
+    };
+  }
+  function linhaBotaoAgenda(ev, rotulo) {
+    const d = document.createElement('div');
+    d.className = 'agenda-linha';
+    d.appendChild(botaoAgenda(ev, rotulo));
+    return d;
   }
 
   // ---------- cadastro do produtor (o mesmo em Vendas, Visitas e Média de leite) ----------
@@ -11824,7 +12089,7 @@
     const chaves = [];
     const vistas = new Set();
     (primeiras || []).concat(['id']).forEach(k => { if (!vistas.has(k)) { vistas.add(k); chaves.push(k); } });
-    linhas.forEach(l => Object.keys(l).forEach(k => { if (!vistas.has(k)) { vistas.add(k); chaves.push(k); } }));
+    linhas.forEach(l => Object.keys(l).forEach(k => { if (!vistas.has(k) && !k.startsWith('__')) { vistas.add(k); chaves.push(k); } }));
     const colunas = chaves.filter(k => linhas.some(l => l[k] != null && l[k] !== '')).map(k => ({
       titulo: k, key: k, max: 50,
       fmt: linhas.some(l => l[k] instanceof Date) ? 'dd/mm/yyyy hh:mm' : undefined
@@ -15113,7 +15378,7 @@
     if ((osStatus === 'andamento' || osStatus === 'concluida')) setTimeout(() => { if (!osAssinaturaAtual && !osAssinDesenhou) window.limparAssinatura(); }, 30);
   });
 
-  $('visita-save').addEventListener('click', () => {
+  $('visita-save').addEventListener('click', async () => {
     const pid = currentProdutorId;
     if (!pid) return;
     if (fotosPreparando) { avisar('Espere as fotos terminarem de ser preparadas.'); return; }
@@ -15138,6 +15403,13 @@
     if (st === 'concluida' && !descricao && !defeito && !marcouItens && temperaturaLeite == null && !fotosForm.length && !pecas.length && !extrasOS.temAlgo) {
       avisar(categoria === 'ordenha' ? 'Marque o que foi feito, descreva o serviço ou lance as peças.' : categoria === 'resfriador' ? 'Informe a temperatura do leite ou descreva o serviço feito.' : 'Descreva o serviço feito.');
       return;
+    }
+    // Limp fora do padrão: avisa e oferece abrir a OS corretiva (salvar acontece nos dois casos)
+    let limpAviso = null, abrirCorretiva = false;
+    try { limpAviso = avisoLimpNecessario(extrasOS.campos.teste, osBase); } catch (e) { extraErro(e); }
+    if (limpAviso) {
+      abrirCorretiva = await abrirDialogo(limpAviso.msg, { ok: 'Abrir OS corretiva', cancelar: 'Só salvar' });
+      if (currentProdutorId !== pid || $('modal-visita').hidden) return;
     }
     const agora = Date.now();
     const vid = editingVisitaId || novoId();
@@ -15188,6 +15460,7 @@
     manutSub = 'os';
     renderManutSub();
     osParaDestacar = vid;
+    if (limpAviso && abrirCorretiva) setTimeout(() => abrirCorretivaLimp(pid, limpAviso.fora, payload.numero, dataServico), 120);
   });
 
   // ---------- ações rápidas na OS ----------
@@ -15230,6 +15503,7 @@
     const abertas = lista.filter(osAtiva).length;
     $('manut-n-os').textContent = abertas ? String(abertas) : '';
     renderPreventivaFicha();
+    try { renderLimpFicha(); } catch (e) { extraErro(e); }
     lista.forEach(v => container.appendChild(cartaoOSFicha(v, ultimaRev, perfis)));
     if (osParaDestacar && visitas.some(v => v.id === osParaDestacar)) { const id = osParaDestacar; osParaDestacar = null; setTimeout(() => destacarOS(id), 60); }
     else if (osParaDestacar && visitasConfiavel) osParaDestacar = null;
@@ -15371,6 +15645,17 @@
       if (jaAgendado(v, prox)) { b.textContent = 'Adicionado à agenda ✓'; b.classList.add('done'); b.disabled = true; }
       else { b.textContent = '📅 Revisão na agenda'; b.addEventListener('click', () => adicionarAgenda(v, b)); }
       acoes.appendChild(b);
+    } else if (ultimaRev && v.id === ultimaRev.id) {
+      // sem o conector do Google Agenda: a próxima revisão vai para a agenda do celular
+      const prox = addMonthsISO(v.data, MESES_ATE_REVISAO);
+      const pr = produtores.find(x => x.id === currentProdutorId);
+      const nome = pr ? pr.nome : '';
+      acoes.appendChild(botaoAgenda({ uid: 'rev-' + v.id + '-' + prox, titulo: 'Revisão de ordenhadeira – ' + nome, data: prox, local: localAgenda(pr), descricao: resumoParaAgenda(v, nome) },
+        '📅 Próxima revisão na agenda do celular'));
+    }
+    if (st === 'agendada' && v.agendadaPara) {
+      const pr = produtores.find(x => x.id === currentProdutorId);
+      acoes.appendChild(botaoAgenda(eventoDaOS({ ...v, produtorNome: pr ? pr.nome : '' }, pr)));
     }
     if (acoes.children.length) card.appendChild(acoes);
     return card;
@@ -15743,7 +16028,13 @@
     lista.innerHTML = '';
     const l = doDia(osDiaSel).sort((a, b) => (a.horaInicio || '99').localeCompare(b.horaInicio || '99') || (Number(a.numero) || 0) - (Number(b.numero) || 0));
     if (!l.length) { const v = document.createElement('div'); v.className = 'leite-ficha-sub'; v.style.margin = '0 0 8px'; v.textContent = 'Nada marcado para ' + fmtDate(osDiaSel) + '.'; lista.appendChild(v); }
-    l.forEach(o => lista.appendChild(cartaoOS(o, 'ordens')));
+    l.forEach(o => {
+      lista.appendChild(cartaoOS(o, 'ordens'));
+      if (statusOS(o) === 'agendada' && o.agendadaPara) {
+        const p = produtoresTodos.find(x => x.id === o.produtorId) || produtores.find(x => x.id === o.produtorId) || null;
+        lista.appendChild(linhaBotaoAgenda(eventoDaOS(o, p)));
+      }
+    });
   }
   $('os-sem-ant').addEventListener('click', () => { osSemana--; osDiaSel = null; renderAgendaSemana(osVisiveis()); });
   $('os-sem-prox').addEventListener('click', () => { osSemana++; osDiaSel = null; renderAgendaSemana(osVisiveis()); });
@@ -16581,7 +16872,9 @@
     vacTrab: { min: 40, max: 50 }, vacColetor: { min: 32, max: 42 },
     reservaBase: 200, reservaPorConjunto: 30, vazaoPct: 85,
     taxa: { min: 55, max: 65 }, relacao: { min: 60, max: 70 },
-    faseA: { min: 60, max: 200 }, faseB: { min: 300, max: null }, faseC: { min: 60, max: 200 }, faseD: { min: 150, max: null }
+    faseA: { min: 60, max: 200 }, faseB: { min: 300, max: null }, faseC: { min: 60, max: 200 }, faseD: { min: 150, max: null },
+    // Limp: diferença entre os dois canais do pulsador, sempre comparada em valor absoluto
+    limp: { pct: 5, ms: null, atencao: 80 }
   };
   const CONFORTO_PADRAO = { ituVerde: 68, ituAmarelo: 72, ituLaranja: 80, frMax: 60 };
   const numOuNulo = v => (v === '' || v == null || isNaN(Number(v))) ? null : Number(v);
@@ -16608,6 +16901,7 @@
       const r = doc.ref || {};
       PREV_FAIXAS.forEach(k => { if (r[k] && typeof r[k] === 'object') c.ref[k] = { min: numOuNulo(r[k].min), max: numOuNulo(r[k].max) }; });
       ['reservaBase', 'reservaPorConjunto', 'vazaoPct'].forEach(k => { if (k in r) c.ref[k] = numOuNulo(r[k]); });
+      if (r.limp && typeof r.limp === 'object') c.ref.limp = { pct: numOuNulo(r.limp.pct), ms: numOuNulo(r.limp.ms), atencao: numOuNulo(r.limp.atencao) > 0 && Number(r.limp.atencao) <= 100 ? Number(r.limp.atencao) : 80 };
       const cf = doc.conforto || {};
       Object.keys(CONFORTO_PADRAO).forEach(k => { if (numOuNulo(cf[k]) != null) c.conforto[k] = Number(cf[k]); });
       c.atualizadoPor = doc.atualizadoPor || null;
@@ -16892,6 +17186,14 @@
     btn.disabled = !g.itens.length;
     if (g.itens.length) btn.textContent = '🛠 Gerar OS preventiva (' + (g.tipo === 'vencidos' ? plural(g.itens.length, 'item vencido', 'itens vencidos') : plural(g.itens.length, 'item vencendo', 'itens vencendo')) + ')';
     else btn.textContent = plano.itens.some(i => i.osAtiva && (i.cls === 'vencida' || i.cls === 'breve')) ? '🛠 Os itens vencidos já estão em OS' : '🛠 Nada vencido para gerar OS';
+    // lembrete da próxima troca (Google Agenda com o conector; senão, agenda do celular)
+    const lem = $('pv-lembrete');
+    lem.innerHTML = '';
+    const futuras = plano.itens.filter(i => i.proxima && i.proxima >= todayISO()).sort((a, b) => a.proxima.localeCompare(b.proxima));
+    if (futuras.length) {
+      const grupo = futuras.filter(i => i.proxima === futuras[0].proxima);
+      lem.appendChild(botaoAgenda(eventoPreventiva(p, grupo), '📅 Gerar lembrete da próxima troca (' + fmtDate(grupo[0].proxima) + ')'));
+    }
     // os alertas do topo da ficha dependem das OS, que chegam depois do cadastro
     renderFichaAlertas(p);
   }
@@ -16936,6 +17238,9 @@
         l.querySelector('.dado-val').textContent = v;
         dados.appendChild(l);
       });
+    const pvcAg = $('pvc-agenda');
+    pvcAg.innerHTML = '';
+    if (!it.ignorado && it.proxima && it.proxima >= todayISO()) pvcAg.appendChild(botaoAgenda(eventoPreventiva(p, [it]), '📅 Gerar lembrete desta troca (' + fmtDate(it.proxima) + ')'));
     $('pvc-data').value = (p.prevManual || {})[c.id] || '';
     $('pvc-data').max = todayISO();
     const pode = podeLancar('visitas');
@@ -17151,6 +17456,14 @@
     if (ultTeste) {
       const av = avaliarTeste(ultTeste.teste, faixasDoTeste(ultTeste.teste));
       if (av.foraN) out.push({ txt: 'Último teste da ordenhadeira (' + fmtDate(ultTeste.data) + '): ' + plural(av.foraN, 'medida fora do padrão', 'medidas fora do padrão'), cls: 'atencao', ir: () => irParaOS(ultTeste.id) });
+    }
+    const lf = limpForaAtual(lista);
+    if (lf.length) {
+      const ultLimp = lf.slice().sort((a, b) => b.data.localeCompare(a.data))[0];
+      out.push({
+        txt: limpForaTxt(lf.length) + ' (' + lf.map(x => 'nº ' + x.n + ': ' + limpPar(x.r).v).join(', ') + ')', cls: 'ruim', ir: irParaLimp,
+        acao: podeAbrirChamado() ? { rotulo: '📞 OS corretiva', fn: () => abrirCorretivaLimp(p.id, lf.map(x => ({ n: x.n, limp: x.r })), ultLimp.os.numero, ultLimp.data) } : null
+      });
     }
     return out;
   });
@@ -17373,9 +17686,83 @@
     { k: 'taxa', t: 'Taxa', un: 'ppm' }, { k: 'relacao', t: 'Relação', un: '%' },
     { k: 'a', t: 'Fase a', un: 'ms' }, { k: 'b', t: 'Fase b', un: 'ms' }, { k: 'c', t: 'Fase c', un: 'ms' }, { k: 'd', t: 'Fase d', un: 'ms' }
   ];
-  function testeTemAlgo(t) {
-    return !!t && (TESTE_CAMPOS.some(c => temValor(t[c.k])) || (t.pulsadores || []).some(p => PULS_CAMPOS.some(c => temValor(p[c.k]))));
+  // ---------- Limp: diferença entre os dois canais do pulsador ----------
+  // Sinal: positivo = canal 1 maior; negativo = canal 2 maior. A comparação com o limite usa sempre o valor absoluto.
+  const LIMP_NIVEL = {
+    ok: { selo: 'Limp ok', txt: 'dentro do padrão' },
+    atencao: { selo: 'Limp em atenção', txt: 'atenção' },
+    fora: { selo: 'Limp fora do padrão', txt: 'fora do padrão' }
+  };
+  const numOuNada = v => temValor(v) ? Number(v) : null;
+  const lerDigitado = txt => { const t = String(txt == null ? '' : txt).trim(); if (t === '') return null; const n = parseNum(t); return n == null || isNaN(n) ? null : n; };
+  function pulsTemAlgo(p) {
+    return !!p && (PULS_CAMPOS.some(c => temValor(p[c.k])) || temValor(p.limpMs) || temValor(p.limpPct) ||
+      (!!p.canal2 && PULS_CAMPOS.some(c => temValor(p.canal2[c.k]))));
   }
+  function testeTemAlgo(t) {
+    return !!t && (TESTE_CAMPOS.some(c => temValor(t[c.k])) || (t.pulsadores || []).some(pulsTemAlgo));
+  }
+  // número do pulsador ("Pulsador 3"): guardado no teste; testes antigos usam a posição
+  const numPuls = (p, i) => Number(p && p.n) > 0 ? Number(p.n) : i + 1;
+  function pulsPorN(t, n) {
+    const l = (t && t.pulsadores) || [];
+    for (let i = 0; i < l.length; i++) if (numPuls(l[i], i) === n) return l[i];
+    return null;
+  }
+  function limpRef(faixas) {
+    const l = (faixas && faixas.limp) || (cfgPrev && cfgPrev.ref && cfgPrev.ref.limp) || PREV_REF_PADRAO.limp;
+    const at = Number(l.atencao);
+    return { pct: numOuNada(l.pct), ms: numOuNada(l.ms), atencao: at > 0 && at <= 100 ? at : 80 };
+  }
+  function limpRefTxt(L) {
+    const p = [];
+    if (L.pct != null) p.push(fmtN(L.pct) + '%');
+    if (L.ms != null) p.push(fmtN(L.ms, 0) + ' ms');
+    return p.join(' / ');
+  }
+  function avaliarLimp(p, faixas) {
+    const pct = numOuNada(p && p.limpPct), ms = numOuNada(p && p.limpMs);
+    if (pct == null && ms == null) return null;
+    const L = limpRef(faixas);
+    const absP = pct == null ? null : Math.abs(pct), absM = ms == null ? null : Math.abs(ms);
+    let nivel = 'ok';
+    const ver = (v, lim) => {
+      if (v == null || lim == null) return;
+      if (v > lim + 1e-9) nivel = 'fora';
+      else if (nivel !== 'fora' && v >= lim * L.atencao / 100 - 1e-9) nivel = 'atencao';
+    };
+    ver(absP, L.pct); ver(absM, L.ms);
+    const sinal = pct != null && pct !== 0 ? pct : (ms != null ? ms : 0);
+    return { pct, ms, absP, absM, nivel, canal: sinal > 0 ? 1 : sinal < 0 ? 2 : 0, L };
+  }
+  // o valor que manda na situação (o mais perto de estourar o limite) e o limite dele
+  function limpPar(r) {
+    const op = [];
+    if (r.absP != null && r.L.pct != null) op.push({ k: r.absP / r.L.pct, v: fmtN(r.absP) + '%', lim: fmtN(r.L.pct) + '%' });
+    if (r.absM != null && r.L.ms != null) op.push({ k: r.absM / r.L.ms, v: fmtN(r.absM, 0) + ' ms', lim: fmtN(r.L.ms, 0) + ' ms' });
+    if (op.length) return op.sort((a, b) => b.k - a.k)[0];
+    return { v: r.absP != null ? fmtN(r.absP) + '%' : fmtN(r.absM, 0) + ' ms', lim: '' };
+  }
+  function limpTxt(r) { const p = limpPar(r); return p.v + (p.lim ? ' · limite ' + p.lim : ' · sem limite cadastrado'); }
+  function limpValTxt(r) {
+    const v = [];
+    if (r.absP != null) v.push(fmtN(r.absP) + '%');
+    if (r.absM != null) v.push(fmtN(r.absM, 0) + ' ms');
+    return v.join(' · ');
+  }
+  const limpCanalTxt = r => r.canal === 1 ? 'canal 1 maior' : r.canal === 2 ? 'canal 2 maior' : 'canais iguais';
+  const listaE = l => l.length < 2 ? l.join('') : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1];
+  function msgLimpFora(fora) {
+    if (fora.length === 1) {
+      const p = fora[0], lp = limpPar(p.limp);
+      return 'Pulsador ' + p.n + ' com Limp de ' + lp.v + (lp.lim ? ' (limite ' + lp.lim + ')' : '') + '. Recomenda-se revisar ou trocar o reparo desse pulsador.';
+    }
+    const lim = limpPar(fora[0].limp).lim;
+    return 'Pulsadores ' + listaE(fora.map(p => String(p.n))) + ' com Limp fora do padrão: ' + fora.map(p => 'pulsador ' + p.n + ' com ' + limpPar(p.limp).v).join(', ') +
+      (lim ? ' (limite ' + lim + ')' : '') + '. Recomenda-se revisar ou trocar o reparo desses pulsadores.';
+  }
+  function limpForaTxt(n) { return 'Limp fora em ' + plural(n, 'pulsador', 'pulsadores'); }
+
   function faixasTeste(ctx) {
     const r = cfgPrev.ref;
     const conj = ctx.conjuntos || null;
@@ -17384,7 +17771,8 @@
       reserva: { min: conj && r.reservaBase != null ? r.reservaBase + (r.reservaPorConjunto || 0) * conj : null, max: null },
       vazao: { min: ctx.vazaoNominal && r.vazaoPct ? Math.round(ctx.vazaoNominal * r.vazaoPct / 100) : null, max: null },
       taxa: { ...r.taxa }, relacao: { ...r.relacao },
-      a: { ...r.faseA }, b: { ...r.faseB }, c: { ...r.faseC }, d: { ...r.faseD }
+      a: { ...r.faseA }, b: { ...r.faseB }, c: { ...r.faseC }, d: { ...r.faseD },
+      limp: { ...(r.limp || PREV_REF_PADRAO.limp) }
     };
   }
   // a referência usada fica guardada no teste: o laudo não muda se a Administração mudar depois
@@ -17401,16 +17789,26 @@
     if (!(soma > 0)) return { v: null, calc: false };
     return k === 'taxa' ? { v: Math.round(60000 / soma * 10) / 10, calc: true } : { v: Math.round((fs[0] + fs[1]) / soma * 1000) / 10, calc: true };
   }
+  function camposPuls(obj, faixas) {
+    return PULS_CAMPOS.map(c => { const { v, calc } = valorPuls(obj, c.k); const f = faixas[c.k] || {}; return { ...c, v, calc, f, fora: foraFaixa(v, f) }; });
+  }
   function avaliarTeste(t, faixas) {
     const linhas = TESTE_CAMPOS.map(c => { const v = temValor(t[c.k]) ? Number(t[c.k]) : null; const f = faixas[c.k] || {}; return { ...c, v, f, fora: foraFaixa(v, f) }; });
     const puls = (t.pulsadores || []).map((p, i) => {
-      const campos = PULS_CAMPOS.map(c => { const { v, calc } = valorPuls(p, c.k); const f = faixas[c.k] || {}; return { ...c, v, calc, f, fora: foraFaixa(v, f) }; });
-      return { i, campos, fora: campos.filter(x => x.fora).length, vazio: campos.every(x => x.v == null) };
+      const campos = camposPuls(p, faixas);
+      const campos2 = p.canal2 && PULS_CAMPOS.some(c => temValor(p.canal2[c.k])) ? camposPuls(p.canal2, faixas) : null;
+      const limp = avaliarLimp(p, faixas);
+      const limpFora = !!limp && limp.nivel === 'fora';
+      const fora1 = campos.filter(x => x.fora).length, fora2 = campos2 ? campos2.filter(x => x.fora).length : 0;
+      return { i, n: numPuls(p, i), campos, campos2, limp, limpFora, fora1, fora2, fora: fora1 + fora2 + (limpFora ? 1 : 0),
+        vazio: campos.every(x => x.v == null) && !limp && !campos2 };
     }).filter(x => !x.vazio);
     const foraL = linhas.filter(l => l.fora);
     const foraN = foraL.length + puls.reduce((s, p) => s + p.fora, 0);
-    const medidas = linhas.filter(l => l.v != null).length + puls.reduce((s, p) => s + p.campos.filter(c => c.v != null).length, 0);
-    return { linhas, puls, foraN, medidas, foraTxt: foraL.map(l => (l.tc || l.t).toLowerCase()).concat(puls.filter(p => p.fora).map(p => 'pulsador ' + (p.i + 1))) };
+    const medidas = linhas.filter(l => l.v != null).length +
+      puls.reduce((s, p) => s + p.campos.filter(c => c.v != null).length + (p.campos2 ? p.campos2.filter(c => c.v != null).length : 0) + (p.limp ? 1 : 0), 0);
+    return { linhas, puls, foraN, medidas, limpFora: puls.filter(p => p.limpFora),
+      foraTxt: foraL.map(l => (l.tc || l.t).toLowerCase()).concat(puls.filter(p => p.fora).map(p => 'pulsador ' + p.n + (p.limpFora ? ' (Limp ' + limpPar(p.limp).v + ')' : ''))) };
   }
   // melhor ou pior que o teste anterior: mais perto da faixa de referência (ou do meio dela)
   function compararValor(v, ant, f) {
@@ -17436,17 +17834,194 @@
     return (lista || []).filter(o => o.id !== atual.id && !o.arquivado && osConcluida(o) && o.teste && testeTemAlgo(o.teste) && chaveOS(o) < ref)
       .sort((a, b) => chaveOS(b).localeCompare(chaveOS(a)))[0] || null;
   }
+
+  // ---------- histórico e situação atual do Limp de cada pulsador ----------
+  // Vale o teste mais novo que mediu o Limp daquele pulsador: um teste mais novo ok tira o pulsador da lista.
+  function historicoLimp(lista) {
+    const testes = (lista || []).filter(o => !o.arquivado && statusOS(o) !== 'cancelada' && o.teste && testeTemAlgo(o.teste))
+      .sort((a, b) => chaveOS(a).localeCompare(chaveOS(b)));
+    const porN = {};
+    testes.forEach(o => {
+      const fx = faixasDoTeste(o.teste);
+      (o.teste.pulsadores || []).forEach((p, i) => {
+        const r = avaliarLimp(p, fx);
+        if (!r) return;
+        const n = numPuls(p, i);
+        (porN[n] = porN[n] || []).push({ r, os: o, data: o.data || '' });
+      });
+    });
+    return porN;
+  }
+  function limpForaAtual(lista) {
+    const h = historicoLimp(lista);
+    return Object.keys(h).map(Number).sort((a, b) => a - b).map(n => ({ n, ...h[n][h[n].length - 1] })).filter(x => x.r.nivel === 'fora');
+  }
+  function limpForaGeral() {
+    if (acesso.estado !== 'ativo' || !podeVer('visitas')) return [];
+    const porPid = {};
+    osVisiveis().forEach(o => { (porPid[o.produtorId] = porPid[o.produtorId] || []).push(o); });
+    const out = [];
+    produtores.forEach(p => {
+      const lista = p.id === currentProdutorId && visitasConfiavel ? visitas : (porPid[p.id] || []);
+      limpForaAtual(lista).forEach(x => out.push({ p, ...x }));
+    });
+    return out.sort((a, b) => b.data.localeCompare(a.data) || (a.p.nome || '').localeCompare(b.p.nome || '') || a.n - b.n);
+  }
+  function abrirListaLimp() {
+    const l = limpForaGeral();
+    const box = $('limp-lista');
+    box.innerHTML = '';
+    l.forEach(x => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'limp-item';
+      b.innerHTML = '<span class="limp-item-txt"><span class="limp-item-nome"></span><span class="limp-item-sub"></span></span><span class="limp-item-val"><b></b><span></span></span>';
+      b.querySelector('.limp-item-nome').textContent = x.p.nome || 'Produtor';
+      b.querySelector('.limp-item-sub').textContent = 'Pulsador ' + x.n + ' · teste de ' + fmtDate(x.data) + (x.os.numero ? ' · ' + numOS(x.os.numero) : '') + (localDoProdutor(x.p) ? ' · ' + localDoProdutor(x.p) : '');
+      b.querySelector('.limp-item-val b').textContent = limpPar(x.r).v;
+      b.querySelector('.limp-item-val span').textContent = (limpPar(x.r).lim ? 'limite ' + limpPar(x.r).lim + ' · ' : '') + limpCanalTxt(x.r);
+      b.setAttribute('aria-label', (x.p.nome || '') + ', pulsador ' + x.n + ', Limp ' + limpPar(x.r).v + ', teste de ' + fmtDate(x.data));
+      b.addEventListener('click', () => {
+        $('modal-limp').hidden = true;
+        osParaDestacar = x.os.id;
+        openProdutor(x.p.id, { aba: 'visitas', voltar: 'home' });
+        manutSub = 'os';
+        renderManutSub();
+      });
+      box.appendChild(b);
+    });
+    $('limp-lista-vazio').hidden = l.length > 0;
+    const L = limpRef(null);
+    $('limp-lista-dica').textContent = 'Situação pelo teste mais recente de cada pulsador. Limite atual: ' + (limpRefTxt(L) || 'não definido') + ' em valor absoluto. Um teste mais novo ok tira o pulsador da lista.';
+    $('modal-limp').hidden = false;
+  }
+  $('limp-lista-fechar').addEventListener('click', () => { $('modal-limp').hidden = true; });
+  $('modal-limp').addEventListener('click', e => { if (e.target === $('modal-limp')) $('modal-limp').hidden = true; });
+
+  // gráfico pequeno do Limp (um por pulsador) com a linha do limite
+  function sparkLimp(hist) {
+    const ult = hist[hist.length - 1].r;
+    const usaPct = ult.absP != null || hist.every(x => x.r.absM == null);
+    const val = x => usaPct ? x.r.absP : x.r.absM;
+    const pts = hist.map((x, i) => ({ i, v: val(x), x })).filter(o => o.v != null);
+    const lim = usaPct ? ult.L.pct : ult.L.ms;
+    const W = 140, H = 48, px = 6, py = 6;
+    const max = Math.max(lim != null ? lim * 1.35 : 0, ...pts.map(o => o.v * 1.15), usaPct ? 1 : 5);
+    const X = i => hist.length < 2 ? W / 2 : px + i * (W - 2 * px) / (hist.length - 1);
+    const Y = v => H - py - v / max * (H - 2 * py);
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('class', 'limp-spark');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', 'Limp nos últimos testes: ' + pts.map(o => fmtDate(o.x.data) + ' ' + fmtN(o.v, usaPct ? 1 : 0) + (usaPct ? '%' : ' ms')).join(', ') + (lim != null ? '. Limite ' + fmtN(lim) + (usaPct ? '%' : ' ms') : ''));
+    const el = (tag, at) => { const e = document.createElementNS(ns, tag); Object.entries(at).forEach(([k, v]) => e.setAttribute(k, v)); svg.appendChild(e); return e; };
+    el('line', { x1: 0, x2: W, y1: H - py, y2: H - py, stroke: 'var(--line)', 'stroke-width': 1 });
+    if (lim != null) {
+      el('line', { x1: 0, x2: W, y1: Y(lim * ult.L.atencao / 100), y2: Y(lim * ult.L.atencao / 100), stroke: 'var(--soon)', 'stroke-width': 1, 'stroke-dasharray': '3 3' });
+      el('line', { x1: 0, x2: W, y1: Y(lim), y2: Y(lim), stroke: 'var(--tax)', 'stroke-width': 1.5 });
+    }
+    if (pts.length > 1) el('polyline', { points: pts.map(o => X(o.i).toFixed(1) + ',' + Y(o.v).toFixed(1)).join(' '), fill: 'none', stroke: 'var(--ink-soft)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
+    const COR = { ok: 'var(--accent-txt)', atencao: 'var(--soon)', fora: 'var(--tax)' };
+    pts.forEach(o => {
+      const c = el('circle', { cx: X(o.i).toFixed(1), cy: Y(o.v).toFixed(1), r: 4, fill: COR[o.x.r.nivel], stroke: 'var(--surface)', 'stroke-width': 1.5 });
+      const t = document.createElementNS(ns, 'title');
+      t.textContent = fmtDate(o.x.data) + ' · ' + limpValTxt(o.x.r) + ' · ' + LIMP_NIVEL[o.x.r.nivel].txt + ' · ' + limpCanalTxt(o.x.r);
+      c.appendChild(t);
+    });
+    return svg;
+  }
+  function renderLimpFicha() {
+    const box = $('limp-ficha');
+    if (!box) return;
+    const h = historicoLimp(visitas);
+    const ns = Object.keys(h).map(Number).sort((a, b) => a - b);
+    box.innerHTML = '';
+    box.hidden = !ns.length;
+    if (!ns.length) return;
+    const tit = document.createElement('div');
+    tit.className = 'section-label';
+    tit.textContent = 'Limp dos pulsadores';
+    box.appendChild(tit);
+    const L = limpRef(null);
+    const sub = document.createElement('div');
+    sub.className = 'limp-ficha-sub';
+    sub.textContent = 'Últimos testes de cada pulsador, em valor absoluto. Linha vermelha: limite' + (limpRefTxt(L) ? ' (' + limpRefTxt(L) + ')' : '') + '; tracejado amarelo: início da atenção.';
+    box.appendChild(sub);
+    ns.forEach(n => {
+      const hist = h[n].slice(-6);
+      const ult = hist[hist.length - 1];
+      const l = document.createElement('div');
+      l.className = 'limp-linha';
+      l.innerHTML = '<div><div class="limp-nome"></div><div class="limp-det"><span class="limp-selo"></span><span class="limp-canal"></span></div></div>';
+      l.querySelector('.limp-nome').textContent = 'Pulsador ' + n;
+      const selo = l.querySelector('.limp-selo');
+      selo.className = 'limp-selo ' + ult.r.nivel;
+      selo.textContent = LIMP_NIVEL[ult.r.nivel].selo + ' · ' + limpPar(ult.r).v;
+      l.querySelector('.limp-canal').textContent = limpCanalTxt(ult.r) + ' · ' + fmtDate(ult.data) + (hist.length > 1 ? ' · ' + plural(hist.length, 'teste', 'testes') : '');
+      l.appendChild(sparkLimp(hist));
+      box.appendChild(l);
+    });
+  }
+  function irParaLimp() {
+    ativarAbaFicha('visitas');
+    manutSub = 'os';
+    renderManutSub();
+    setTimeout(() => { const b = $('limp-ficha'); if (b && !b.hidden) b.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+  }
+  // aviso ao salvar: só quando o Limp fora é novo nesta OS (não repete a cada edição)
+  function avisoLimpNecessario(t, base) {
+    if (!t || !testeTemAlgo(t)) return null;
+    const chave = tt => avaliarTeste(tt, faixasDoTeste(tt)).limpFora.map(p => p.n + ':' + limpPar(p.limp).v).join('|');
+    const fora = avaliarTeste(t, faixasDoTeste(t)).limpFora;
+    if (!fora.length) return null;
+    if (base && base.teste && testeTemAlgo(base.teste) && chave(base.teste) === chave(t)) return null;
+    return { fora, msg: msgLimpFora(fora) };
+  }
+  function abrirCorretivaLimp(pid, fora, numero, data) {
+    const eq = equipPid === pid ? (equipamentosTodos || []).find(e => e.tipo === 'pulsadores' && !e.arquivado) : null;
+    const lim = limpPar(fora[0].limp).lim;
+    abrirChamado({
+      produtorId: pid, categoria: 'ordenha', equipamentoId: eq ? eq.id : undefined,
+      motivo: 'Limp fora do padrão: ' + fora.map(p => 'pulsador ' + p.n + ' com ' + limpPar(p.limp).v + ' (' + limpCanalTxt(p.limp) + ')').join('; ') +
+        (lim ? ' · limite ' + lim : '') + '. Revisar ou trocar o reparo ' + (fora.length > 1 ? 'desses pulsadores.' : 'desse pulsador.'),
+      origem: 'Do teste de pulsadores da ' + numOS(numero) + ' de ' + fmtDate(data)
+    });
+  }
+
   var ttVals = {}, ttPuls = [{}];
   function ctxTesteAtual() {
     const p = produtores.find(x => x.id === currentProdutorId);
     const conj = equipPid === currentProdutorId && equipamentosTodos.length ? conjuntosDeEquip(equipamentosTodos) || null : conjuntosDoProdutor(p);
     return { conjuntos: conj, vazaoNominal: equipPid === currentProdutorId ? vazaoNominalDeEquip(equipamentosTodos) : null };
   }
+  function pulsDoForm(p, i) {
+    const o = { n: i + 1 };
+    PULS_CAMPOS.forEach(c => { o[c.k] = numOuNada(p[c.k]); });
+    o.limpMs = numOuNada(p.limpMs);
+    o.limpPct = numOuNada(p.limpPct);
+    if (p.canal2) {
+      const c2 = {};
+      PULS_CAMPOS.forEach(c => { c2[c.k] = numOuNada(p.canal2[c.k]); });
+      if (PULS_CAMPOS.some(c => c2[c.k] != null)) o.canal2 = c2;
+    }
+    if (p.gimenez && typeof p.gimenez === 'object') o.gimenez = p.gimenez;
+    return o;
+  }
   function testeDoForm() {
     const t = {};
     TESTE_CAMPOS.forEach(c => { t[c.k] = ttVals[c.k] == null ? null : ttVals[c.k]; });
-    t.pulsadores = ttPuls.map(p => { const o = {}; PULS_CAMPOS.forEach(c => { o[c.k] = temValor(p[c.k]) ? Number(p[c.k]) : null; }); return o; });
+    t.pulsadores = ttPuls.map(pulsDoForm);
     return t;
+  }
+  // coloca cada pulsador na posição do número dele (os vazios não são guardados)
+  function pulsParaForm(t) {
+    const l = t && Array.isArray(t.pulsadores) ? t.pulsadores : [];
+    if (!l.length) return [{}];
+    const arr = [];
+    l.forEach((p, i) => { const n = Math.min(numPuls(p, i), 60); arr[n - 1] = clonar(p); });
+    for (let i = 0; i < arr.length; i++) if (!arr[i]) arr[i] = {};
+    return arr;
   }
   (function montarTeste() {
     const box = $('tt-principais');
@@ -17474,6 +18049,24 @@
       pintarTeste();
     });
   })();
+  function gradePuls(alvo, i, canal) {
+    const g = document.createElement('div');
+    g.className = 'tt-pul-grade';
+    g.dataset.c = canal;
+    PULS_CAMPOS.forEach(c => {
+      const l = document.createElement('label');
+      l.className = 'tt-pc';
+      l.dataset.k = c.k;
+      l.innerHTML = '<span class="tt-pc-rot"></span><input type="text" inputmode="decimal" class="mono-input" autocomplete="off"><span class="tt-pc-info"></span>';
+      l.querySelector('.tt-pc-rot').textContent = c.t + ' (' + c.un + ')';
+      const inp = l.querySelector('input');
+      inp.value = txtNum(alvo[c.k]);
+      inp.setAttribute('aria-label', c.t + ' do pulsador ' + (i + 1) + (canal === '2' ? ', canal 2,' : '') + ' em ' + c.un);
+      inp.addEventListener('input', () => { alvo[c.k] = lerDigitado(inp.value); pintarTeste(); });
+      g.appendChild(l);
+    });
+    return g;
+  }
   function renderPulsForm() {
     const box = $('tt-puls');
     box.innerHTML = '';
@@ -17481,25 +18074,73 @@
       const d = document.createElement('div');
       d.className = 'tt-pul';
       d.dataset.i = i;
-      d.innerHTML = '<div class="tt-pul-topo"><span class="tt-pul-n"></span><span class="tt-pul-st"></span><button type="button" class="tt-pul-x">×</button></div><div class="tt-pul-grade"></div>';
+      d.innerHTML = '<div class="tt-pul-topo"><span class="tt-pul-n"></span><span class="tt-pul-st"></span><button type="button" class="tt-pul-foto">📷</button><button type="button" class="tt-pul-x">×</button></div>';
       d.querySelector('.tt-pul-n').textContent = 'Pulsador ' + (i + 1);
+      const foto = d.querySelector('.tt-pul-foto');
+      foto.setAttribute('aria-label', 'Ler a foto do pulsógrafo para o pulsador ' + (i + 1));
+      foto.title = 'Ler a foto do Gimenez para este pulsador';
+      foto.hidden = false;
+      foto.addEventListener('click', () => escolherFotosGimenez(i));
       const x = d.querySelector('.tt-pul-x');
       x.setAttribute('aria-label', 'Tirar pulsador ' + (i + 1));
       x.hidden = ttPuls.length < 2;
       x.addEventListener('click', () => { ttPuls.splice(i, 1); if (!ttPuls.length) ttPuls.push({}); renderPulsForm(); pintarTeste(); });
-      const g = d.querySelector('.tt-pul-grade');
-      PULS_CAMPOS.forEach(c => {
+      if (p.canal2) { const t1 = document.createElement('div'); t1.className = 'tt-c-tit'; t1.textContent = 'Canal 1'; d.appendChild(t1); }
+      d.appendChild(gradePuls(p, i, '1'));
+      // Limp (ms e %): o teclado numérico do iPhone não tem "−", então o botão ± troca o sinal
+      const lp = document.createElement('div');
+      lp.className = 'tt-limp';
+      [['limpMs', 'Limp (ms)', 'ms'], ['limpPct', 'Limp (%)', '%']].forEach(([k, rot, un]) => {
         const l = document.createElement('label');
         l.className = 'tt-pc';
-        l.dataset.k = c.k;
-        l.innerHTML = '<span class="tt-pc-rot"></span><input type="text" inputmode="decimal" class="mono-input" autocomplete="off"><span class="tt-pc-info"></span>';
-        l.querySelector('.tt-pc-rot').textContent = c.t + ' (' + c.un + ')';
+        l.dataset.k = k;
+        l.innerHTML = '<span class="tt-pc-rot"></span><input type="text" inputmode="decimal" class="mono-input" autocomplete="off">';
+        l.querySelector('.tt-pc-rot').textContent = rot;
         const inp = l.querySelector('input');
-        inp.value = txtNum(p[c.k]);
-        inp.setAttribute('aria-label', c.t + ' do pulsador ' + (i + 1) + ' em ' + c.un);
-        inp.addEventListener('input', () => { const t = inp.value.trim(); const n = t === '' ? null : parseNum(t); p[c.k] = n == null || isNaN(n) ? null : n; pintarTeste(); });
-        g.appendChild(l);
+        inp.value = txtNum(p[k]);
+        inp.setAttribute('aria-label', 'Limp do pulsador ' + (i + 1) + ' em ' + un + ' (negativo: canal 2 maior)');
+        inp.addEventListener('input', () => { p[k] = lerDigitado(inp.value); pintarTeste(); });
+        lp.appendChild(l);
       });
+      const sinal = document.createElement('button');
+      sinal.type = 'button';
+      sinal.className = 'tt-limp-sinal';
+      sinal.textContent = '± sinal';
+      sinal.setAttribute('aria-label', 'Trocar o sinal do Limp do pulsador ' + (i + 1) + ' (negativo: canal 2 maior)');
+      sinal.addEventListener('click', () => {
+        ['limpMs', 'limpPct'].forEach(k => { if (temValor(p[k]) && Number(p[k]) !== 0) p[k] = -Number(p[k]); const inp = lp.querySelector('.tt-pc[data-k="' + k + '"] input'); inp.value = txtNum(p[k]); });
+        pintarTeste();
+      });
+      lp.appendChild(sinal);
+      d.appendChild(lp);
+      const info = document.createElement('div');
+      info.className = 'tt-limp-info';
+      d.appendChild(info);
+      if (p.canal2) {
+        const c2 = document.createElement('div');
+        c2.className = 'tt-c2';
+        c2.innerHTML = '<div class="tt-c-tit"><span>Canal 2</span><button type="button" class="link-btn">Tirar canal 2</button></div>';
+        c2.querySelector('button').addEventListener('click', () => { delete p.canal2; renderPulsForm(); pintarTeste(); });
+        c2.appendChild(gradePuls(p.canal2, i, '2'));
+        d.appendChild(c2);
+      } else {
+        const ac = document.createElement('div');
+        ac.className = 'tt-pul-acoes';
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'link-btn';
+        b.textContent = '+ Valores do canal 2';
+        b.addEventListener('click', () => { p.canal2 = {}; renderPulsForm(); pintarTeste(); const ins = $('tt-puls').querySelectorAll('.tt-pul[data-i="' + i + '"] .tt-pul-grade[data-c="2"] input'); if (ins[0]) ins[0].focus(); });
+        ac.appendChild(b);
+        d.appendChild(ac);
+      }
+      if (p.gimenez) {
+        const g = p.gimenez;
+        const n = document.createElement('div');
+        n.className = 'tt-gim-nota';
+        n.textContent = '📷 Lido da foto do Gimenez' + (g.data || g.hora ? ' (' + [g.data, g.hora].filter(Boolean).join(' ') + ')' : '') + '. Confira os valores antes de salvar.';
+        d.appendChild(n);
+      }
       box.appendChild(d);
     });
   }
@@ -17529,24 +18170,47 @@
     document.querySelectorAll('#tt-puls .tt-pul').forEach(d => {
       const i = Number(d.dataset.i);
       const p = t.pulsadores[i] || {};
-      const pAnt = ant && ant.teste.pulsadores ? ant.teste.pulsadores[i] : null;
+      const pAnt = ant ? pulsPorN(ant.teste, i + 1) : null;
       let fora = 0, algum = false;
-      PULS_CAMPOS.forEach(c => {
-        const l = d.querySelector('.tt-pc[data-k="' + c.k + '"]');
-        const { v, calc } = valorPuls(p, c.k);
-        const f = faixas[c.k];
-        const fo = foraFaixa(v, f);
-        if (v != null) algum = true;
-        if (fo) fora++;
-        const inp = l.querySelector('input');
-        inp.classList.toggle('fora', fo);
-        inp.placeholder = calc ? fmtN(v) : '';
-        const vAnt = pAnt ? valorPuls(pAnt, c.k).v : null;
-        const cmp = compararValor(v, vAnt, fAnt ? fAnt[c.k] : f);
-        const info = l.querySelector('.tt-pc-info');
-        info.className = 'tt-pc-info' + (fo ? ' fora' : '') + (cmp ? ' ' + cmp : '');
-        info.textContent = (calc ? 'calc. · ' : '') + (faixaTxt(f) || '') + (cmp && cmp !== 'igual' ? ' ' + (cmp === 'melhor' ? '▲' : '▼') : '');
+      d.querySelectorAll('.tt-pul-grade').forEach(g => {
+        const canal = g.dataset.c;
+        const alvo = canal === '2' ? (p.canal2 || {}) : p;
+        const alvoAnt = pAnt ? (canal === '2' ? pAnt.canal2 : pAnt) : null;
+        PULS_CAMPOS.forEach(c => {
+          const l = g.querySelector('.tt-pc[data-k="' + c.k + '"]');
+          const { v, calc } = valorPuls(alvo, c.k);
+          const f = faixas[c.k];
+          const fo = foraFaixa(v, f);
+          if (v != null) algum = true;
+          if (fo) fora++;
+          const inp = l.querySelector('input');
+          inp.classList.toggle('fora', fo);
+          inp.placeholder = calc ? fmtN(v) : '';
+          const vAnt = alvoAnt ? valorPuls(alvoAnt, c.k).v : null;
+          const cmp = compararValor(v, vAnt, fAnt ? fAnt[c.k] : f);
+          const info = l.querySelector('.tt-pc-info');
+          info.className = 'tt-pc-info' + (fo ? ' fora' : '') + (cmp ? ' ' + cmp : '');
+          info.textContent = (calc ? 'calc. · ' : '') + (faixaTxt(f) || '') + (cmp && cmp !== 'igual' ? ' ' + (cmp === 'melhor' ? '▲' : '▼') : '');
+        });
       });
+      // Limp: selo verde, amarelo ou vermelho, com o valor e o limite
+      const r = avaliarLimp(p, faixas);
+      const info = d.querySelector('.tt-limp-info');
+      info.innerHTML = '';
+      d.querySelectorAll('.tt-limp input').forEach(inp => inp.classList.toggle('fora', !!r && r.nivel === 'fora'));
+      if (r) {
+        algum = true;
+        if (r.nivel === 'fora') fora++;
+        const selo = document.createElement('span');
+        selo.className = 'limp-selo ' + r.nivel;
+        selo.textContent = LIMP_NIVEL[r.nivel].selo + ' · ' + limpTxt(r);
+        info.appendChild(selo);
+        const cn = document.createElement('span');
+        cn.className = 'limp-canal';
+        const rAnt = pAnt ? avaliarLimp(pAnt, fAnt) : null;
+        cn.textContent = limpCanalTxt(r) + (rAnt ? ' · antes ' + limpPar(rAnt).v : '');
+        info.appendChild(cn);
+      }
       const st = d.querySelector('.tt-pul-st');
       st.textContent = !algum ? '' : fora ? plural(fora, 'fora', 'fora') : 'ok';
       st.className = 'tt-pul-st' + (!algum ? '' : fora ? ' fora' : ' ok');
@@ -17567,30 +18231,176 @@
     }
     $('tt-comparado').textContent = ant ? 'Setas: comparação com o teste da ' + numOS(ant.numero) + ' de ' + fmtDate(ant.data) + '.' : 'Primeiro teste deste produtor: nas próximas OS aparece a comparação.';
   }
+
+  // ---------- leitura da foto do pulsógrafo Gimenez (cada foto = um pulsador) ----------
+  var gimSample = null, gimSlot = null, gimLendo = false, gimMotivo = 'carregando';
+  const GIM_PROMPT = [
+    'A imagem é uma foto da tela de um pulsógrafo Gimenez (aparelho que testa pulsadores de ordenhadeira). Cada foto mostra UM pulsador.',
+    'Como a tela é organizada:',
+    '- Cabeçalho: "Pulsador N", data e hora.',
+    '- Duas colunas: CANAL 1 e CANAL 2 (os dois lados do pulsador).',
+    '- Linhas: Vácuo (kPa), Press. (kPa), A, B, C, D (cada uma com valor em ms e em %), A+B e C+D (ms e %), Puls. (pulsações por minuto e relação, ex.: "60 pm 58/42" = 60 pulsações por minuto, relação 58/42) e Limp (ms e %, aparece só na coluna do canal 1).',
+    'Leia exatamente o que está na tela. Não calcule nem invente: o que não der para ler com certeza vira null. Mantenha o sinal do Limp como aparece (negativo se tiver "-").',
+    'Responda só com um objeto JSON com estas chaves (números com ponto decimal):',
+    '{"legivel": true, "pulsador": número ou null, "data": "DD/MM/AAAA" ou null, "hora": "HH:MM" ou null,',
+    ' "canal1": {"vacuo": n, "pressao": n, "a_ms": n, "a_pct": n, "b_ms": n, "b_pct": n, "c_ms": n, "c_pct": n, "d_ms": n, "d_pct": n, "ab_ms": n, "ab_pct": n, "cd_ms": n, "cd_pct": n, "ppm": n, "relacao_ab": n, "relacao_cd": n},',
+    ' "canal2": {as mesmas chaves do canal1},',
+    ' "limp_ms": n, "limp_pct": n}',
+    'Se a imagem não for a tela de um pulsógrafo, ou estiver ilegível, responda {"legivel": false}.'
+  ].join('\n');
+  // O botão fica sempre visível; se a leitura não estiver disponível neste aparelho, o toque explica o motivo.
+  async function initGimenez() {
+    try {
+      if (typeof claude === 'undefined' || !claude || !claude.use) { gimMotivo = 'fora'; return; }
+      const s = await claude.use('sample');
+      if (!s || typeof s.limits !== 'function') { gimMotivo = 'fora'; return; }
+      const lim = await s.limits().catch(() => null);
+      if (!lim || !lim.images) { gimMotivo = 'sem-imagens'; return; }
+      gimSample = s;
+      gimMotivo = '';
+      if (lim.images.mediaTypes && lim.images.mediaTypes.length) $('tt-gim-arq').accept = lim.images.mediaTypes.join(',');
+    } catch (e) { gimSample = null; gimMotivo = 'fora'; }
+    finally { pintarGimDisponivel(); }
+  }
+  function pintarGimDisponivel() {
+    $('tt-gim').hidden = false;
+    document.querySelectorAll('#tt-puls .tt-pul-foto').forEach(b => { b.hidden = false; });
+  }
+  const GIM_MOTIVO = {
+    fora: 'A leitura da foto só funciona com o app aberto dentro do Claude (claude.ai ou app do Claude). Aqui, digite os valores do Gimenez nos campos do pulsador.',
+    'sem-claude': 'A leitura da foto não está liberada nesta tela do Claude. Abra o app pelo link no navegador (claude.ai) ou no app do Claude atualizado e tente de novo. Enquanto isso, digite os valores nos campos.',
+    'sem-imagens': 'Esta versão do app do Claude ainda não permite enviar fotos para leitura. Atualize o app do Claude ou abra o link no navegador (Safari ou Chrome, em claude.ai) e tente de novo. Enquanto isso, digite os valores nos campos.',
+    negado: 'A leitura de fotos foi recusada nesta sessão. Recarregue o app e, quando o Claude pedir, toque em Permitir. Enquanto isso, digite os valores nos campos.'
+  };
+  async function escolherFotosGimenez(slot) {
+    if (gimLendo) return;
+    if (!gimSample && gimMotivo !== 'negado') await initGimenez();
+    if (!gimSample) { avisar(GIM_MOTIVO[gimMotivo] || GIM_MOTIVO['sem-claude']); return; }
+    gimSlot = slot;
+    const arq = $('tt-gim-arq');
+    arq.multiple = slot == null;
+    arq.value = '';
+    arq.click();
+  }
+  $('tt-gim-btn').addEventListener('click', () => escolherFotosGimenez(null));
+  $('tt-gim-arq').addEventListener('change', () => {
+    const fs = [...($('tt-gim-arq').files || [])];
+    if (fs.length) lerFotosGimenez(fs, gimSlot);
+  });
+  function numLido(v) {
+    if (typeof v === 'number') return isFinite(v) ? v : null;
+    if (typeof v === 'string') { const t = v.trim().replace(',', '.').replace(/[^\d.+-]/g, ''); if (t === '' || isNaN(Number(t))) return null; return Number(t); }
+    return null;
+  }
+  function normalizarGimenez(r) {
+    if (!r || typeof r !== 'object' || r.legivel === false) return null;
+    const canal = o => {
+      o = o && typeof o === 'object' ? o : {};
+      const c = {};
+      ['vacuo', 'pressao', 'a_ms', 'a_pct', 'b_ms', 'b_pct', 'c_ms', 'c_pct', 'd_ms', 'd_pct', 'ab_ms', 'ab_pct', 'cd_ms', 'cd_pct', 'ppm', 'relacao_ab', 'relacao_cd']
+        .forEach(k => { c[k] = numLido(o[k]); });
+      return c;
+    };
+    const L = {
+      pulsador: numLido(r.pulsador), data: typeof r.data === 'string' ? r.data.slice(0, 10) : null, hora: typeof r.hora === 'string' ? r.hora.slice(0, 5) : null,
+      canal1: canal(r.canal1), canal2: canal(r.canal2), limp_ms: numLido(r.limp_ms), limp_pct: numLido(r.limp_pct)
+    };
+    const fases = c => ['a_ms', 'b_ms', 'c_ms', 'd_ms', 'ppm'].some(k => c[k] != null);
+    if (!fases(L.canal1) && !fases(L.canal2) && L.limp_ms == null && L.limp_pct == null) return null;
+    return L;
+  }
+  function camposDeLeitura(L) {
+    const conv = c => ({ taxa: c.ppm, relacao: c.relacao_ab != null ? c.relacao_ab : c.ab_pct, a: c.a_ms, b: c.b_ms, c: c.c_ms, d: c.d_ms });
+    const o = { ...conv(L.canal1), limpMs: L.limp_ms, limpPct: L.limp_pct, gimenez: { ...L, lidoEm: Date.now() } };
+    const c2 = conv(L.canal2);
+    if (PULS_CAMPOS.some(c => c2[c.k] != null)) o.canal2 = c2;
+    return o;
+  }
+  async function aplicarGimenez(L, slot) {
+    let idx = slot != null ? slot
+      : (L.pulsador > 0 && L.pulsador <= 60 ? Math.round(L.pulsador) - 1 : ttPuls.findIndex(p => !pulsTemAlgo(p)));
+    if (idx < 0) idx = ttPuls.length;
+    while (ttPuls.length <= idx) ttPuls.push({});
+    if (pulsTemAlgo(ttPuls[idx]) && !(await confirmar('O pulsador ' + (idx + 1) + ' já tem valores. Trocar pelos da foto?', 'Trocar'))) return null;
+    ttPuls[idx] = camposDeLeitura(L);
+    return idx;
+  }
+  async function lerFotosGimenez(arquivos, slot) {
+    if (!gimSample || gimLendo) return;
+    if (slot != null) arquivos = arquivos.slice(0, 1);
+    gimLendo = true;
+    const st = $('tt-gim-st'), btn = $('tt-gim-btn');
+    btn.disabled = true;
+    const lidos = [], falhas = [];
+    let aviso = '';
+    try {
+      for (let k = 0; k < arquivos.length; k++) {
+        st.textContent = arquivos.length > 1 ? 'Lendo foto ' + (k + 1) + ' de ' + arquivos.length + '…' : 'Lendo a foto…';
+        let r;
+        try { r = await gimSample.json(GIM_PROMPT, { images: arquivos[k] }); }
+        catch (e) {
+          const code = e && e.code;
+          if (['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed', 'images_unavailable'].includes(code)) {
+            gimSample = null; gimMotivo = code === 'images_unavailable' ? 'sem-imagens' : code === 'not_granted' ? 'negado' : 'sem-claude';
+            aviso = GIM_MOTIVO[gimMotivo];
+            break;
+          }
+          if (code === 'cancelled') break;
+          if (code === 'rate_limited') { aviso = 'Muitas leituras seguidas. Espere um pouco e tente de novo com as fotos que faltaram.'; break; }
+          if (code === 'session_expired') { aviso = 'Sua sessão do Claude expirou. Entre de novo e tente outra vez.'; break; }
+          if (code === 'image_rejected') { falhas.push(k + 1); continue; }
+          falhas.push(k + 1);
+          continue;
+        }
+        const L = normalizarGimenez(r);
+        if (!L) { falhas.push(k + 1); continue; }
+        const idx = await aplicarGimenez(L, slot);
+        if (idx != null) lidos.push(idx + 1);
+      }
+    } finally {
+      gimLendo = false;
+      btn.disabled = false;
+      st.textContent = '';
+    }
+    if (lidos.length) {
+      abrirBloco($('tt-bloco'), true);
+      renderPulsForm();
+      pintarTeste();
+    }
+    const partes = [];
+    if (lidos.length) partes.push((lidos.length === 1 ? 'Foto lida: pulsador ' + lidos[0] : 'Fotos lidas: pulsadores ' + listaE(lidos.map(String))) + '. Confira os valores antes de salvar.');
+    if (falhas.length) partes.push('Não consegui ler ' + (falhas.length === 1 && arquivos.length === 1 ? 'a foto' : (falhas.length === 1 ? 'a foto ' : 'as fotos ') + listaE(falhas.map(String))) + '. Tire outra com a tela inteira, reta, bem iluminada e sem reflexo, ou digite os valores.');
+    if (aviso) partes.push(aviso);
+    if (partes.length) avisar(partes.join('\n\n'));
+  }
+
   OS_EXTRAS.push({
     preparar(existing) {
       const t = existing && existing.teste;
       ttVals = {};
       TESTE_CAMPOS.forEach(c => { ttVals[c.k] = t && temValor(t[c.k]) ? Number(t[c.k]) : null; $('tt-' + c.k).value = txtNum(ttVals[c.k]); });
-      ttPuls = t && Array.isArray(t.pulsadores) && t.pulsadores.length ? clonar(t.pulsadores) : [{}];
+      ttPuls = pulsParaForm(t);
       renderPulsForm();
       abrirBloco($('tt-bloco'), testeTemAlgo(t));
     },
     pintar() {
       $('tt-bloco').hidden = novaVisitaCategoria !== 'ordenha';
+      pintarGimDisponivel();
       pintarTeste();
     },
     ler(ctx) {
       if (!ctx.exec) return { campos: { teste: (ctx.base && ctx.base.teste) || null }, temAlgo: false };
       if (ctx.categoria !== 'ordenha') return { campos: { teste: null }, temAlgo: false };
       const t = testeDoForm();
-      t.pulsadores = t.pulsadores.filter(o => PULS_CAMPOS.some(c => o[c.k] != null));
+      t.pulsadores = t.pulsadores.filter(pulsTemAlgo);
       if (!testeTemAlgo(t)) return { campos: { teste: null }, temAlgo: false };
       const ctxT = ctxTesteAtual();
       t.faixas = faixasTeste(ctxT);
       t.conjuntos = ctxT.conjuntos || null;
       t.vazaoNominal = ctxT.vazaoNominal || null;
-      t.foraDoPadrao = avaliarTeste(t, t.faixas).foraN;
+      const av = avaliarTeste(t, t.faixas);
+      t.foraDoPadrao = av.foraN;
+      t.limpForaN = av.limpFora.length;
       return { campos: { teste: t }, temAlgo: true };
     },
     cartao(card, v) {
@@ -17600,20 +18410,29 @@
       d.className = 'tt-card' + (av.foraN ? ' fora' : ' ok');
       d.textContent = '🧪 Teste do equipamento: ' + (av.foraN ? plural(av.foraN, 'medida fora do padrão', 'medidas fora do padrão') + ' (' + av.foraTxt.join(', ') + ')' : 'dentro do padrão');
       card.appendChild(d);
+      if (av.limpFora.length) {
+        const lf = document.createElement('div');
+        lf.className = 'tt-card limp';
+        lf.textContent = '⚠ ' + limpForaTxt(av.limpFora.length) + ' (' + av.limpFora.map(p => 'nº ' + p.n + ': ' + limpPar(p.limp).v).join(', ') + ')';
+        card.appendChild(lf);
+      }
       const vals = av.linhas.filter(l => l.v != null).map(l => (l.tc || l.t).replace('Vácuo de trabalho', 'Vácuo') + ' ' + fmtN(l.v) + ' ' + l.un);
       if (av.puls.length) vals.push(plural(av.puls.length, 'pulsador', 'pulsadores'));
       if (vals.length) { const s = document.createElement('div'); s.className = 'tt-card-vals'; s.textContent = vals.join(' · '); card.appendChild(s); }
     },
     resumo(o, texto) {
       if (!o.teste || !testeTemAlgo(o.teste)) return [];
-      const n = avaliarTeste(o.teste, faixasDoTeste(o.teste)).foraN;
-      return [{ txt: '🧪 teste ' + (n ? 'com ' + plural(n, 'medida fora', 'medidas fora') : 'ok'), cls: n ? 'ruim' : 'ok' }];
+      const av = avaliarTeste(o.teste, faixasDoTeste(o.teste));
+      const out = [{ txt: '🧪 teste ' + (av.foraN ? 'com ' + plural(av.foraN, 'medida fora', 'medidas fora') : 'ok'), cls: av.foraN ? 'ruim' : 'ok' }];
+      if (av.limpFora.length) out.push({ txt: '⚠ ' + limpForaTxt(av.limpFora.length), cls: 'ruim' });
+      return out;
     },
     async pdf(ctx) {
       const v = ctx.v;
       if (!v.teste || !testeTemAlgo(v.teste)) return;
       const t = v.teste, faixas = faixasDoTeste(t), av = avaliarTeste(t, faixas);
       const { VERDE, VERDE_ESC, VERMELHO, SUAVE } = ctx.CORES;
+      const AMARELO = ctx.CORES.AMARELO || [154, 100, 16];
       const lista = ctx.p.id === currentProdutorId && visitasConfiavel ? visitas : await lerColecao('produtores/' + ctx.p.id + '/visitas').then(l => l.filter(naoArquivado)).catch(() => []);
       const ant = testeAnterior(lista, v);
       const fAnt = ant ? faixasDoTeste(ant.teste) : null;
@@ -17632,16 +18451,30 @@
         pdfSub(ctx, 'Pulsadores');
         let temCalc = false;
         const cel = c => { if (c.v == null) return '-'; if (c.calc) temCalc = true; return { t: fmtN(c.v) + (c.calc ? '*' : ''), cor: c.fora ? VERMELHO : null, b: c.fora ? 1 : 0 }; };
-        pdfTabelaCor(ctx, [{ t: 'Pulsador', w: 17 }, { t: 'Taxa (ppm)', w: 16, dir: 1 }, { t: 'Relação (%)', w: 17, dir: 1 }, { t: 'a (ms)', w: 13, dir: 1 }, { t: 'b (ms)', w: 13, dir: 1 }, { t: 'c (ms)', w: 13, dir: 1 }, { t: 'd (ms)', w: 13, dir: 1 }, { t: 'Situação', w: 16 }],
-          av.puls.map(p => [String(p.i + 1)].concat(p.campos.map(cel)).concat([p.fora ? { t: p.fora + ' fora', cor: VERMELHO, b: 1 } : { t: 'OK', cor: VERDE, b: 1 }])));
-        ctx.paragrafo('Referência: ' + PULS_CAMPOS.map(c => c.t.toLowerCase() + ' ' + (faixaTxt(faixas[c.k], c.un) || 'sem limite')).join('; ') + '.' + (temCalc ? ' * calculado pelas fases a, b, c e d.' : ''), { tam: 8.3, cor: SUAVE });
+        const corLimp = r => r.nivel === 'fora' ? VERMELHO : r.nivel === 'atencao' ? AMARELO : VERDE;
+        const situ = n => n ? { t: n + ' fora', cor: VERMELHO, b: 1 } : { t: 'OK', cor: VERDE, b: 1 };
+        const linhasPul = [];
+        av.puls.forEach(p => {
+          const lv = p.limp ? { t: limpValTxt(p.limp) + (p.limp.canal ? ' (c' + p.limp.canal + ')' : ''), cor: corLimp(p.limp), b: 1 } : '-';
+          const ls = p.limp ? { t: LIMP_NIVEL[p.limp.nivel].txt, cor: corLimp(p.limp), b: 1 } : '-';
+          linhasPul.push([String(p.n) + (p.campos2 ? ' · canal 1' : '')].concat(p.campos.map(cel)).concat([lv, ls, situ(p.fora1 + (p.limpFora ? 1 : 0))]));
+          if (p.campos2) linhasPul.push([String(p.n) + ' · canal 2'].concat(p.campos2.map(cel)).concat(['', '', situ(p.fora2)]));
+        });
+        pdfTabelaCor(ctx, [{ t: 'Pulsador', w: 17 }, { t: 'Taxa (ppm)', w: 14, dir: 1 }, { t: 'Relação (%)', w: 15, dir: 1 }, { t: 'a (ms)', w: 11, dir: 1 }, { t: 'b (ms)', w: 11, dir: 1 }, { t: 'c (ms)', w: 11, dir: 1 }, { t: 'd (ms)', w: 11, dir: 1 }, { t: 'Limp', w: 17, dir: 1 }, { t: 'Limp: faixa', w: 18 }, { t: 'Situação', w: 13 }],
+          linhasPul);
+        const L = limpRef(faixas);
+        ctx.paragrafo('Referência: ' + PULS_CAMPOS.map(c => c.t.toLowerCase() + ' ' + (faixaTxt(faixas[c.k], c.un) || 'sem limite')).join('; ') +
+          '; Limp em valor absoluto, máx. ' + (limpRefTxt(L) || 'sem limite') + ' (atenção a partir de ' + fmtN(L.atencao, 0) + '% do limite; c1/c2 = canal maior).' + (temCalc ? ' * calculado pelas fases a, b, c e d.' : ''), { tam: 8.3, cor: SUAVE });
         if (ant && (ant.teste.pulsadores || []).length) {
           const comp = av.puls.map(p => {
-            const pa = ant.teste.pulsadores[p.i];
+            const pa = pulsPorN(ant.teste, p.n);
             if (!pa) return '';
             let m = 0, pi = 0;
             p.campos.forEach(c => { const r = compararValor(c.v, valorPuls(pa, c.k).v, faixas[c.k]); if (r === 'melhor') m++; if (r === 'pior') pi++; });
-            return m || pi ? 'pulsador ' + (p.i + 1) + ': ' + [m ? plural(m, 'medida melhor', 'medidas melhores') : '', pi ? plural(pi, 'pior', 'piores') : ''].filter(Boolean).join(', ') : '';
+            const ra = avaliarLimp(pa, fAnt);
+            const limpCmp = p.limp && ra ? 'Limp ' + limpPar(ra).v + ' → ' + limpPar(p.limp).v : '';
+            const partes = [m ? plural(m, 'medida melhor', 'medidas melhores') : '', pi ? plural(pi, 'pior', 'piores') : '', limpCmp].filter(Boolean);
+            return partes.length ? 'pulsador ' + p.n + ': ' + partes.join(', ') : '';
           }).filter(Boolean);
           if (comp.length) ctx.paragrafo('Em relação ao teste anterior: ' + comp.join('; ') + '.', { tam: 8.8 });
         }
@@ -17649,6 +18482,7 @@
       ctx.y += 1;
       if (av.foraN) ctx.paragrafo('Resultado: ' + plural(av.foraN, 'medida fora', 'medidas fora') + ' dos valores de referência (' + av.foraTxt.join(', ') + '). Recomenda-se corrigir e testar de novo.', { tam: 9.8, estilo: 'bold', cor: VERMELHO });
       else ctx.paragrafo('Resultado: equipamento dentro dos valores de referência (' + plural(av.medidas, 'medida conferida', 'medidas conferidas') + ').', { tam: 9.8, estilo: 'bold', cor: VERDE_ESC });
+      if (av.limpFora.length) ctx.paragrafo(msgLimpFora(av.limpFora), { tam: 9.3, cor: VERMELHO });
     }
   });
 
@@ -17821,6 +18655,7 @@
       ['Vazão da bomba', r.vazaoPct ? 'mín. ' + fmtN(r.vazaoPct, 0) + '% da nominal' : ''],
       ['Taxa de pulsação', faixaTxt(r.taxa, 'ppm')], ['Relação', faixaTxt(r.relacao, '%')],
       ['Fases a · b · c · d', ['faseA', 'faseB', 'faseC', 'faseD'].map(k => faixaTxt(r[k]) || '—').join(' · ') + ' ms'],
+      ['Limp do pulsador', (() => { const L = limpRef({ limp: r.limp }); const t = limpRefTxt(L); return t ? 'máx. ' + t + ' (valor absoluto) · atenção a partir de ' + fmtN(L.atencao, 0) + '% do limite' : ''; })()],
       ['Resfriador', 'leite a 4 °C em até ' + fmtN(cfgPrev.resfriamentoMax, 0) + ' min'],
       ['Duração padrão da ordenha', fmtN(cfgPrev.horasPorOrdenha, 2) + ' h'],
       ['ITU', 'sem estresse até ' + fmtN(cf.ituVerde) + ' · estresse leve até ' + fmtN(cf.ituAmarelo) + ' · estresse moderado até ' + fmtN(cf.ituLaranja) + ' · estresse severo acima'],
@@ -17943,6 +18778,8 @@
   function preencherParRef(c) {
     PAR_FAIXAS_UI.forEach(([k]) => { $('par-' + k + '-min').value = txtNum(c.ref[k].min); $('par-' + k + '-max').value = txtNum(c.ref[k].max); });
     ['reservaBase', 'reservaPorConjunto', 'vazaoPct'].forEach(k => { $('par-' + k).value = txtNum(c.ref[k]); });
+    const lr = c.ref.limp || PREV_REF_PADRAO.limp;
+    $('par-limpPct').value = txtNum(lr.pct); $('par-limpMs').value = txtNum(lr.ms); $('par-limpAtencao').value = txtNum(lr.atencao);
     $('par-resfriamentoMax').value = txtNum(c.resfriamentoMax);
     $('par-horasPorOrdenha').value = txtNum(c.horasPorOrdenha);
     Object.keys(CONFORTO_PADRAO).forEach(k => { $('par-' + k).value = txtNum(c.conforto[k]); });
@@ -17958,6 +18795,10 @@
       novo.ref[k] = { min, max };
     }
     ['reservaBase', 'reservaPorConjunto', 'vazaoPct'].forEach(k => { novo.ref[k] = lerNumInput('par-' + k); });
+    const lPct = lerNumInput('par-limpPct'), lMs = lerNumInput('par-limpMs'), lAt = lerNumInput('par-limpAtencao');
+    if ((lPct != null && lPct <= 0) || (lMs != null && lMs <= 0)) { avisar('O limite do Limp precisa ser maior que zero (ou em branco para não usar).'); return; }
+    if (lAt == null || !(lAt > 0 && lAt <= 100)) { avisar('A faixa de atenção do Limp deve ficar entre 1% e 100% do limite (padrão: 80%).'); return; }
+    novo.ref.limp = { pct: lPct, ms: lMs, atencao: lAt };
     const rm = lerNumInput('par-resfriamentoMax'), ho = lerNumInput('par-horasPorOrdenha');
     if (!(rm > 0)) { avisar('Informe o tempo máximo para o leite chegar a 4 °C.'); return; }
     if (!(ho > 0)) { avisar('Informe a duração padrão de cada ordenha.'); return; }
@@ -17990,10 +18831,20 @@
     });
   }
   function linhasPulsadores(lista) {
+    const nomeK = k => k === 'a' || k === 'b' || k === 'c' || k === 'd' ? 'fase' + k.toUpperCase() : k;
     return lista.filter(o => o.teste && testeTemAlgo(o.teste)).flatMap(o => avaliarTeste(o.teste, faixasDoTeste(o.teste)).puls.map(p => {
-      const r = { os: numOS(o.numero), data: o.data || '', pulsador: p.i + 1 };
-      p.campos.forEach(c => { r[c.k === 'a' || c.k === 'b' || c.k === 'c' || c.k === 'd' ? 'fase' + c.k.toUpperCase() : c.k] = c.v; });
-      return { ...r, situacao: p.fora ? p.fora + ' fora' : 'ok' };
+      const r = { os: numOS(o.numero), data: o.data || '', pulsador: p.n };
+      p.campos.forEach(c => { r[nomeK(c.k)] = c.v; });
+      const cor = {};
+      if (p.limp) {
+        r.limpMs = p.limp.ms; r.limpPct = p.limp.pct;
+        r.limpSituacao = LIMP_NIVEL[p.limp.nivel].txt;
+        r.limpCanalMaior = limpCanalTxt(p.limp);
+        r.limpLimite = limpRefTxt(p.limp.L);
+        cor.limpMs = cor.limpPct = cor.limpSituacao = p.limp.nivel;
+      }
+      if (p.campos2) p.campos2.forEach(c => { r['canal2_' + nomeK(c.k)] = c.v; });
+      return { ...r, situacao: p.fora ? p.fora + ' fora' : 'ok', __cor: cor };
     }));
   }
   function linhasResfriador(lista) {
@@ -18009,7 +18860,7 @@
   EXCEL_MANUT.push((lista, p) => [
     { nome: 'Plano preventivo', linhas: p ? linhasPlano(p, lista) : [], primeiras: ['componente', 'ultimaTroca', 'proximaTroca', 'situacao'] },
     { nome: 'Testes de ordenhadeira', linhas: linhasTeste(lista), primeiras: ['os', 'data', 'vacTrab', 'vacColetor', 'reserva', 'vazao', 'foraDoPadrao'] },
-    { nome: 'Pulsadores', linhas: linhasPulsadores(lista), primeiras: ['os', 'data', 'pulsador', 'taxa', 'relacao', 'faseA', 'faseB', 'faseC', 'faseD', 'situacao'] },
+    { nome: 'Pulsadores', linhas: linhasPulsadores(lista), primeiras: ['os', 'data', 'pulsador', 'taxa', 'relacao', 'faseA', 'faseB', 'faseC', 'faseD', 'limpMs', 'limpPct', 'limpSituacao', 'limpCanalMaior', 'limpLimite', 'situacao'] },
     { nome: 'Resfriador', linhas: linhasResfriador(lista), primeiras: ['os', 'data', 'temperaturaLeite', 'tempoAte4', 'pressaoAlta', 'pressaoBaixa', 'corrente', 'tensao'] }
   ]);
   function abasManutProdutor(abas, p, vis) {
@@ -18634,11 +19485,15 @@
       itens.push({ k: 'hoje', n: pm.hoje.length, rot: 'OS de hoje', cls: pm.hoje.length ? 'info' : '' });
       itens.push({ k: 'atrasadas', n: pm.atrasadas.length, rot: 'Atrasadas', cls: pm.atrasadas.length ? 'alerta' : '' });
       itens.push({ k: 'prev', n: prev, rot: 'Preventivas vencendo', cls: prev ? 'atencao' : '' });
+      let limpN = 0;
+      try { limpN = limpForaGeral().length; } catch (e) { extraErro(e); }
+      itens.push({ k: 'limp', n: limpN, rot: 'Pulsadores com Limp fora', cls: limpN ? 'alerta' : '' });
     }
     const tarefas = encaminhamentos.filter(e => encAberto(e) && daMinhaCaixa(e)).length;
     itens.push({ k: 'tarefas', n: tarefas, rot: 'Tarefas abertas', cls: tarefas ? 'info' : '' });
     kp.innerHTML = '';
     kp.style.setProperty('--n', itens.length);
+    kp.classList.toggle('n5', itens.length === 5);
     itens.forEach(it => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -18680,6 +19535,7 @@
   function irDoIndicador(k) {
     if (k === 'tarefas') { abrirEncaminhamentos(); return; }
     if (k === 'prev') { pvFiltro = 'proximas'; abrirPreventivas('home'); return; }
+    if (k === 'limp') { abrirListaLimp(); return; }
     osFiltro.status = k === 'atrasadas' ? 'atrasadas' : 'ativas';
     osFiltro.periodo = k === 'hoje' ? 'hoje' : '';
     osFiltro.tipo = ''; osFiltro.tecnico = '';
@@ -19165,7 +20021,11 @@
     });
     const revisao = (dia, itens) => ({ itens: Object.fromEntries(itens.map(i => [i, true])), proximaRevisao: addMonthsISO(d(dia), 6), responsavelTecnico: nomeTec });
     const teste = (bom) => ({ vacTrab: bom ? 46 : 44, vacColetor: bom ? 38 : 36, reserva: bom ? 520 : 430, vazao: bom ? 980 : 760,
-      pulsadores: [{ taxa: 60, relacao: 65, a: 120, b: 480, c: 120, d: 280 }] });
+      pulsadores: [
+        { n: 1, taxa: 60, relacao: 65, a: 120, b: 480, c: 120, d: 280, limpMs: bom ? 6 : 8, limpPct: bom ? 0.6 : 0.8 },
+        { n: 2, taxa: 60, relacao: 64, a: 118, b: 476, c: 122, d: 284, limpMs: bom ? -12 : -43, limpPct: bom ? -1.2 : -4.3 },
+        { n: 3, taxa: 61, relacao: 65, a: 121, b: 474, c: 119, d: 270, limpMs: bom ? 15 : 62, limpPct: bom ? 1.5 : 6.2 }
+      ] });
     const pecasRev = [{ descricao: 'Jogo de teteiras', qtd: 1, unidade: 'jogo', precoUnit: 0, valor: 0 }, { descricao: 'Reparo de pulsador', qtd: 2, unidade: 'un', precoUnit: 0, valor: 0 }];
 
     // Adriana Zanella: preventiva feita, avaliação de conforto e a próxima revisão marcada
@@ -20643,6 +21503,7 @@
   showView('entrada');
   const saudacao = renderGreeting();
   initAgenda();
+  initGimenez();
   renderBrands();
   loadCalcState();
   calcular();
