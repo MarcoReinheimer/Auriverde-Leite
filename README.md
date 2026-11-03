@@ -1,4 +1,4 @@
-# Auriverde — app de manutenção, produtores e qualidade do leite
+# Auriverde — app de manutenção de ordenha, resfriador e conforto animal
 
 App instalável (PWA) hospedado no GitHub Pages, com banco compartilhado no Supabase.
 
@@ -19,6 +19,10 @@ App instalável (PWA) hospedado no GitHub Pages, com banco compartilhado no Supa
 | `supabase.js` | biblioteca oficial do Supabase |
 | `claude-local.js` | modo "só neste aparelho", usado se o `config.js` estiver vazio |
 | `sw.js`, `manifest.webmanifest`, `icon-*.png` | instalação e uso sem internet |
+| `img/` | logo do topo e ícone da aba do navegador |
+| `fontes/` | fonte IBM Plex Sans da tela (`.woff2`) e do PDF (`.ttf`, baixada só ao gerar PDF) |
+
+Ao trocar um arquivo de `img/` ou `fontes/`, aumente a `VERSAO` no `sw.js`: esses arquivos ficam guardados no celular e só são baixados de novo quando a versão muda.
 
 ## Configuração (uma vez)
 1. Supabase → **SQL Editor** → **New query**: cole o `supabase.sql`, troque `SEU_EMAIL_AQUI` pelo e-mail do dono e clique **Run**.
