@@ -1,8 +1,12 @@
 // Deixa o app abrir sem internet. Guarda os arquivos do app e as bibliotecas
 // (Excel, PDF, fontes). NUNCA guarda os dados do Supabase: esses vêm sempre do banco.
-const VERSAO = 'auriverde-v6';
+const VERSAO = 'auriverde-v7';
+// logo, ícone e fontes saíram de dentro do index.html para estes arquivos (img/ e fontes/)
+const ESTATICOS = ['./img/logo-auriverde.png', './img/favicon.png',
+  './fontes/ibm-plex-sans-400.woff2', './fontes/ibm-plex-sans-500.woff2', './fontes/ibm-plex-sans-600.woff2', './fontes/ibm-plex-sans-700.woff2',
+  './fontes/plex-pdf-normal.ttf', './fontes/plex-pdf-bold.ttf'];
 const ARQUIVOS = ['./', './index.html', './config.js', './supabase.js', './claude-supabase.js', './claude-local.js',
-  './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
+  './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'].concat(ESTATICOS);
 const BIBLIOTECAS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', (e) => {
@@ -15,7 +19,12 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin === self.location.origin) {
+  if (url.origin === self.location.origin && /\/(img|fontes)\//.test(url.pathname)) {
+    // imagens e fontes quase nunca mudam: usa a guardada direto (abre mais rápido no 3G)
+    e.respondWith(
+      caches.match(req, { ignoreSearch: true }).then((r) => r || fetch(req).then((resp) => { if (resp.ok) { const copia = resp.clone(); caches.open(VERSAO).then((c) => c.put(req, copia)); } return resp; }))
+    );
+  } else if (url.origin === self.location.origin) {
     // arquivos do app: tenta a versão nova; sem internet, usa a guardada
     e.respondWith(
       fetch(req).then((r) => { if (r.ok) { const copia = r.clone(); caches.open(VERSAO).then((c) => c.put(req, copia)); } return r; })
