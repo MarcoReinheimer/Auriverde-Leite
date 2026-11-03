@@ -2972,6 +2972,19 @@
   .ap-opcao, .ap-como-op { border-width: 1px; }
   .ap-como-op::before { display: none; }
 
+  /* ---------- topo da ficha enxuto: nome; propriedade e endereço numa linha; contato em botões pequenos ---------- */
+  .ficha-topo { margin-bottom: 4px; }
+  .ficha-topo .ficha-prop, .ficha-topo .ficha-local { display: inline; margin: 0; font-size: 14px; }
+  .ficha-topo .ficha-prop { font-weight: 600; color: var(--ink); }
+  .ficha-topo .ficha-prop::after { content: ' · '; font-weight: 400; color: var(--ink-soft); }
+  .ficha-topo .ficha-local { color: var(--ink-soft); }
+  .ficha-topo .selos-produtor:not(:empty) { margin-top: 6px; }
+  /* a próxima revisão já está na faixa de resumo logo abaixo */
+  body:not(.sem-visitas-1) #produtor-proxima { display: none !important; }
+  .ficha-topo .contato-acoes { justify-content: flex-start; margin-top: 10px; }
+  .ficha-topo .contato-acoes .acao-link { flex: 0 0 auto; min-height: 36px; padding: 6px 16px; border-radius: 999px; font-size: var(--fs-legenda); font-weight: 600; }
+  .ficha-alertas { margin-top: 10px; }
+
   /* ---------- Formulário da OS: fundo cinza, cada parte num bloco branco, Salvar sempre à vista ---------- */
   .os-form.modal-sheet { background: var(--bg); padding-left: 12px; padding-right: 12px; padding-bottom: 0; scroll-padding-bottom: 84px; }
   .os-form .os-sec { margin: 0 0 var(--gap-bloco); padding: 12px var(--pad) 2px; border: 1px solid var(--line); border-radius: var(--raio); background: var(--surface); }
@@ -5111,6 +5124,10 @@
       <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-headset"/></svg></span>
       <span class="novo-txt"><span class="novo-nome">Abrir chamado</span><span class="novo-sub" id="novo-chamado-sub">Problema relatado pelo produtor, para agendar</span></span>
     </button>
+    <button type="button" class="novo-op" id="novo-enc" data-perm="algum:2" hidden>
+      <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-forward"/></svg></span>
+      <span class="novo-txt"><span class="novo-nome">Encaminhar</span><span class="novo-sub" id="novo-enc-sub">Tarefa para outro setor ou pessoa</span></span>
+    </button>
     <button type="button" class="novo-op" id="novo-produtor" data-perm="produtores:2">
       <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span>
       <span class="novo-txt"><span class="novo-nome">Novo produtor</span><span class="novo-sub">Cadastro rápido: nome, WhatsApp e cidade</span></span>
@@ -6013,7 +6030,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.03.8';
+  const APP_VERSAO = '2026.11.03.9';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -13567,7 +13584,7 @@
     lista.forEach(e => box.appendChild(cartaoEnc(e, { semProdutor: true })));
     $('ficha-enc-n').textContent = lista.length ? String(lista.length) : '';
     $('ficha-enc-vazio').hidden = lista.length > 0;
-    $('ficha-enc').hidden = !lista.length && !podeCriarEnc();
+    $('ficha-enc').hidden = !lista.length;
   }
   function renderFichaTopo() {
     const p = produtores.find(x => x.id === currentProdutorId);
@@ -16573,6 +16590,9 @@
     const p = produtorDaFicha();
     $('novo-os-sub').textContent = p ? 'Para ' + p.nome : 'Escolha o produtor e registre o serviço';
     $('novo-chamado-sub').textContent = p ? 'Para ' + p.nome + ', para agendar' : 'Problema relatado pelo produtor, para agendar';
+    // encaminhar fica aqui na ficha (o topo da ficha só mostra encaminhamentos quando há algum aberto)
+    $('novo-enc').hidden = !p;
+    if (p) $('novo-enc-sub').textContent = 'Sobre ' + p.nome + ', para outro setor ou pessoa';
     $('modal-novo').hidden = false;
   }
   function fecharNovo() { $('modal-novo').hidden = true; }
@@ -16589,6 +16609,11 @@
     const p = produtorDaFicha();
     fecharNovo();
     abrirChamado(p ? { produtorId: p.id } : {});
+  });
+  $('novo-enc').addEventListener('click', () => {
+    const p = produtorDaFicha();
+    fecharNovo();
+    if (p) abrirNovoEncaminhamento({ produtorId: p.id });
   });
   $('novo-produtor').addEventListener('click', () => { fecharNovo(); abrirCadastroRapido(); });
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
