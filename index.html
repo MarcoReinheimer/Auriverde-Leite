@@ -2972,6 +2972,19 @@
   .ap-opcao, .ap-como-op { border-width: 1px; }
   .ap-como-op::before { display: none; }
 
+  /* ---------- Formulário da OS: fundo cinza, cada parte num bloco branco, Salvar sempre à vista ---------- */
+  .os-form.modal-sheet { background: var(--bg); padding-left: 12px; padding-right: 12px; padding-bottom: 0; scroll-padding-bottom: 84px; }
+  .os-form .os-sec { margin: 0 0 var(--gap-bloco); padding: 12px var(--pad) 2px; border: 1px solid var(--line); border-radius: var(--raio); background: var(--surface); }
+  .os-form .os-sec-tit { margin: 0 0 10px; font-size: var(--fs-legenda) !important; font-weight: 600 !important; color: var(--ink-soft) !important; }
+  .os-form .os-form-topo, .os-form .os-form-prod { padding: 0 4px; }
+  /* opções mais leves: borda fina, letra um pouco menor */
+  .os-form .os-chip, .os-form .check-chip { min-height: 40px; padding: 7px 12px; border-width: 1px; font-size: 14px; font-weight: 600; }
+  .os-form .toggle button { min-height: 44px; font-size: 14px; }
+  .os-form .os-add-linha { border-width: 1px; font-weight: 600; }
+  .os-form .os-peca { background: var(--surface-2); }
+  .os-form .modal-actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg); border-top: 1px solid var(--line); }
+
 </style>
 </head>
 <body>
@@ -5331,20 +5344,22 @@
     </div>
     <div class="os-form-prod" id="os-form-prod"></div>
 
-    <div class="field">
-      <label>Situação</label>
-      <div class="os-chips" id="os-status-toggle" role="group" aria-label="Situação da OS"></div>
-    </div>
-    <div class="field">
-      <label>Tipo</label>
-      <div class="os-chips" id="os-tipo-toggle" role="group" aria-label="Tipo da OS"></div>
-    </div>
-    <div class="field">
-      <label>Categoria</label>
-      <div class="toggle" id="visita-cat-toggle">
-        <button type="button" class="active" data-cat="ordenha">Ordenha</button>
-        <button type="button" data-cat="resfriador">Resfriador</button>
-        <button type="button" data-cat="conforto">Conforto animal</button>
+    <div class="os-sec" id="os-sec-geral">
+      <div class="field">
+        <label>Situação</label>
+        <div class="os-chips" id="os-status-toggle" role="group" aria-label="Situação da OS"></div>
+      </div>
+      <div class="field">
+        <label>Tipo</label>
+        <div class="os-chips" id="os-tipo-toggle" role="group" aria-label="Tipo da OS"></div>
+      </div>
+      <div class="field">
+        <label>Categoria</label>
+        <div class="toggle" id="visita-cat-toggle">
+          <button type="button" class="active" data-cat="ordenha">Ordenha</button>
+          <button type="button" data-cat="resfriador">Resfriador</button>
+          <button type="button" data-cat="conforto" aria-label="Conforto animal">Conforto</button>
+        </div>
       </div>
     </div>
 
@@ -5386,220 +5401,227 @@
       <div class="campo-dica" id="os-prev-dica"></div>
     </div>
 
-    <div class="os-sec" id="os-sec-exec">
-      <div class="os-sec-tit">Execução</div>
-      <div class="field">
-        <label for="visita-data">Data do serviço</label>
-        <input type="date" id="visita-data">
-      </div>
-      <div class="rate-row os-horas">
-        <div class="field"><label for="os-hora-ini">Início</label><input type="time" id="os-hora-ini"></div>
-        <div class="field"><label for="os-hora-fim">Fim</label><input type="time" id="os-hora-fim"></div>
-        <div class="field"><label for="os-km">Km rodados</label><input type="text" inputmode="decimal" id="os-km" class="mono-input" placeholder="0"></div>
-      </div>
-      <div class="campo-dica os-tempo" id="os-tempo"></div>
-      <div class="field">
-        <label>Equipamentos atendidos</label>
-        <div class="check-chips" id="os-equip-chips"></div>
-        <div class="campo-dica" id="os-equip-dica"></div>
-      </div>
-      <div class="field">
-        <label for="os-defeito">Defeito encontrado</label>
-        <textarea id="os-defeito" placeholder="O que estava errado"></textarea>
-      </div>
-      <div class="field">
-        <label for="visita-desc" id="visita-desc-label">Serviço feito</label>
-        <textarea id="visita-desc" placeholder="Descreva o serviço..."></textarea>
-      </div>
-      <div class="field" id="visita-itens-field">
-        <label>Checklist: o que foi feito na ordenhadeira</label>
-        <div class="check-chips" id="revisao-itens"></div>
-      </div>
-      <div class="field" id="visita-kpa-field">
-        <label for="visita-kpa">Vácuo deixado (kPa)</label>
-        <input type="text" inputmode="decimal" id="visita-kpa" class="mono-input" placeholder="Ex: 42">
-      </div>
-      <div class="cf-bloco tt-bloco" id="tt-bloco">
-        <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">🧪</span><span class="cf-tit">Teste do equipamento <span class="opcional">(opcional)</span></span><span class="cf-res" id="tt-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
-        <div class="cf-corpo" hidden>
-          <div class="tt-grade" id="tt-principais"></div>
-          <div class="tt-sub">Pulsadores</div>
-          <div class="tt-gim" id="tt-gim">
-            <button type="button" class="btn-secondary" id="tt-gim-btn">📷 Ler fotos do pulsógrafo Gimenez</button>
-            <span class="tt-gim-st" id="tt-gim-st" aria-live="polite"></span>
-            <div class="campo-dica" style="margin:0;flex-basis:100%">Uma foto por pulsador, com a tela inteira. O número do pulsador na tela decide onde os valores entram. Confira antes de salvar.</div>
-          </div>
-          <input type="file" id="tt-gim-arq" accept="image/*" multiple hidden>
-          <div id="tt-puls"></div>
-          <button type="button" class="os-add-linha" id="tt-add-puls">+ Pulsador</button>
-          <div class="tt-conclusao" id="tt-conclusao"></div>
-          <div class="campo-dica" id="tt-comparado"></div>
-          <button type="button" class="link-btn tt-limpar" id="tt-limpar">Apagar o teste desta OS</button>
-        </div>
-      </div>
-      <div class="field" id="visita-temp-field" hidden>
-        <label for="visita-temp">Temperatura do leite (°C)</label>
-        <input type="text" inputmode="decimal" id="visita-temp" class="mono-input" placeholder="Ex: 3,8">
-        <div class="campo-dica" id="visita-temp-alerta">O leite no resfriador deve estar a no máximo 4 °C.</div>
-      </div>
-      <div id="rf-campos" hidden>
+    <div id="os-sec-exec">
+      <div class="os-sec">
+        <div class="os-sec-tit">Execução</div>
         <div class="field">
-          <label for="rf-tempo">Tempo para o leite chegar a 4 °C (min)</label>
-          <input type="text" inputmode="numeric" id="rf-tempo" class="mono-input" placeholder="Ex: 150" autocomplete="off">
-          <div class="campo-dica" id="rf-tempo-alerta"></div>
+          <label for="visita-data">Data do serviço</label>
+          <input type="date" id="visita-data">
         </div>
-        <div class="rate-row">
-          <div class="field"><label for="rf-alta">Pressão de alta (psi)</label><input type="text" inputmode="decimal" id="rf-alta" class="mono-input" placeholder="Ex: 250" autocomplete="off"></div>
-          <div class="field"><label for="rf-baixa">Pressão de baixa (psi)</label><input type="text" inputmode="decimal" id="rf-baixa" class="mono-input" placeholder="Ex: 35" autocomplete="off"></div>
+        <div class="rate-row os-horas">
+          <div class="field"><label for="os-hora-ini">Início</label><input type="time" id="os-hora-ini"></div>
+          <div class="field"><label for="os-hora-fim">Fim</label><input type="time" id="os-hora-fim"></div>
+          <div class="field"><label for="os-km">Km rodados</label><input type="text" inputmode="decimal" id="os-km" class="mono-input" placeholder="0"></div>
         </div>
-        <div class="rate-row">
-          <div class="field"><label for="rf-corrente">Corrente do compressor (A)</label><input type="text" inputmode="decimal" id="rf-corrente" class="mono-input" placeholder="Ex: 12,5" autocomplete="off"></div>
-          <div class="field"><label for="rf-tensao">Tensão (V)</label><input type="text" inputmode="decimal" id="rf-tensao" class="mono-input" placeholder="Ex: 220" autocomplete="off"></div>
+        <div class="campo-dica os-tempo" id="os-tempo"></div>
+        <div class="field">
+          <label>Equipamentos atendidos</label>
+          <div class="check-chips" id="os-equip-chips"></div>
+          <div class="campo-dica" id="os-equip-dica"></div>
         </div>
-        <div id="rf-sn"></div>
-      </div>
-      <div id="cf-blocos" hidden>
-        <div class="cf-bloco" data-cf="vent">
-          <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">🌀</span><span class="cf-tit">Ventilação</span><span class="cf-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
+        <div class="field">
+          <label for="os-defeito">Defeito encontrado</label>
+          <textarea id="os-defeito" placeholder="O que estava errado"></textarea>
+        </div>
+        <div class="field">
+          <label for="visita-desc" id="visita-desc-label">Serviço feito</label>
+          <textarea id="visita-desc" placeholder="Descreva o serviço..."></textarea>
+        </div>
+        <div class="field" id="visita-itens-field">
+          <label>Checklist: o que foi feito na ordenhadeira</label>
+          <div class="check-chips" id="revisao-itens"></div>
+        </div>
+        <div class="field" id="visita-kpa-field">
+          <label for="visita-kpa">Vácuo deixado (kPa)</label>
+          <input type="text" inputmode="decimal" id="visita-kpa" class="mono-input" placeholder="Ex: 42">
+        </div>
+        <div class="cf-bloco tt-bloco" id="tt-bloco">
+          <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">🧪</span><span class="cf-tit">Teste do equipamento <span class="opcional">(opcional)</span></span><span class="cf-res" id="tt-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
           <div class="cf-corpo" hidden>
-            <div class="field">
-              <label>Ventiladores</label>
-              <div id="cf-vent-lista"></div>
-              <div class="campo-dica" id="cf-vent-dica"></div>
+            <div class="tt-grade" id="tt-principais"></div>
+            <div class="tt-sub">Pulsadores</div>
+            <div class="tt-gim" id="tt-gim">
+              <button type="button" class="btn-secondary" id="tt-gim-btn">📷 Ler fotos do pulsógrafo Gimenez</button>
+              <span class="tt-gim-st" id="tt-gim-st" aria-live="polite"></span>
+              <div class="campo-dica" style="margin:0;flex-basis:100%">Uma foto por pulsador, com a tela inteira. O número do pulsador na tela decide onde os valores entram. Confira antes de salvar.</div>
             </div>
-            <div class="field">
-              <label for="cf-vel">Velocidade do ar na altura das vacas (m/s)</label>
-              <input type="text" inputmode="decimal" id="cf-vel" class="mono-input" placeholder="Ex: 2,5" autocomplete="off">
-            </div>
-            <div class="field">
-              <label>Acionamento</label>
-              <div class="os-chips" id="cf-acion" role="group" aria-label="Acionamento da ventilação"></div>
-            </div>
-            <div class="field" id="cf-acion-temp-field" hidden>
-              <label for="cf-acion-temp">Temperatura de acionamento (°C)</label>
-              <input type="text" inputmode="decimal" id="cf-acion-temp" class="mono-input" placeholder="Ex: 22" autocomplete="off">
-            </div>
-            <div class="field">
-              <label>Checklist</label>
-              <div class="check-chips" id="cf-vent-check"></div>
-            </div>
-            <div class="field">
-              <label>Serviços feitos</label>
-              <div class="check-chips" id="cf-vent-serv"></div>
-            </div>
+            <input type="file" id="tt-gim-arq" accept="image/*" multiple hidden>
+            <div id="tt-puls"></div>
+            <button type="button" class="os-add-linha" id="tt-add-puls">+ Pulsador</button>
+            <div class="tt-conclusao" id="tt-conclusao"></div>
+            <div class="campo-dica" id="tt-comparado"></div>
+            <button type="button" class="link-btn tt-limpar" id="tt-limpar">Apagar o teste desta OS</button>
           </div>
         </div>
-
-        <div class="cf-bloco" data-cf="asp">
-          <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">💧</span><span class="cf-tit">Aspersão / nebulização</span><span class="cf-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
-          <div class="cf-corpo" hidden>
-            <div class="campo-dica" id="cf-asp-equip" style="margin-top:0"></div>
-            <div class="field">
-              <label>Local</label>
-              <div class="check-chips" id="cf-asp-local"></div>
-            </div>
-            <div class="rate-row">
-              <div class="field"><label for="cf-bicos">Nº de bicos</label><input type="text" inputmode="numeric" id="cf-bicos" class="mono-input" autocomplete="off"></div>
-              <div class="field"><label for="cf-entupidos">Bicos entupidos</label><input type="text" inputmode="numeric" id="cf-entupidos" class="mono-input" placeholder="0" autocomplete="off"></div>
-            </div>
-            <div class="field">
-              <label for="cf-pressao">Pressão (bar)</label>
-              <input type="text" inputmode="decimal" id="cf-pressao" class="mono-input" placeholder="Ex: 3" autocomplete="off">
-            </div>
-            <div class="rate-row">
-              <div class="field"><label for="cf-ciclo-on">Ciclo ligado (min)</label><input type="text" inputmode="decimal" id="cf-ciclo-on" class="mono-input" placeholder="Ex: 1" autocomplete="off"></div>
-              <div class="field"><label for="cf-ciclo-off">Ciclo desligado (min)</label><input type="text" inputmode="decimal" id="cf-ciclo-off" class="mono-input" placeholder="Ex: 5" autocomplete="off"></div>
-            </div>
-            <div id="cf-com-vent"></div>
-            <div class="field">
-              <label>Checklist</label>
-              <div class="check-chips" id="cf-asp-check"></div>
-            </div>
-            <div class="field">
-              <label>Serviços feitos</label>
-              <div class="check-chips" id="cf-asp-serv"></div>
-            </div>
-          </div>
+        <div class="field" id="visita-temp-field" hidden>
+          <label for="visita-temp">Temperatura do leite (°C)</label>
+          <input type="text" inputmode="decimal" id="visita-temp" class="mono-input" placeholder="Ex: 3,8">
+          <div class="campo-dica" id="visita-temp-alerta">O leite no resfriador deve estar a no máximo 4 °C.</div>
         </div>
-
-        <div class="cf-bloco" data-cf="amb">
-          <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">🌡️</span><span class="cf-tit">Ambiente</span><span class="cf-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
-          <div class="cf-corpo" hidden>
-            <div class="rate-row">
-              <div class="field"><label for="cf-temp">Temperatura do galpão (°C)</label><input type="text" inputmode="decimal" id="cf-temp" class="mono-input" placeholder="Ex: 29" autocomplete="off"></div>
-              <div class="field"><label for="cf-ur">Umidade relativa (%)</label><input type="text" inputmode="decimal" id="cf-ur" class="mono-input" placeholder="Ex: 70" autocomplete="off"></div>
-            </div>
-            <div class="cf-itu vazio" id="cf-itu" aria-live="polite"></div>
-            <div class="campo-dica" id="cf-itu-faixas" style="margin-top:0;margin-bottom:12px"></div>
-            <div class="field">
-              <label for="cf-fr">Frequência respiratória média (mov/min)</label>
-              <input type="text" inputmode="numeric" id="cf-fr" class="mono-input" placeholder="Ex: 48" autocomplete="off">
-              <div class="campo-dica" id="cf-fr-alerta"></div>
-            </div>
+        <div id="rf-campos" hidden>
+          <div class="field">
+            <label for="rf-tempo">Tempo para o leite chegar a 4 °C (min)</label>
+            <input type="text" inputmode="numeric" id="rf-tempo" class="mono-input" placeholder="Ex: 150" autocomplete="off">
+            <div class="campo-dica" id="rf-tempo-alerta"></div>
           </div>
+          <div class="rate-row">
+            <div class="field"><label for="rf-alta">Pressão de alta (psi)</label><input type="text" inputmode="decimal" id="rf-alta" class="mono-input" placeholder="Ex: 250" autocomplete="off"></div>
+            <div class="field"><label for="rf-baixa">Pressão de baixa (psi)</label><input type="text" inputmode="decimal" id="rf-baixa" class="mono-input" placeholder="Ex: 35" autocomplete="off"></div>
+          </div>
+          <div class="rate-row">
+            <div class="field"><label for="rf-corrente">Corrente do compressor (A)</label><input type="text" inputmode="decimal" id="rf-corrente" class="mono-input" placeholder="Ex: 12,5" autocomplete="off"></div>
+            <div class="field"><label for="rf-tensao">Tensão (V)</label><input type="text" inputmode="decimal" id="rf-tensao" class="mono-input" placeholder="Ex: 220" autocomplete="off"></div>
+          </div>
+          <div id="rf-sn"></div>
         </div>
-
-        <div class="cf-bloco" data-cf="cama">
-          <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">🛏️</span><span class="cf-tit">Cama</span><span class="cf-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
-          <div class="cf-corpo" hidden>
-            <div class="field">
-              <label>Tipo de cama</label>
-              <div class="os-chips" id="cf-cama-tipo" role="group" aria-label="Tipo de cama"></div>
-            </div>
-            <div id="cf-compost-campos" hidden>
-              <div class="rate-row">
-                <div class="field"><label for="cf-cama-temp">Temperatura da cama (°C)</label><input type="text" inputmode="decimal" id="cf-cama-temp" class="mono-input" placeholder="Ex: 48" autocomplete="off"></div>
-                <div class="field"><label for="cf-cama-ur">Umidade da cama (%)</label><input type="text" inputmode="decimal" id="cf-cama-ur" class="mono-input" placeholder="Ex: 50" autocomplete="off"></div>
+        <div id="cf-blocos" hidden>
+          <div class="cf-bloco" data-cf="vent">
+            <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">🌀</span><span class="cf-tit">Ventilação</span><span class="cf-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
+            <div class="cf-corpo" hidden>
+              <div class="field">
+                <label>Ventiladores</label>
+                <div id="cf-vent-lista"></div>
+                <div class="campo-dica" id="cf-vent-dica"></div>
               </div>
-              <div class="field"><label for="cf-revolv">Revolvimentos por dia</label><input type="text" inputmode="decimal" id="cf-revolv" class="mono-input" placeholder="Ex: 2" autocomplete="off"></div>
+              <div class="field">
+                <label for="cf-vel">Velocidade do ar na altura das vacas (m/s)</label>
+                <input type="text" inputmode="decimal" id="cf-vel" class="mono-input" placeholder="Ex: 2,5" autocomplete="off">
+              </div>
+              <div class="field">
+                <label>Acionamento</label>
+                <div class="os-chips" id="cf-acion" role="group" aria-label="Acionamento da ventilação"></div>
+              </div>
+              <div class="field" id="cf-acion-temp-field" hidden>
+                <label for="cf-acion-temp">Temperatura de acionamento (°C)</label>
+                <input type="text" inputmode="decimal" id="cf-acion-temp" class="mono-input" placeholder="Ex: 22" autocomplete="off">
+              </div>
+              <div class="field">
+                <label>Checklist</label>
+                <div class="check-chips" id="cf-vent-check"></div>
+              </div>
+              <div class="field">
+                <label>Serviços feitos</label>
+                <div class="check-chips" id="cf-vent-serv"></div>
+              </div>
             </div>
-            <div class="rate-row">
-              <div class="field"><label for="cf-area">Área de cama (m²)</label><input type="text" inputmode="decimal" id="cf-area" class="mono-input" placeholder="Ex: 600" autocomplete="off"></div>
-              <div class="field"><label for="cf-vacas">Nº de vacas</label><input type="text" inputmode="numeric" id="cf-vacas" class="mono-input" autocomplete="off"></div>
+          </div>
+
+          <div class="cf-bloco" data-cf="asp">
+            <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">💧</span><span class="cf-tit">Aspersão / nebulização</span><span class="cf-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
+            <div class="cf-corpo" hidden>
+              <div class="campo-dica" id="cf-asp-equip" style="margin-top:0"></div>
+              <div class="field">
+                <label>Local</label>
+                <div class="check-chips" id="cf-asp-local"></div>
+              </div>
+              <div class="rate-row">
+                <div class="field"><label for="cf-bicos">Nº de bicos</label><input type="text" inputmode="numeric" id="cf-bicos" class="mono-input" autocomplete="off"></div>
+                <div class="field"><label for="cf-entupidos">Bicos entupidos</label><input type="text" inputmode="numeric" id="cf-entupidos" class="mono-input" placeholder="0" autocomplete="off"></div>
+              </div>
+              <div class="field">
+                <label for="cf-pressao">Pressão (bar)</label>
+                <input type="text" inputmode="decimal" id="cf-pressao" class="mono-input" placeholder="Ex: 3" autocomplete="off">
+              </div>
+              <div class="rate-row">
+                <div class="field"><label for="cf-ciclo-on">Ciclo ligado (min)</label><input type="text" inputmode="decimal" id="cf-ciclo-on" class="mono-input" placeholder="Ex: 1" autocomplete="off"></div>
+                <div class="field"><label for="cf-ciclo-off">Ciclo desligado (min)</label><input type="text" inputmode="decimal" id="cf-ciclo-off" class="mono-input" placeholder="Ex: 5" autocomplete="off"></div>
+              </div>
+              <div id="cf-com-vent"></div>
+              <div class="field">
+                <label>Checklist</label>
+                <div class="check-chips" id="cf-asp-check"></div>
+              </div>
+              <div class="field">
+                <label>Serviços feitos</label>
+                <div class="check-chips" id="cf-asp-serv"></div>
+              </div>
             </div>
-            <div class="cf-m2 vazio" id="cf-m2" aria-live="polite"></div>
+          </div>
+
+          <div class="cf-bloco" data-cf="amb">
+            <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">🌡️</span><span class="cf-tit">Ambiente</span><span class="cf-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
+            <div class="cf-corpo" hidden>
+              <div class="rate-row">
+                <div class="field"><label for="cf-temp">Temperatura do galpão (°C)</label><input type="text" inputmode="decimal" id="cf-temp" class="mono-input" placeholder="Ex: 29" autocomplete="off"></div>
+                <div class="field"><label for="cf-ur">Umidade relativa (%)</label><input type="text" inputmode="decimal" id="cf-ur" class="mono-input" placeholder="Ex: 70" autocomplete="off"></div>
+              </div>
+              <div class="cf-itu vazio" id="cf-itu" aria-live="polite"></div>
+              <div class="campo-dica" id="cf-itu-faixas" style="margin-top:0;margin-bottom:12px"></div>
+              <div class="field">
+                <label for="cf-fr">Frequência respiratória média (mov/min)</label>
+                <input type="text" inputmode="numeric" id="cf-fr" class="mono-input" placeholder="Ex: 48" autocomplete="off">
+                <div class="campo-dica" id="cf-fr-alerta"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cf-bloco" data-cf="cama">
+            <button type="button" class="cf-cab" aria-expanded="false"><span class="cf-ico" aria-hidden="true">🛏️</span><span class="cf-tit">Cama</span><span class="cf-res"></span><span class="cf-seta" aria-hidden="true">▾</span></button>
+            <div class="cf-corpo" hidden>
+              <div class="field">
+                <label>Tipo de cama</label>
+                <div class="os-chips" id="cf-cama-tipo" role="group" aria-label="Tipo de cama"></div>
+              </div>
+              <div id="cf-compost-campos" hidden>
+                <div class="rate-row">
+                  <div class="field"><label for="cf-cama-temp">Temperatura da cama (°C)</label><input type="text" inputmode="decimal" id="cf-cama-temp" class="mono-input" placeholder="Ex: 48" autocomplete="off"></div>
+                  <div class="field"><label for="cf-cama-ur">Umidade da cama (%)</label><input type="text" inputmode="decimal" id="cf-cama-ur" class="mono-input" placeholder="Ex: 50" autocomplete="off"></div>
+                </div>
+                <div class="field"><label for="cf-revolv">Revolvimentos por dia</label><input type="text" inputmode="decimal" id="cf-revolv" class="mono-input" placeholder="Ex: 2" autocomplete="off"></div>
+              </div>
+              <div class="rate-row">
+                <div class="field"><label for="cf-area">Área de cama (m²)</label><input type="text" inputmode="decimal" id="cf-area" class="mono-input" placeholder="Ex: 600" autocomplete="off"></div>
+                <div class="field"><label for="cf-vacas">Nº de vacas</label><input type="text" inputmode="numeric" id="cf-vacas" class="mono-input" autocomplete="off"></div>
+              </div>
+              <div class="cf-m2 vazio" id="cf-m2" aria-live="polite"></div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="field" id="visita-fotos-field">
-        <label>Fotos <span class="opcional">(até 4)</span></label>
-        <div class="fotos-grade" id="visita-fotos"></div>
-        <div class="fotos-botoes">
-          <label class="foto-add">📷 Câmera<input type="file" accept="image/*" capture="environment" id="foto-camera"></label>
-          <label class="foto-add">🖼️ Galeria<input type="file" accept="image/*" multiple id="foto-galeria"></label>
+      <div class="os-sec">
+        <div class="os-sec-tit">Fotos e peças</div>
+        <div class="field" id="visita-fotos-field">
+          <label>Fotos <span class="opcional">(até 4)</span></label>
+          <div class="fotos-grade" id="visita-fotos"></div>
+          <div class="fotos-botoes">
+            <label class="foto-add">📷 Câmera<input type="file" accept="image/*" capture="environment" id="foto-camera"></label>
+            <label class="foto-add">🖼️ Galeria<input type="file" accept="image/*" multiple id="foto-galeria"></label>
+          </div>
+          <div class="campo-dica" id="visita-fotos-dica"></div>
         </div>
-        <div class="campo-dica" id="visita-fotos-dica"></div>
-      </div>
 
-      <div class="field">
-        <label>Peças usadas</label>
-        <div id="os-pecas-lista"></div>
-        <button type="button" class="os-add-linha" id="os-add-peca">+ Adicionar peça</button>
-      </div>
-      <div class="rate-row">
         <div class="field">
-          <label for="os-mao-obra">Mão de obra (R$)</label>
-          <input type="text" inputmode="decimal" id="os-mao-obra" class="mono-input" placeholder="0,00">
+          <label>Peças usadas</label>
+          <div id="os-pecas-lista"></div>
+          <button type="button" class="os-add-linha" id="os-add-peca">+ Adicionar peça</button>
         </div>
-      </div>
-      <div class="os-totais" id="os-totais"></div>
-
-      <div class="field" id="visita-resp-field">
-        <label for="revisao-responsavel">Responsável técnico</label>
-        <input type="text" id="revisao-responsavel" placeholder="Nome do responsável">
-      </div>
-      <div class="proxima-box" id="visita-proxima-box"></div>
-
-      <div class="field os-assin-field">
-        <label>Assinatura do produtor</label>
-        <div class="os-assin-img" id="os-assin-img" hidden><img alt="Assinatura do produtor"><button type="button" class="bloco-editar" id="os-assin-refazer">Assinar de novo</button></div>
-        <div class="os-assin-pad" id="os-assin-pad">
-          <canvas id="os-assin-canvas" aria-label="Espaço para assinar com o dedo"></canvas>
-          <span class="os-assin-linha" aria-hidden="true"></span>
-          <span class="os-assin-guia" id="os-assin-guia">Assine aqui com o dedo</span>
-          <button type="button" class="os-assin-limpar" id="os-assin-limpar">Limpar</button>
+        <div class="rate-row">
+          <div class="field">
+            <label for="os-mao-obra">Mão de obra (R$)</label>
+            <input type="text" inputmode="decimal" id="os-mao-obra" class="mono-input" placeholder="0,00">
+          </div>
         </div>
-        <input type="text" id="os-assin-nome" placeholder="Nome de quem assinou" style="margin-top:8px">
+        <div class="os-totais" id="os-totais"></div>
+      </div>
+      <div class="os-sec">
+        <div class="os-sec-tit">Assinatura</div>
+        <div class="field" id="visita-resp-field">
+          <label for="revisao-responsavel">Responsável técnico</label>
+          <input type="text" id="revisao-responsavel" placeholder="Nome do responsável">
+        </div>
+        <div class="proxima-box" id="visita-proxima-box"></div>
+
+        <div class="field os-assin-field">
+          <label>Assinatura do produtor</label>
+          <div class="os-assin-img" id="os-assin-img" hidden><img alt="Assinatura do produtor"><button type="button" class="bloco-editar" id="os-assin-refazer">Assinar de novo</button></div>
+          <div class="os-assin-pad" id="os-assin-pad">
+            <canvas id="os-assin-canvas" aria-label="Espaço para assinar com o dedo"></canvas>
+            <span class="os-assin-linha" aria-hidden="true"></span>
+            <span class="os-assin-guia" id="os-assin-guia">Assine aqui com o dedo</span>
+            <button type="button" class="os-assin-limpar" id="os-assin-limpar">Limpar</button>
+          </div>
+          <input type="text" id="os-assin-nome" placeholder="Nome de quem assinou" style="margin-top:8px">
+        </div>
       </div>
     </div>
 
@@ -5991,7 +6013,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.03.7';
+  const APP_VERSAO = '2026.11.03.8';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
