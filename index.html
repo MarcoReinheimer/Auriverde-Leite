@@ -2813,19 +2813,19 @@
 
   /* ---------- Início ---------- */
   /* topo: faixa verde fina com logo, data e engrenagem (sem a foto e o degradê) */
-  body[data-view="home"] .hero-banner {
+  body:is([data-view="home"], [data-view="entrada"]) .hero-banner {
     min-height: 0 !important; margin-bottom: 14px !important; gap: 12px !important; border-radius: 0 !important;
     padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px !important;
     flex-direction: row !important; align-items: center !important; justify-content: flex-start !important;
     background: #0F6B3F !important;
   }
-  body[data-view="home"] .hero-banner::before { display: none !important; }
-  body[data-view="home"] .hero-topo { display: contents; }
-  body[data-view="home"] .hero-banner .logo-badge { order: 1; padding: 4px 7px !important; border-radius: 8px !important; box-shadow: none !important; }
-  body[data-view="home"] .hero-banner .logo-badge img { height: 20px !important; }
+  body:is([data-view="home"], [data-view="entrada"]) .hero-banner::before { display: none !important; }
+  body:is([data-view="home"], [data-view="entrada"]) .hero-topo { display: contents; }
+  body:is([data-view="home"], [data-view="entrada"]) .hero-banner .logo-badge { order: 1; padding: 4px 7px !important; border-radius: 8px !important; box-shadow: none !important; }
+  body:is([data-view="home"], [data-view="entrada"]) .hero-banner .logo-badge img { height: 20px !important; }
   body[data-view="home"] .hero-saud { order: 2; flex: 1; min-width: 0; }
   body[data-view="home"] .hero-saud::after,
-  body[data-view="home"] .hero-entrada,
+  body:is([data-view="home"], [data-view="entrada"]) .hero-entrada,
   body[data-view="home"] .hero-banner .greeting-text { display: none !important; }
   body[data-view="home"] .hero-data { margin: 0 !important; font-size: 14px !important; font-weight: 600 !important; color: #FFFFFF; }
   body[data-view="home"] .hero-config { order: 3; width: 36px !important; height: 36px !important; }
@@ -2872,18 +2872,15 @@
     border-radius: 0 !important; box-shadow: none !important; background: none !important; }
 
   /* ---------- OS em linha (Início, agenda e lista de OS) ----------
-     produtor e situação em cima, "OS 0016 · tipo · data · técnico" embaixo, motivo em até 2 linhas */
-  .os-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "prod prod urg st" "num linha linha linha" "txt txt txt txt";
+     produtor e situação em cima; embaixo "OS 0016 · tipo · data · técnico", que quebra em vez de cortar; motivo em até 2 linhas */
+  .os-card { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "prod urg st" "linha linha linha" "txt txt txt";
     column-gap: 6px; row-gap: 2px; align-items: center; }
   .os-card > * { grid-column: 1 / -1; }
   .os-card-topo { display: contents; }
-  .os-card .os-num { grid-area: num; font-size: var(--fs-legenda); font-weight: 500; color: var(--ink-soft); }
-  .os-card .os-num::after { content: ' ·'; }
   .os-card .os-urg { grid-area: urg; }
   .os-card .os-status { grid-area: st; margin: 0; }
-  .os-card .os-card-prod { grid-area: prod; margin: 0; font-size: var(--fs-texto); font-weight: 600; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .os-card .os-card-linha.l1 { grid-area: linha; margin: 0; font-size: var(--fs-legenda); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .os-card .os-card-linha.l1.atraso { white-space: normal; }
+  .os-card .os-card-prod { grid-area: prod; margin: 0; font-size: var(--fs-texto); font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .os-card .os-card-linha.l1 { grid-area: linha; margin: 0; font-size: var(--fs-legenda); }
   .os-card .os-card-txt { grid-area: txt; margin-top: 2px; font-size: 14px; color: var(--ink); }
   .os-card .os-card-linha { font-size: var(--fs-legenda); margin-top: 2px; }
   .lista > .os-card { padding: 11px var(--pad); }
@@ -2963,6 +2960,17 @@
   .adm-lista > .adm-dobra[open] { padding-bottom: var(--pad) !important; }
   .adm-lista > .adm-dobra[open] > summary { margin-bottom: 6px; }
   .adm-lista .adm-tit { font-size: var(--fs-texto) !important; }
+
+  /* ---------- textos que não podem quebrar nem cortar ---------- */
+  /* abas do Plano preventivo: cada uma do tamanho do seu texto */
+  #pv-seg { grid-template-columns: repeat(4, auto); }
+  .pv-filtros select { flex: 0 0 36%; }
+  /* relatório do mês (Mais): campo do mês e botão um embaixo do outro, para "novembro de 2026" caber */
+  #view-mais .os-relatorio .rate-row { flex-direction: column; align-items: stretch !important; gap: 8px; }
+
+  /* ---------- entrada: escolhas sem a barra colorida do lado ---------- */
+  .ap-opcao, .ap-como-op { border-width: 1px; }
+  .ap-como-op::before { display: none; }
 
 </style>
 </head>
@@ -3375,8 +3383,8 @@
       <button type="button" class="rh-tile" data-pvf="semregistro"><span class="rh-label">Sem registro</span><span class="rh-valor" id="pv-k-sem">0</span><span class="rh-sub">produtores</span></button>
     </div>
     <div class="seg-leite" id="pv-seg" role="tablist" aria-label="Período">
-      <button type="button" class="seg-btn ativo" role="tab" data-pvf="proximas">Vencidos e 15 dias</button>
-      <button type="button" class="seg-btn" role="tab" data-pvf="60">60 dias</button>
+      <button type="button" class="seg-btn ativo" role="tab" data-pvf="proximas">Até 15 dias</button>
+      <button type="button" class="seg-btn" role="tab" data-pvf="60">Até 60 dias</button>
       <button type="button" class="seg-btn" role="tab" data-pvf="todas">Todos</button>
       <button type="button" class="seg-btn" role="tab" data-pvf="semregistro">Sem registro</button>
     </div>
@@ -3479,8 +3487,8 @@
     <div class="detail-header"><h1>Encaminhamentos</h1><div class="leite-ficha-sub" id="enc-sub"></div></div>
     <button type="button" class="add-record-btn" id="enc-novo" data-perm="algum:2">↪ Novo encaminhamento</button>
     <div class="seg-leite enc-seg" id="enc-seg" role="tablist" aria-label="Caixa">
-      <button type="button" class="seg-btn ativo" role="tab" data-caixa="entrada">Para mim / meu setor<span class="seg-n" id="enc-n-entrada"></span></button>
-      <button type="button" class="seg-btn" role="tab" data-caixa="enviados">Enviados por mim<span class="seg-n" id="enc-n-enviados"></span></button>
+      <button type="button" class="seg-btn ativo" role="tab" data-caixa="entrada">Para mim<span class="seg-n" id="enc-n-entrada"></span></button>
+      <button type="button" class="seg-btn" role="tab" data-caixa="enviados">Enviados<span class="seg-n" id="enc-n-enviados"></span></button>
       <button type="button" class="seg-btn" role="tab" data-caixa="todos" data-perm="admin">Todos</button>
     </div>
     <div class="toggle enc-status-filtro" id="enc-status">
@@ -3589,7 +3597,7 @@
     </button>
     <div class="busca-wrap" id="produtor-busca-wrap" hidden>
       <div class="busca-linha">
-        <input type="search" id="produtor-busca" placeholder="Buscar por nome, propriedade ou linha" autocomplete="off" aria-label="Buscar produtor">
+        <input type="search" id="produtor-busca" placeholder="Buscar produtor" autocomplete="off" aria-label="Buscar produtor">
         <button type="button" class="filtros-btn" id="filtros-btn" aria-haspopup="dialog"><svg class="ic" aria-hidden="true"><use href="#i-sliders-horizontal"/></svg><span id="filtros-btn-txt">Filtros</span></button>
       </div>
       <div class="filtros-escondidos">
@@ -5983,7 +5991,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.03.6';
+  const APP_VERSAO = '2026.11.03.7';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -13022,6 +13030,7 @@
     // com um setor só (Manutenção), o cartão de setores não tem o que escolher
     $('mais-setores-card').hidden = box.children.length < 2;
     $('app-versao').textContent = 'Auriverde · versão ' + APP_VERSAO;
+    if (!$('os-rel-mes').value) $('os-rel-mes').value = mesAtualISO();
     $('mais-quem').textContent = [nomeParaSaudar(), acesso.dono ? 'Administrador (dono do app)' : nomePapel(acesso.papel)].filter(Boolean).join(' · ');
     const meus = meusSetores().map(id => SETOR[id].nome);
     $('mais-meus-setores').textContent = meus.length ? 'Seus setores: ' + meus.join(', ') + '. Encaminhamentos para eles chegam para você.' : 'Você ainda não faz parte de nenhum setor.';
@@ -16386,14 +16395,13 @@
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'os-card os-st-' + st + (st === 'cancelada' ? ' cancelada' : '');
-    b.innerHTML = '<span class="os-card-topo"><span class="os-num"></span><span class="os-urg" hidden>Urgente</span><span class="os-status"></span></span>' +
+    b.innerHTML = '<span class="os-card-topo"><span class="os-urg" hidden>Urgente</span><span class="os-status"></span></span>' +
       '<span class="os-card-prod"></span><span class="os-card-linha l1"></span><span class="os-card-txt" hidden></span>';
-    b.querySelector('.os-num').textContent = numOS(o.numero);
     b.querySelector('.os-urg').hidden = !(o.urgencia === 'urgente' && osAtiva(o));
     b.querySelector('.os-status').textContent = OS_STATUS[st];
     b.querySelector('.os-card-prod').textContent = o.produtorNome || 'Produtor';
     const tec = o.tecnicoId ? nomeReal(o.tecnicoId) : '';
-    const l1 = [OS_TIPOS[tipoOS(o)], CAT_LABEL[o.categoria] || ''];
+    const l1 = [numOS(o.numero), OS_TIPOS[tipoOS(o)], CAT_LABEL[o.categoria] || ''];
     if (st === 'aberta') l1.push('aberta ' + (o.criadoEm ? quandoTxt(o.criadoEm) : fmtDate(o.data)));
     else if (st === 'agendada' || st === 'andamento') l1.push((st === 'andamento' ? 'desde ' : '') + fmtDate(o.agendadaPara || o.data));
     else l1.push(fmtDate(o.data));
@@ -20152,7 +20160,7 @@
       try { planoGeral().forEach(({ plano }) => { prev += plano.vencidas + plano.breve; }); } catch (e) {}
       itens.push({ k: 'hoje', n: pm.hoje.length, rot: 'OS de hoje', cls: pm.hoje.length ? 'info' : '' });
       itens.push({ k: 'atrasadas', n: pm.atrasadas.length, rot: 'Atrasadas', cls: pm.atrasadas.length ? 'alerta' : '' });
-      itens.push({ k: 'prev', n: prev, rot: 'Componentes vencendo', cls: prev ? 'atencao' : '' });
+      itens.push({ k: 'prev', n: prev, rot: 'Trocas a fazer', cls: prev ? 'atencao' : '' });
     }
     kp.innerHTML = '';
     kp.style.setProperty('--n', itens.length);
@@ -20175,7 +20183,7 @@
     // mais abaixo, também não se repetem aqui.
     const setoresNaTela = !focoManutencao();
     const cand = [
-      { nome: 'Plano preventivo', ic: 'calendar-check', cor: 'var(--s-manutencao)', ok: podeVer('visitas'), fn: () => { pvFiltro = 'proximas'; abrirPreventivas('home'); } },
+      { nome: 'Preventiva', ic: 'calendar-check', cor: 'var(--s-manutencao)', ok: podeVer('visitas'), fn: () => { pvFiltro = 'proximas'; abrirPreventivas('home'); } },
       { nome: 'Rota do dia', ic: 'route', cor: 'var(--accent-txt)', ok: podeVer('produtores'), fn: () => abrirRota() },
       { nome: 'Comercial', ic: 'shopping-bag', cor: 'var(--s-comercial)', ok: !setoresNaTela && podeVerSetor('comercial'), fn: () => abrirSetor('comercial') },
       { nome: 'Qualidade', ic: 'milk', cor: 'var(--s-qualidade)', ok: !setoresNaTela && podeVerSetor('qualidade'), fn: () => abrirSetor('qualidade') },
@@ -20431,7 +20439,7 @@
     if (sub != null) $('demo-prep-sub').textContent = sub;
   }
   function renderDemoAdmin() {
-    $('adm-demo-st').textContent = DEMO_ATIVO ? 'Ligado neste aparelho' : 'Desligado';
+    $('adm-demo-st').textContent = DEMO_ATIVO ? 'Ligado' : 'Desligado';
     $('adm-demo-st').classList.toggle('on', DEMO_ATIVO);
     $('adm-demo-ligar-txt').textContent = DEMO_ATIVO ? 'Desligar modo demonstração' : 'Ligar modo demonstração';
     $('adm-demo-ligar').classList.toggle('adm-demo-off', DEMO_ATIVO);
