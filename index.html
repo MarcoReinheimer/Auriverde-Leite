@@ -2907,6 +2907,19 @@
   .produtor-card .selos-produtor { margin-top: 5px; }
   .produtor-card .rota-toggle { top: 0; bottom: 0; right: var(--pad); height: 32px; min-height: 32px; margin: auto 0; padding: 0 10px; font-size: var(--fs-mini); font-weight: 600; }
 
+  /* ---------- Rota do dia: cidade e linha como título pequeno; as paradas de cada linha num bloco só ---------- */
+  .rota-agora { border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  .rota-cidade { font-size: var(--fs-legenda); font-weight: 600; color: var(--ink); margin: var(--gap-secao) 0 0; }
+  .rota-linha { font-size: var(--fs-mini); font-weight: 500; color: var(--ink-soft); margin: 2px 0 8px; }
+  .rota-item { margin: 0 !important; border: 1px solid var(--line); border-radius: 0 !important; padding: 10px var(--pad); }
+  .rota-item + .rota-item { border-top: none; }
+  .rota-item:not(.rota-item + .rota-item) { border-top-left-radius: var(--raio) !important; border-top-right-radius: var(--raio) !important; }
+  .rota-item:not(:has(+ .rota-item)) { border-bottom-left-radius: var(--raio) !important; border-bottom-right-radius: var(--raio) !important; margin-bottom: var(--gap-bloco) !important; }
+  .rota-item.atual { border: 1px solid var(--line); background: var(--accent-suave); }
+  .rota-item + .rota-item.atual { border-top: none; }
+  .rota-item .rota-item-nome { font-weight: 600; }
+  .rota-item-mapas .acao-link { min-height: 36px; padding: 6px 10px; font-size: var(--fs-legenda); }
+
   /* ---------- Tarefas (encaminhamentos) ---------- */
   .lista > .enc-card { padding: 11px var(--pad); }
   .enc-card .enc-setor { font-size: var(--fs-legenda); font-weight: 600; }
@@ -5970,7 +5983,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.03.5';
+  const APP_VERSAO = '2026.11.03.6';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
