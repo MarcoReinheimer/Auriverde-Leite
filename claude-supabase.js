@@ -149,7 +149,7 @@
     caixa.innerHTML =
       '<div class="av-box">' +
       '<div class="av-logo"><img alt="Auriverde" src="' + (icone ? icone.getAttribute('href') : 'icon-180.png') + '"></div>' +
-      '<h1>Auriverde</h1><p class="av-sub">Manutenção, produtores e qualidade do leite</p>' +
+      '<h1>Auriverde</h1><p class="av-sub">Manutenção de ordenha, resfriador e conforto animal</p>' +
       '<div class="av-card" id="av-card"></div>' +
       '<div class="av-rodape">Seus dados ficam protegidos: cada pessoa só vê o que tem permissão.</div>' +
       '</div>';
