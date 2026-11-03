@@ -2282,6 +2282,30 @@
   .ini-atalho-ico .ic { width: 21px; height: 21px; }
   body.foco-manut .hm-kpis, #home-manut .hm-kpis { display: none !important; }
   .hm-outros { display: none; }
+  /* indicadores do Início: são no máximo 3, sempre numa fileira (o id vence as regras de 2 x 2 mais abaixo) */
+  #ini-kpis { grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); }
+  /* atalhos do Início: uma fileira de botões pequenos (ícone em cima, nome embaixo) */
+  .ini-atalhos { grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 8px; }
+  .ini-atalho { align-items: center; justify-content: center; gap: 6px; min-height: 0; padding: 10px 4px; text-align: center;
+    font-size: 12.5px; line-height: 1.2; }
+  .ini-atalho-ico { width: 34px; height: 34px; }
+  .ini-atalho-ico .ic { width: 19px; height: 19px; }
+  /* Início da Manutenção: o de hoje aberto; o resto recolhido, com o número ao lado */
+  .hm-aviso { display: flex; align-items: center; gap: 8px; width: 100%; margin: 0 0 10px; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--tax) 40%, var(--line)); background: color-mix(in srgb, var(--tax) 10%, var(--surface));
+    color: var(--tax); font-family: inherit; font-size: var(--fs-texto); font-weight: 600; text-align: left; cursor: pointer; }
+  .hm-aviso span { flex: 1; }
+  .hm-tudo-certo { text-align: center; color: var(--ink-soft); font-size: var(--fs-texto); padding: 18px 14px !important; }
+  .hm-dobra { padding-bottom: var(--pad) !important; }
+  .hm-dobra > summary { display: flex; align-items: center; gap: 8px; padding: 0; font-size: var(--fs-secao); font-weight: 600; color: var(--ink); min-height: 28px; }
+  .hm-dobra > summary .hm-dobra-tit { flex: 1; }
+  .hm-dobra > summary .hm-dobra-tit.ruim { color: var(--tax); }
+  .hm-dobra > summary::after { margin-left: 0 !important; transition: transform .15s; }
+  .hm-dobra[open] > summary::after { transform: rotate(180deg); }
+  .hm-dobra[open] > summary { margin-bottom: 12px; }
+  .hm-n { min-width: 26px; padding: 2px 8px; border-radius: 999px; background: var(--accent-suave); color: var(--accent-txt);
+    font-size: 13px; font-weight: 700; text-align: center; }
+  .hm-dobra-acao { display: block; margin: 2px 0 0 auto; }
 
   /* ---------- Produtores: busca + Filtros ---------- */
   .busca-linha { display: flex; gap: 8px; align-items: stretch; margin-bottom: 8px; }
@@ -2883,6 +2907,9 @@
         <button type="button" class="rh-tile" data-ir="atrasadas"><span class="rh-label">Atrasadas</span><span class="rh-valor" id="hm-k-atras">0</span><span class="rh-sub" id="hm-k-atras-sub"></span></button>
         <button type="button" class="rh-tile" data-ir="chamados"><span class="rh-label">Chamados abertos</span><span class="rh-valor" id="hm-k-cham">0</span><span class="rh-sub" id="hm-k-cham-sub"></span></button>
       </div>
+      <!-- aviso que só aparece quando há problema -->
+      <button type="button" class="hm-aviso" id="hm-aviso-limp" hidden><span id="hm-aviso-limp-txt"></span>›</button>
+      <!-- o que é para hoje: aberto, e só aparece quando tem algo -->
       <div class="card hm-card" id="hm-sec-atrasadas">
         <div class="section-label hm-tit ruim">Atrasadas</div>
         <div id="hm-atrasadas"></div>
@@ -2890,34 +2917,31 @@
       <div class="card hm-card" id="hm-sec-hoje">
         <div class="bloco-topo"><div class="section-label hm-tit">Hoje</div><span class="hm-data" id="hm-hoje-data"></span></div>
         <div id="hm-hoje"></div>
-        <div class="leite-ficha-sub" id="hm-hoje-vazio">Nenhuma OS marcada para hoje.</div>
       </div>
       <div class="card hm-card" id="hm-sec-chamados">
         <div class="section-label hm-tit atencao">Chamados aguardando agendamento</div>
         <div id="hm-chamados"></div>
       </div>
-      <div class="card hm-card" id="hm-sec-semana">
-        <div class="section-label hm-tit">Próximos 7 dias</div>
+      <div class="card hm-card hm-tudo-certo" id="hm-tudo-certo" hidden>Nenhuma OS para hoje.</div>
+      <!-- o resto fica recolhido: o número aparece ao lado, toque para abrir -->
+      <details class="card hm-card hm-dobra" id="hm-sec-semana">
+        <summary><span class="hm-dobra-tit">Próximos 7 dias</span><span class="hm-n" id="hm-semana-n"></span></summary>
         <div id="hm-semana"></div>
-        <div class="leite-ficha-sub" id="hm-semana-vazio">Nada agendado para os próximos dias.</div>
-      </div>
-      <div class="card hm-card" id="hm-sec-prev">
-        <div class="section-label hm-tit">Preventivas vencendo (15 dias)</div>
+      </details>
+      <details class="card hm-card hm-dobra" id="hm-sec-prev">
+        <summary><span class="hm-dobra-tit">Revisões vencendo</span><span class="hm-n" id="hm-prev-n"></span></summary>
         <div id="hm-prev"></div>
-        <div class="leite-ficha-sub" id="hm-prev-vazio">Nenhuma revisão preventiva vencida ou vencendo.</div>
-      </div>
-      <div class="card hm-card" id="hm-sec-plano">
-        <div class="bloco-topo"><div class="section-label hm-tit" id="hm-plano-tit">Componentes vencendo (plano preventivo)</div><button type="button" class="bloco-editar" id="hm-plano-ver">Ver painel</button></div>
+      </details>
+      <details class="card hm-card hm-dobra" id="hm-sec-plano">
+        <summary><span class="hm-dobra-tit" id="hm-plano-tit">Componentes vencendo</span><span class="hm-n" id="hm-plano-n"></span></summary>
         <div id="hm-plano"></div>
-        <div class="leite-ficha-sub" id="hm-plano-vazio">Nenhum componente vencido ou vencendo nos próximos 15 dias.</div>
-      </div>
-      <div class="card hm-card setor-cor-manutencao" id="hm-sec-enc">
-        <div class="bloco-topo"><div class="section-label hm-tit">↪ Encaminhamentos para Manutenção</div><button type="button" class="bloco-editar" id="hm-enc-ver">Ver todos</button></div>
+        <button type="button" class="bloco-editar hm-dobra-acao" id="hm-plano-ver">Ver painel</button>
+      </details>
+      <details class="card hm-card hm-dobra setor-cor-manutencao" id="hm-sec-enc">
+        <summary><span class="hm-dobra-tit">Encaminhamentos</span><span class="hm-n" id="hm-enc-n"></span></summary>
         <div id="hm-enc"></div>
-        <div class="leite-ficha-sub" id="hm-enc-vazio">Nenhum encaminhamento aberto para a Manutenção.</div>
-      </div>
-      <button type="button" class="add-record-btn hm-ver-todas" id="hm-ver-todas">🛠 Ver todas as ordens de serviço</button>
-      <div class="campo-dica hm-outros">Os outros setores continuam no menu <b>Mais</b>.</div>
+        <button type="button" class="bloco-editar hm-dobra-acao" id="hm-enc-ver">Ver todos</button>
+      </details>
     </div>
     <div class="section-label" id="resumo-home-titulo">Resumo do mês</div>
     <div class="resumo-home" id="resumo-home">
@@ -15820,25 +15844,33 @@
     $('home-manut').hidden = !foco;
     if (!foco || $('view-home').hidden) return;
     const pm = painelManut();
-    const pinta = (id, lista, vazioId, max) => {
+    // cada lista mostra só as primeiras; "Ver mais" abre as Ordens já filtradas
+    const pinta = (id, lista, max, filtro) => {
       const box = $(id);
       box.innerHTML = '';
-      lista.slice(0, max || 8).forEach(o => box.appendChild(cartaoOS(o, 'home')));
-      if (lista.length > (max || 8)) {
+      lista.slice(0, max).forEach(o => box.appendChild(cartaoOS(o, 'home')));
+      if (lista.length > max) {
         const m = document.createElement('button'); m.type = 'button'; m.className = 'bloco-editar'; m.style.margin = '0 0 10px';
-        m.textContent = 'Ver mais ' + (lista.length - (max || 8));
-        m.addEventListener('click', () => abrirOrdens());
+        m.textContent = 'Ver mais ' + (lista.length - max);
+        m.addEventListener('click', () => { Object.assign(osFiltro, { status: 'ativas', periodo: '', tipo: '', tecnico: '' }, filtro); abrirOrdens(true); });
         box.appendChild(m);
       }
-      if (vazioId) $(vazioId).hidden = lista.length > 0;
+      return lista.length;
     };
     $('hm-hoje-data').textContent = fmtDate(todayISO());
-    pinta('hm-atrasadas', pm.atrasadas);
-    $('hm-sec-atrasadas').hidden = !pm.atrasadas.length;
-    pinta('hm-hoje', pm.hoje, 'hm-hoje-vazio');
-    pinta('hm-chamados', pm.chamados);
-    $('hm-sec-chamados').hidden = !pm.chamados.length;
-    pinta('hm-semana', pm.semana, 'hm-semana-vazio');
+    // aviso de Limp fora: só quando existe
+    let limpN = 0;
+    try { limpN = limpForaGeral().length; } catch (e) { extraErro(e); }
+    $('hm-aviso-limp').hidden = !limpN;
+    $('hm-aviso-limp-txt').textContent = plural(limpN, 'pulsador com Limp fora', 'pulsadores com Limp fora');
+    // o que é de hoje: aberto, e some quando está vazio
+    $('hm-sec-atrasadas').hidden = !pinta('hm-atrasadas', pm.atrasadas, 3, { status: 'atrasadas' });
+    $('hm-sec-hoje').hidden = !pinta('hm-hoje', pm.hoje, 5, { periodo: 'hoje' });
+    $('hm-sec-chamados').hidden = !pinta('hm-chamados', pm.chamados, 3, { status: 'aberta' });
+    $('hm-tudo-certo').hidden = !!(pm.atrasadas.length || pm.hoje.length || pm.chamados.length);
+    // o resto: recolhido, com o número no título; some quando é zero
+    $('hm-sec-semana').hidden = !pinta('hm-semana', pm.semana, 8, {});
+    $('hm-semana-n').textContent = String(pm.semana.length);
     // preventivas: revisões vencidas ou vencendo nos próximos 15 dias
     const prev = produtores.filter(p => p.proximaRevisao && diasAte(p.proximaRevisao) <= REVISAO_ALERTA_DIAS).sort((a, b) => a.proximaRevisao.localeCompare(b.proximaRevisao));
     const boxP = $('hm-prev');
@@ -15867,14 +15899,16 @@
       }
       boxP.appendChild(item);
     });
-    $('hm-prev-vazio').hidden = prev.length > 0;
+    $('hm-sec-prev').hidden = !prev.length;
+    $('hm-prev-n').textContent = String(prev.length);
     renderPrevHome();
     // encaminhamentos abertos para a Manutenção
     const encs = ordenarEnc(encaminhamentos.filter(e => encAberto(e) && e.setor === 'manutencao'));
     const boxE = $('hm-enc');
     boxE.innerHTML = '';
     encs.slice(0, 5).forEach(e => boxE.appendChild(cartaoEnc(e)));
-    $('hm-enc-vazio').hidden = encs.length > 0;
+    $('hm-sec-enc').hidden = !encs.length;
+    $('hm-enc-n').textContent = String(encs.length);
     $('hm-enc-ver').textContent = encs.length > 5 ? 'Ver todos (' + encs.length + ')' : 'Ver todos';
     // números do topo
     $('hm-k-hoje').textContent = String(pm.hoje.length);
@@ -15897,7 +15931,7 @@
   }));
   $('hm-nova-os').addEventListener('click', () => novaOSEscolhendoProdutor('home'));
   $('hm-chamado').addEventListener('click', () => abrirChamado({}));
-  $('hm-ver-todas').addEventListener('click', () => abrirOrdens());
+  $('hm-aviso-limp').addEventListener('click', () => abrirListaLimp());
   $('hm-enc-ver').addEventListener('click', () => abrirEncaminhamentos('entrada'));
   $('setor-chamado').addEventListener('click', () => abrirChamado({}));
   $('nav-ordens').addEventListener('click', () => abrirOrdens());
@@ -17412,7 +17446,8 @@
     const box = $('hm-plano');
     box.innerHTML = '';
     l.slice(0, 6).forEach(({ p, it }) => box.appendChild(linhaPv(it, { produtor: p, onClick: () => { openProdutor(p.id, { aba: 'visitas', voltar: 'home' }); manutSub = 'prev'; renderManutSub(); } })));
-    $('hm-plano-vazio').hidden = l.length > 0;
+    card.hidden = !l.length;
+    $('hm-plano-n').textContent = String(l.length);
     const venc = l.filter(x => x.it.cls === 'vencida').length;
     $('hm-plano-ver').textContent = l.length > 6 ? 'Ver todos (' + l.length + ')' : 'Ver painel';
     $('hm-plano-tit').classList.toggle('ruim', venc > 0);
@@ -19474,6 +19509,8 @@
   new MutationObserver(pintarFilaCurta).observe($('fila-texto'), { childList: true, characterData: true, subtree: true });
 
   // ---------- Início: indicadores e atalhos ----------
+  // No máximo 3 números no topo. As tarefas já aparecem no contador da aba "Tarefas",
+  // e o Limp fora só aparece (como aviso na lista) quando existe.
   function renderInicio() {
     if (acesso.estado !== 'ativo') return;
     const kp = $('ini-kpis'), at = $('ini-atalhos');
@@ -19484,13 +19521,8 @@
       try { planoGeral().forEach(({ plano }) => { prev += plano.vencidas + plano.breve; }); } catch (e) {}
       itens.push({ k: 'hoje', n: pm.hoje.length, rot: 'OS de hoje', cls: pm.hoje.length ? 'info' : '' });
       itens.push({ k: 'atrasadas', n: pm.atrasadas.length, rot: 'Atrasadas', cls: pm.atrasadas.length ? 'alerta' : '' });
-      itens.push({ k: 'prev', n: prev, rot: 'Preventivas vencendo', cls: prev ? 'atencao' : '' });
-      let limpN = 0;
-      try { limpN = limpForaGeral().length; } catch (e) { extraErro(e); }
-      itens.push({ k: 'limp', n: limpN, rot: 'Pulsadores com Limp fora', cls: limpN ? 'alerta' : '' });
+      itens.push({ k: 'prev', n: prev, rot: 'Componentes vencendo', cls: prev ? 'atencao' : '' });
     }
-    const tarefas = encaminhamentos.filter(e => encAberto(e) && daMinhaCaixa(e)).length;
-    itens.push({ k: 'tarefas', n: tarefas, rot: 'Tarefas abertas', cls: tarefas ? 'info' : '' });
     kp.innerHTML = '';
     kp.style.setProperty('--n', itens.length);
     kp.classList.toggle('n5', itens.length === 5);
@@ -19507,19 +19539,20 @@
       kp.appendChild(b);
     });
     kp.hidden = itens.length < 2;
-    // atalhos principais (os quatro primeiros que a pessoa pode usar)
+    // atalhos (até quatro, numa fileira só). Ordens de serviço, Produtores e Tarefas
+    // já estão na barra de baixo; os setores, quando aparecem nos cartões de Setores
+    // mais abaixo, também não se repetem aqui.
+    const setoresNaTela = !focoManutencao();
     const cand = [
-      { nome: 'Ordens de serviço', ic: 'clipboard-list', cor: 'var(--s-manutencao)', ok: podeVer('visitas'), fn: () => abrirOrdens() },
-      { nome: 'Produtores', ic: 'users', cor: 'var(--accent-txt)', ok: podeVer('produtores'), fn: () => showView('produtores') },
       { nome: 'Plano preventivo', ic: 'calendar-check', cor: 'var(--s-manutencao)', ok: podeVer('visitas'), fn: () => { pvFiltro = 'proximas'; abrirPreventivas('home'); } },
-      { nome: 'Comercial', ic: 'shopping-bag', cor: 'var(--s-comercial)', ok: podeVerSetor('comercial'), fn: () => abrirSetor('comercial') },
-      { nome: 'Qualidade do leite', ic: 'milk', cor: 'var(--s-qualidade)', ok: podeVerSetor('qualidade'), fn: () => abrirSetor('qualidade') },
-      { nome: 'Veterinária', ic: 'stethoscope', cor: 'var(--s-veterinaria)', ok: podeVerSetor('veterinaria'), fn: () => abrirSetor('veterinaria') },
-      { nome: 'Nutrição', ic: 'wheat', cor: 'var(--s-nutricao)', ok: podeVerSetor('nutricao'), fn: () => abrirSetor('nutricao') },
       { nome: 'Rota do dia', ic: 'route', cor: 'var(--accent-txt)', ok: podeVer('produtores'), fn: () => abrirRota() },
-      { nome: 'Tarefas', ic: 'circle-check', cor: 'var(--info-txt)', ok: true, fn: () => abrirEncaminhamentos() }
+      { nome: 'Comercial', ic: 'shopping-bag', cor: 'var(--s-comercial)', ok: !setoresNaTela && podeVerSetor('comercial'), fn: () => abrirSetor('comercial') },
+      { nome: 'Qualidade', ic: 'milk', cor: 'var(--s-qualidade)', ok: !setoresNaTela && podeVerSetor('qualidade'), fn: () => abrirSetor('qualidade') },
+      { nome: 'Veterinária', ic: 'stethoscope', cor: 'var(--s-veterinaria)', ok: !setoresNaTela && podeVerSetor('veterinaria'), fn: () => abrirSetor('veterinaria') },
+      { nome: 'Nutrição', ic: 'wheat', cor: 'var(--s-nutricao)', ok: !setoresNaTela && podeVerSetor('nutricao'), fn: () => abrirSetor('nutricao') }
     ].filter(c => c.ok).slice(0, 4);
     at.innerHTML = '';
+    at.style.setProperty('--n', cand.length);
     cand.forEach(c => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -19599,7 +19632,7 @@
     'atend-empty': ['stethoscope', 'vet-novo-atend', 'Novo atendimento'], 'san-empty': ['syringe', 'vet-nova-sanidade', 'Registrar vacinação'],
     'repro-empty': ['baby', 'vet-nova-ia', 'Registrar inseminação'], 'lotes-vazio': ['wheat', 'add-lote-btn', 'Novo lote'],
     'nutri-empty': ['wheat', 'add-nutri-btn', 'Registrar avaliação'], 'dietas-vazio': ['chart-line'], 'vendas-empty': ['shopping-bag', 'btn-nova-venda', 'Registrar venda'],
-    'medias-empty': ['milk', 'fab-add-produtor', 'Novo produtor'], 'pmls-empty': ['badge-check', 'fab-add-produtor', 'Novo produtor'], 'hm-hoje-vazio': ['calendar', 'hm-nova-os', 'Nova OS']
+    'medias-empty': ['milk', 'fab-add-produtor', 'Novo produtor'], 'pmls-empty': ['badge-check', 'fab-add-produtor', 'Novo produtor']
   };
   Object.entries(VAZIOS).forEach(([id, [ic, alvo, rot]]) => {
     const el = $(id);
@@ -19620,7 +19653,6 @@
     d.appendChild(b);
     el.after(d);
   });
-  $('hm-hoje-vazio').textContent = 'Nenhuma OS hoje';
 
   // ---------- carregando: blocos cinza piscando no lugar da tela vazia ----------
   function skel(box, n) {
