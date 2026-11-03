@@ -2322,6 +2322,29 @@
   .os-filtros-det .filtros-row { grid-template-columns: 1fr; gap: 8px; margin-top: 8px; }
   .os-filtros-det .filtros-row#os-f-datas { grid-template-columns: 1fr 1fr; }
   .app-versao { text-align: center; color: var(--ink-soft); font-size: 12px; margin: 4px 0 12px; }
+  /* cadastro rápido */
+  .cr-cidades { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .cr-cidades .check-chip { min-height: 36px; padding: 6px 12px; font-size: 14px; }
+  .cr-gps { width: 100%; min-height: 48px; }
+  .cr-dup { margin: 4px 0 14px; padding: 12px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--soon) 45%, var(--line));
+    background: var(--soon-bg); }
+  .cr-dup-tit { color: var(--soon); font-weight: 700; font-size: var(--fs-legenda); margin-bottom: 8px; }
+  .cr-dup-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 0; border: none; border-top: 1px solid var(--line);
+    background: none; color: var(--ink); font-family: inherit; text-align: left; cursor: pointer; }
+  .cr-dup-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .cr-dup-nome { font-weight: 600; font-size: var(--fs-texto); }
+  .cr-dup-sub { font-size: var(--fs-legenda); color: var(--ink-soft); }
+  .cr-dup-acao { flex-shrink: 0; font-size: var(--fs-legenda); font-weight: 600; color: var(--accent-txt); }
+  .cr-acoes { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .cr-acoes button { width: 100%; min-height: 50px; }
+  .cr-rodape { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+  .cr-link { border: none; background: none; padding: 8px 0; color: var(--ink-soft); font-family: inherit; font-size: var(--fs-legenda); font-weight: 600; cursor: pointer; }
+  #cr-completo { color: var(--accent-txt); }
+  /* aviso curto que some sozinho */
+  .aviso-rapido { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 80;
+    max-width: calc(100vw - 32px); padding: 11px 18px; border-radius: 999px; background: var(--ink); color: var(--bg);
+    font-size: var(--fs-legenda); font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.25); pointer-events: none; }
+  .aviso-rapido[hidden] { display: none; }
   /* Administração: uma linha por item, abre ao tocar */
   .adm-dobra { padding-top: var(--pad) !important; padding-bottom: var(--pad) !important; }
   .adm-dobra > summary { display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px; row-gap: 2px; padding: 0; min-height: 30px;
@@ -4887,6 +4910,46 @@
   </div>
 </div>
 
+<!-- MODAL: cadastro rápido do produtor (só o essencial; o resto fica para depois, na ficha) -->
+<div class="modal-backdrop" id="modal-cadastro-rapido" hidden>
+  <div class="modal-sheet">
+    <h2>Cadastro rápido</h2>
+    <div class="field">
+      <label for="cr-nome">Nome do produtor</label>
+      <input type="text" id="cr-nome" placeholder="Ex: João da Silva" autocomplete="off" autocapitalize="words">
+    </div>
+    <div class="field">
+      <label for="cr-whats">WhatsApp</label>
+      <input type="tel" inputmode="numeric" id="cr-whats" class="mono-input" placeholder="(49) 9 9999-9999" autocomplete="off" maxlength="16">
+    </div>
+    <div class="field">
+      <label for="cr-cidade">Cidade</label>
+      <input type="text" id="cr-cidade" placeholder="Ex: Chapecó" autocomplete="off" autocapitalize="words">
+      <div class="cr-cidades" id="cr-cidades" hidden></div>
+    </div>
+    <div class="field">
+      <label>Localização da propriedade <span class="opcional">(opcional)</span></label>
+      <button type="button" class="btn-secondary cr-gps" id="cr-gps">📍 Usar minha localização</button>
+      <div class="campo-dica" id="cr-gps-st"></div>
+    </div>
+    <div class="cr-dup" id="cr-dup" hidden role="alert">
+      <div class="cr-dup-tit">⚠ Parece que este produtor já está cadastrado</div>
+      <div id="cr-dup-lista"></div>
+    </div>
+    <div class="cr-acoes">
+      <button type="button" class="btn-primary" id="cr-salvar-os">Salvar e abrir OS</button>
+      <button type="button" class="btn-secondary" id="cr-salvar">Só salvar · completo depois</button>
+    </div>
+    <div class="cr-rodape">
+      <button type="button" class="cr-link" id="cr-completo">Abrir cadastro completo</button>
+      <button type="button" class="cr-link" id="cr-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- aviso curto que some sozinho ("Produtor cadastrado") -->
+<div class="aviso-rapido" id="aviso-rapido" role="status" aria-live="polite" hidden></div>
+
 <!-- MODAL: cadastro do produtor (novo ou editar) -->
 <div class="modal-backdrop" id="modal-produtor" hidden>
   <div class="modal-sheet">
@@ -5732,7 +5795,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.02';
+  const APP_VERSAO = '2026.11.03';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -7422,7 +7485,7 @@
     folha.scrollTop = 0;
     if (secao && $(secao)) setTimeout(() => { folha.scrollTop = Math.max(0, $(secao).offsetTop - 12); }, 30);
   }
-  $('fab-add-produtor').addEventListener('click', () => abrirNovoProdutor());
+  $('fab-add-produtor').addEventListener('click', () => abrirCadastroRapido());
   $('produtor-cancel').addEventListener('click', () => { aoCriarProdutor = null; editandoProdutorId = null; $('modal-produtor').hidden = true; });
   $('produtor-save').addEventListener('click', async () => {
     const dados = lerFormProdutor();
@@ -7444,6 +7507,241 @@
     if (cb) cb(id, dados.nome);
   });
   $('produtor-editar').addEventListener('click', () => { if (currentProdutorId) abrirEditarProdutor(currentProdutorId, 'pf-pessoais'); });
+
+  // ---------- cadastro rápido: nome, WhatsApp, cidade e o ponto do GPS ----------
+  // O resto aparece na ficha como "campos em branco · Completar". Tudo passa pela fila do app
+  // (gravar), então funciona sem internet, e a OS aberta logo em seguida também.
+  let crCallback = null, crLoc = null, crConfirmouDup = false, crTimerDup = null;
+
+  // (49) 9 9999-9999 enquanto digita; no fim, com 10 números (fixo), vira (49) 9999-9999
+  function mascaraTelefone(v, final) {
+    let d = String(v || '').replace(/\D/g, '');
+    if (d.length > 11 && d.startsWith('55')) d = d.slice(2);
+    d = d.replace(/^0+/, '').slice(0, 11);
+    if (!d) return '';
+    if (d.length <= 2) return '(' + d;
+    const ddd = d.slice(0, 2), r = d.slice(2);
+    if (final && r.length === 8) return '(' + ddd + ') ' + r.slice(0, 4) + '-' + r.slice(4);
+    if (r.length <= 1) return '(' + ddd + ') ' + r;
+    if (r.length <= 5) return '(' + ddd + ') ' + r[0] + ' ' + r.slice(1);
+    return '(' + ddd + ') ' + r[0] + ' ' + r.slice(1, 5) + '-' + r.slice(5);
+  }
+  // chave para achar o mesmo telefone: DDD + 8 últimos números (com ou sem o 9 da frente, com ou sem +55)
+  function chaveTelefone(t) {
+    let d = String(t || '').replace(/\D/g, '');
+    if (d.length > 11 && d.startsWith('55')) d = d.slice(2);
+    d = d.replace(/^0+/, '');
+    return d.length >= 10 ? d.slice(0, 2) + d.slice(-8) : '';
+  }
+  // nomes parecidos: igual sem acento, com 1 ou 2 letras trocadas, um nome dentro do outro
+  // ("Valdir Schneider" x "Valdir A. Schneider") ou mesmo primeiro e último nome
+  const PALAVRAS_SOLTAS = ['de', 'da', 'do', 'das', 'dos', 'e'];
+  function palavrasNome(s) {
+    return normalizarBusca(s).replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w && !PALAVRAS_SOLTAS.includes(w));
+  }
+  function distanciaTexto(a, b) {
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+    let ant = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      for (let j = 1; j <= b.length; j++) cur[j] = Math.min(ant[j] + 1, cur[j - 1] + 1, ant[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      ant = cur;
+    }
+    return ant[b.length];
+  }
+  function nomesParecidos(a, b) {
+    const pa = palavrasNome(a), pb = palavrasNome(b);
+    if (!pa.length || !pb.length) return false;
+    const ja = pa.join(' '), jb = pb.join(' ');
+    if (ja === jb) return true;
+    if (Math.min(ja.length, jb.length) >= 6 && distanciaTexto(ja, jb) <= (Math.max(ja.length, jb.length) >= 12 ? 2 : 1)) return true;
+    const [menor, maior] = pa.length <= pb.length ? [pa, pb] : [pb, pa];
+    if (menor.every(w => maior.includes(w))) return true;
+    return pa.length > 1 && pb.length > 1 && pa[0] === pb[0] && pa[pa.length - 1] === pb[pb.length - 1];
+  }
+  // procura também nos arquivados: cadastrar de novo quem foi arquivado é o repetido mais comum
+  function produtoresParecidos(nome, telefone) {
+    const chave = chaveTelefone(telefone);
+    const temNome = String(nome || '').trim().length >= 3;
+    const out = [];
+    produtoresTodos.forEach(p => {
+      const mesmoTel = !!chave && chaveTelefone(p.telefone) === chave;
+      if (mesmoTel || (temNome && nomesParecidos(nome, p.nome))) out.push({ p, motivo: mesmoTel ? 'mesmo WhatsApp' : 'nome parecido' });
+    });
+    return out.sort((a, b) => (a.motivo === 'mesmo WhatsApp' ? 0 : 1) - (b.motivo === 'mesmo WhatsApp' ? 0 : 1)).slice(0, 3);
+  }
+  // cidades já cadastradas, da mais usada para a menos usada
+  function cidadesCadastradas() {
+    const cont = {};
+    produtoresTodos.forEach(p => { const c = (p.cidade || '').trim(); if (c) cont[c] = (cont[c] || 0) + 1; });
+    return Object.keys(cont).sort((a, b) => cont[b] - cont[a] || a.localeCompare(b));
+  }
+  // "pinhalzinho" vira "Pinhalzinho" quando a cidade já existe (não cria duas no filtro)
+  function cidadeCanonica(c) {
+    const n = normalizarBusca(c);
+    return (n && cidadesCadastradas().find(x => normalizarBusca(x) === n)) || c;
+  }
+
+  function crPintarCidades() {
+    const termo = normalizarBusca($('cr-cidade').value.trim());
+    const lista = cidadesCadastradas().filter(c => normalizarBusca(c) !== termo && (!termo || normalizarBusca(c).includes(termo))).slice(0, 6);
+    const box = $('cr-cidades');
+    box.innerHTML = '';
+    lista.forEach(c => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'check-chip';
+      b.textContent = c;
+      b.addEventListener('mousedown', e => e.preventDefault());
+      b.addEventListener('click', () => { $('cr-cidade').value = c; crPintarCidades(); });
+      box.appendChild(b);
+    });
+    box.hidden = !lista.length;
+  }
+  function crConferirDuplicados() {
+    const lista = produtoresParecidos($('cr-nome').value, $('cr-whats').value);
+    const box = $('cr-dup-lista');
+    box.innerHTML = '';
+    lista.forEach(({ p, motivo }) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cr-dup-item';
+      b.innerHTML = '<span class="cr-dup-txt"><span class="cr-dup-nome"></span><span class="cr-dup-sub"></span></span><span class="cr-dup-acao"></span>';
+      b.querySelector('.cr-dup-nome').textContent = p.nome || 'Sem nome';
+      b.querySelector('.cr-dup-sub').textContent = [motivo, localDoProdutor(p), p.telefone, p.arquivado ? 'arquivado' : ''].filter(Boolean).join(' · ');
+      b.querySelector('.cr-dup-acao').textContent = crCallback ? 'Usar este' : 'Abrir ficha';
+      b.addEventListener('click', () => crUsarExistente(p));
+      box.appendChild(b);
+    });
+    $('cr-dup').hidden = !lista.length;
+    if (!lista.length) crConfirmouDup = false;
+    return lista;
+  }
+  function crUsarExistente(p) {
+    if (p.arquivado) {
+      avisar(p.nome + ' está arquivado. Para usar de novo, abra Produtores → Filtros → Arquivados e toque em Restaurar.');
+      return;
+    }
+    const cb = crCallback;
+    fecharCadastroRapido();
+    if (cb) { cb(p.id, p.nome); return; }
+    openProdutor(p.id, { voltar: voltarDaTelaAtual() });
+  }
+  // para onde a ficha (ou a OS) volta, a partir da tela em que a pessoa está
+  function voltarDaTelaAtual() {
+    const v = document.body.dataset.view;
+    if (v === 'produtor') return fichaVoltarPara;
+    return v && VIEWS.includes(v) && !v.startsWith('p-') && v !== 'entrada' ? v : 'produtores';
+  }
+  function crDicaGps() {
+    const st = $('cr-gps-st');
+    st.textContent = 'Na propriedade, toque para guardar o ponto do GPS. Funciona sem internet.';
+    st.className = 'campo-dica';
+  }
+  function abrirCadastroRapido(nomeInicial = '', callback = null) {
+    if (!podeLancar('produtores')) { avisar('Você não tem permissão para cadastrar produtores.'); return; }
+    crCallback = callback;
+    crLoc = null;
+    crConfirmouDup = false;
+    $('cr-nome').value = nomeInicial || '';
+    $('cr-whats').value = '';
+    $('cr-cidade').value = '';
+    crDicaGps();
+    $('cr-gps').textContent = '📍 Usar minha localização';
+    // escolhendo produtor para uma OS ou venda: só "Salvar" (o fluxo continua sozinho depois)
+    const comOS = !callback && podeLancar('visitas');
+    $('cr-salvar-os').hidden = !comOS;
+    $('cr-salvar').textContent = comOS ? 'Só salvar · completo depois' : 'Salvar';
+    $('cr-salvar').className = comOS ? 'btn-secondary' : 'btn-primary';
+    crPintarCidades();
+    crConferirDuplicados();
+    $('modal-cadastro-rapido').hidden = false;
+    setTimeout(() => { if (!$('modal-cadastro-rapido').hidden) $('cr-nome').focus(); }, 60);
+  }
+  function fecharCadastroRapido() {
+    crCallback = null;
+    clearTimeout(crTimerDup);
+    $('modal-cadastro-rapido').hidden = true;
+  }
+  async function crSalvar(abrirOS) {
+    const nome = $('cr-nome').value.trim();
+    if (!nome) { avisar('Digite o nome do produtor.').then(() => $('cr-nome').focus()); return; }
+    const telefone = mascaraTelefone($('cr-whats').value, true);
+    if (telefone && !chaveTelefone(telefone)) { avisar('Confira o WhatsApp: faltam números (DDD e número).').then(() => $('cr-whats').focus()); return; }
+    const dups = crConferirDuplicados();
+    if (dups.length && !crConfirmouDup) {
+      const quem = dups.map(d => d.p.nome + (d.motivo === 'mesmo WhatsApp' ? ' (mesmo WhatsApp)' : '')).join(', ');
+      const ok = await abrirDialogo('Já existe um cadastro parecido: ' + quem + '. Cadastrar mesmo assim?', { ok: 'Cadastrar mesmo assim', cancelar: 'Voltar' });
+      if (!ok) return;
+      crConfirmouDup = true;
+    }
+    const dados = { nome, telefone, cidade: cidadeCanonica($('cr-cidade').value.trim()) };
+    if (crLoc) Object.assign(dados, { lat: crLoc.lat, lng: crLoc.lng, localizacao: crLoc.lat.toFixed(6) + ', ' + crLoc.lng.toFixed(6) });
+    const cb = crCallback;
+    const voltar = voltarDaTelaAtual();
+    fecharCadastroRapido();
+    const id = await addProdutor(dados);
+    if (!id) return;
+    if (cb) { cb(id, nome); return; }
+    if (abrirOS) { abrirNovaOSDoProdutor(id, voltar); return; }
+    avisoRapido('Produtor cadastrado');
+  }
+
+  $('cr-whats').addEventListener('input', e => { e.target.value = mascaraTelefone(e.target.value); });
+  $('cr-whats').addEventListener('blur', e => { e.target.value = mascaraTelefone(e.target.value, true); });
+  ['cr-nome', 'cr-whats'].forEach(id => $(id).addEventListener('input', () => {
+    crConfirmouDup = false;
+    clearTimeout(crTimerDup);
+    crTimerDup = setTimeout(crConferirDuplicados, 250);
+  }));
+  $('cr-cidade').addEventListener('input', crPintarCidades);
+  $('cr-gps').addEventListener('click', () => {
+    const st = $('cr-gps-st'), btn = $('cr-gps');
+    if (!navigator.geolocation) { st.textContent = 'O GPS não está disponível neste aparelho.'; st.className = 'campo-dica alerta'; return; }
+    st.textContent = 'Procurando o sinal do GPS…';
+    st.className = 'campo-dica';
+    btn.disabled = true;
+    navigator.geolocation.getCurrentPosition(pos => {
+      btn.disabled = false;
+      crLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const prec = Math.round(pos.coords.accuracy || 0);
+      st.textContent = 'Localização guardada' + (prec ? ' (precisão de ' + prec + ' m)' : '') + '.';
+      st.className = 'campo-dica ok';
+      btn.textContent = '📍 Atualizar localização';
+    }, err => {
+      btn.disabled = false;
+      st.textContent = err && err.code === 1 ? 'O GPS foi bloqueado. Libere a localização para o app nas configurações do celular e tente de novo.'
+        : err && err.code === 3 ? 'O GPS demorou para responder. Vá para um lugar aberto e tente de novo.'
+        : 'Não deu para pegar a localização agora. Tente de novo.';
+      st.className = 'campo-dica alerta';
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 });
+  });
+  $('cr-salvar-os').addEventListener('click', () => crSalvar(true));
+  $('cr-salvar').addEventListener('click', () => crSalvar(false));
+  $('cr-cancelar').addEventListener('click', fecharCadastroRapido);
+  // leva o que já foi digitado para o formulário completo
+  $('cr-completo').addEventListener('click', () => {
+    const cb = crCallback, nome = $('cr-nome').value.trim(), tel = mascaraTelefone($('cr-whats').value, true);
+    const cidade = cidadeCanonica($('cr-cidade').value.trim()), loc = crLoc;
+    fecharCadastroRapido();
+    abrirNovoProdutor(nome, cb);
+    if (tel) $('produtor-telefone-input').value = tel;
+    if (cidade) $('produtor-cidade-input').value = cidade;
+    if (loc) { $('produtor-local-input').value = loc.lat.toFixed(6) + ', ' + loc.lng.toFixed(6); mostrarDicaLocal(); }
+  });
+  // a mesma máscara no telefone do cadastro completo
+  $('produtor-telefone-input').addEventListener('input', e => { e.target.value = mascaraTelefone(e.target.value); });
+  $('produtor-telefone-input').addEventListener('blur', e => { e.target.value = mascaraTelefone(e.target.value, true); });
+
+  let avisoRapidoTimer = null;
+  function avisoRapido(msg) {
+    const el = $('aviso-rapido');
+    el.textContent = msg;
+    el.hidden = false;
+    clearTimeout(avisoRapidoTimer);
+    avisoRapidoTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  }
 
   // contato, localização e botões de WhatsApp/mapa na página do produtor
 
@@ -8170,7 +8468,7 @@
       novo.addEventListener('mousedown', e => e.preventDefault());
       novo.addEventListener('click', () => {
         fechar();
-        abrirNovoProdutor(sugerir ? texto : '', (id, nome) => escolher(id, nome));
+        abrirCadastroRapido(sugerir ? texto : '', (id, nome) => escolher(id, nome));
       });
       lista.appendChild(novo);
       lista.hidden = false;
@@ -15838,11 +16136,13 @@
 
   // nova OS a partir do painel/tela de OS: escolhe o produtor e abre o formulário na ficha
   function novaOSEscolhendoProdutor(voltar, opts) {
-    escolherProdutor('Nova OS para qual produtor?', pid => {
-      openProdutor(pid, { aba: 'visitas', voltar: voltar || 'home' });
-      manutSub = 'os'; renderManutSub();
-      openVisitaModal(null, { status: 'agendada', ...(opts || {}) });
-    });
+    escolherProdutor('Nova OS para qual produtor?', pid => abrirNovaOSDoProdutor(pid, voltar, opts));
+  }
+  // abre a ficha do produtor na aba de OS, já com o formulário da OS nova
+  function abrirNovaOSDoProdutor(pid, voltar, opts) {
+    openProdutor(pid, { aba: 'visitas', voltar: voltar || 'home' });
+    manutSub = 'os'; renderManutSub();
+    openVisitaModal(null, { status: 'agendada', ...(opts || {}) });
   }
   function abrirOSDoIndice(o, voltar) {
     if (!produtores.some(p => p.id === o.produtorId)) { avisar('O produtor desta OS não está na lista (pode ter sido arquivado).'); return; }
