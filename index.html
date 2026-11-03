@@ -3,17 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>
-  // Visual novo do Início (versão de teste): ?visual=novo liga, ?visual=antigo volta.
-  // Fica guardado neste aparelho; roda antes do resto para a tela não piscar no visual antigo.
-  (function () {
-    try {
-      var v = new URLSearchParams(location.search).get('visual');
-      if (v === 'novo' || v === 'antigo') localStorage.setItem('auriverde_visual', v);
-      if (localStorage.getItem('auriverde_visual') === 'novo') document.documentElement.classList.add('visual-novo');
-    } catch (e) {}
-  })();
-</script>
 <script src="config.js"></script>
 <script>
   // Com o Supabase configurado em config.js, usa o banco compartilhado (login + tempo real).
@@ -48,68 +37,79 @@
   @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url(fontes/ibm-plex-sans-600.woff2) format('woff2'); }
   @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url(fontes/ibm-plex-sans-700.woff2) format('woff2'); }
 
-  /* Paleta tirada do logo da Auriverde: verde #009A52, sol #F2D300, céu #1A8BC9.
-     --accent é um verde um pouco mais fundo que o do logo para texto branco
-     em botões continuar legível. */
+  /* =====================================================================
+     TOKENS: todas as cores e medidas do app ficam aqui, num lugar só.
+     Paleta tirada do logo da Auriverde: verde #009A52, sol #F2D300, céu #1A8BC9.
+     --accent é um verde um pouco mais fundo que o do logo para o texto branco
+     dos botões continuar legível.
+     ===================================================================== */
   :root {
-    --bg: #F2F6F1;
-    --surface: #FFFFFF;
-    --ink: #13241A;
-    --ink-soft: #56675C;
-    --line: #DCE5DC;
-    --accent: #00813F;
-    --accent-ink: #FFFFFF;
-    --brand: #009A52;
-    --brand-deep: #0B5E36;
-    --gold: #F2D300;
-    --tax: #B5482F;
-    --soon: #A86B12;
-    --soon-bg: #FBF1DC;
-    --ordenha: #1A7FBF;
-    --resfriador: #0E8388;
-    --conforto: #8B5E3C;
-    --art-bg: #FFF9EC;
-    --tab-bg: rgba(255, 255, 255, 0.94);
-    --shadow: 0 1px 2px rgba(19, 50, 30, 0.06), 0 8px 22px rgba(19, 50, 30, 0.07);
-    --shadow-press: 0 1px 2px rgba(19, 50, 30, 0.08);
+    /* letra: uma família, poucos tamanhos */
+    --fonte: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --fs-tela: 22px;     /* título da tela */
+    --fs-secao: 17px;    /* título de janela e de parte do formulário */
+    --fs-texto: 15px;    /* texto e nome na linha da lista */
+    --fs-legenda: 13px;  /* informação de apoio e título pequeno de lista */
+    --fs-mini: 12px;     /* selos de situação e contadores */
+    /* forma e respiro */
+    --raio: 12px;        /* blocos, listas e cartões */
+    --raio-p: 10px;      /* botões, campos e etiquetas */
+    --pad: 14px;         /* respiro dentro do bloco */
+    --gap-bloco: 12px;   /* entre um bloco e outro */
+    --gap-secao: 20px;   /* antes de um título de seção */
+    --linha-min: 52px;   /* altura mínima de uma linha que se toca */
+    /* sombra só no que flutua (aviso, botão redondo); o resto é plano, com linha fina */
+    --sombra: none;
+    --sombra-flutua: 0 8px 24px rgba(16, 34, 24, 0.16);
+    --shadow: var(--sombra); --shadow-press: var(--sombra);
+    /* cores */
+    --bg: #F3F5F2; --surface: #FFFFFF; --surface-2: #F6F8F5; --ink: #16221B; --ink-soft: #5A6A60; --line: #E1E7E2;
+    --accent: #007A3D; --accent-txt: #007A3D; --accent-ink: #FFFFFF; --accent-suave: #E3F1E9;
+    --brand: #009A52; --brand-deep: #0B5E36; --gold: #F2D300; --gold-ink: #3A3000;
+    --info: #1A7FBF; --info-txt: #15679C; --info-bg: #E5F0F8;
+    --tax: #B5412B; --soon: #9A6410; --soon-bg: #FBF0DA;
+    --tab-bg: rgba(255, 255, 255, 0.94); --topo-bg: rgba(243, 245, 242, 0.92);
+    --skel: #E5EBE6; --skel-luz: #F3F6F4; --ic-vazio: #C3CEC6;
+    --art-bg: var(--accent-suave);
+    /* setores, tipos de equipamento, situação da OS e faixas do ITU */
+    --s-manutencao: #1A7FBF; --s-veterinaria: #A64D63; --s-qualidade: #0E7F84; --s-nutricao: #4F7F1C; --s-comercial: #8A6A12;
+    --ordenha: #1A7FBF; --resfriador: #0E8388; --conforto: #8B5E3C;
+    --os-aberta: var(--soon); --os-agendada: var(--s-manutencao); --os-andamento: #7B4FC4; --os-concluida: var(--accent); --os-cancelada: var(--ink-soft);
+    --itu-verde: var(--accent); --itu-amarelo: #A88000; --itu-laranja: #C4620E; --itu-vermelho: var(--tax);
     color-scheme: light;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  /* modo escuro: segue o celular, a não ser que a pessoa escolha claro ou escuro no app */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0C1611;
-      --surface: #15231B;
-      --ink: #E8F1EB;
-      --ink-soft: #9AB0A3;
-      --line: #26392E;
-      --accent: #3CBF79;
-      --accent-ink: #05140B;
-      --brand: #2FB36C;
-      --brand-deep: #1E7A49;
-      --gold: #F5D93A;
-      --tax: #EF8A6E;
-      --soon: #E6BD55;
-      --soon-bg: #35301C;
-      --ordenha: #4BA6DC;
-      --resfriador: #3BB3B5;
-      --conforto: #C89366;
-      --tab-bg: rgba(21, 35, 27, 0.94);
-      --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 22px rgba(0, 0, 0, 0.25);
-      --shadow-press: 0 1px 2px rgba(0, 0, 0, 0.35);
+      --sombra-flutua: 0 8px 24px rgba(0, 0, 0, 0.5);
+      --bg: #0E1411; --surface: #161E19; --surface-2: #1B241F; --ink: #E4ECE7; --ink-soft: #98A89E; --line: #27322B;
+      --accent: #2E6F4E; --accent-txt: #7FBE99; --accent-ink: #FFFFFF; --accent-suave: #1B2C23;
+      --brand: #2E6F4E; --brand-deep: #235A3F; --gold: #E0C44A; --gold-ink: #2A2300;
+      --info: #5B9FCC; --info-txt: #8DBFE2; --info-bg: #16283A;
+      --tax: #E68A70; --soon: #D8B25C; --soon-bg: #2D291B;
+      --tab-bg: rgba(22, 30, 25, 0.95); --topo-bg: rgba(14, 20, 17, 0.92);
+      --skel: #1D2621; --skel-luz: #27312B; --ic-vazio: #3A4740;
+      --s-manutencao: #5B9FCC; --s-veterinaria: #D98A9C; --s-qualidade: #4FB0B3; --s-nutricao: #93BD5C; --s-comercial: #D0B25A;
+      --ordenha: #4BA6DC; --resfriador: #3BB3B5; --conforto: #C89366;
+      --os-andamento: #B79AF2; --itu-amarelo: #E3C04A; --itu-laranja: #F2994A;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0C1611; --surface: #15231B; --ink: #E8F1EB; --ink-soft: #9AB0A3;
-    --line: #26392E; --accent: #3CBF79; --accent-ink: #05140B;
-    --brand: #2FB36C; --brand-deep: #1E7A49; --gold: #F5D93A;
-    --tax: #EF8A6E; --soon: #E6BD55; --soon-bg: #35301C;
+    --sombra-flutua: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --bg: #0E1411; --surface: #161E19; --surface-2: #1B241F; --ink: #E4ECE7; --ink-soft: #98A89E; --line: #27322B;
+    --accent: #2E6F4E; --accent-txt: #7FBE99; --accent-ink: #FFFFFF; --accent-suave: #1B2C23;
+    --brand: #2E6F4E; --brand-deep: #235A3F; --gold: #E0C44A; --gold-ink: #2A2300;
+    --info: #5B9FCC; --info-txt: #8DBFE2; --info-bg: #16283A;
+    --tax: #E68A70; --soon: #D8B25C; --soon-bg: #2D291B;
+    --tab-bg: rgba(22, 30, 25, 0.95); --topo-bg: rgba(14, 20, 17, 0.92);
+    --skel: #1D2621; --skel-luz: #27312B; --ic-vazio: #3A4740;
+    --s-manutencao: #5B9FCC; --s-veterinaria: #D98A9C; --s-qualidade: #4FB0B3; --s-nutricao: #93BD5C; --s-comercial: #D0B25A;
     --ordenha: #4BA6DC; --resfriador: #3BB3B5; --conforto: #C89366;
-    --tab-bg: rgba(21, 35, 27, 0.94);
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 22px rgba(0, 0, 0, 0.25);
-    --shadow-press: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --os-andamento: #B79AF2; --itu-amarelo: #E3C04A; --itu-laranja: #F2994A;
     color-scheme: dark;
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
@@ -1298,11 +1298,6 @@
   .q-tabela tr.so-leitura { cursor: default; }
 
   /* ---- setores: cor de cada um ---- */
-  :root { --s-manutencao: #1A7FBF; --s-veterinaria: #C23B5A; --s-qualidade: #0E8388; --s-nutricao: #5A8A1C; --s-comercial: #7B4FC4; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --s-manutencao: #4BA6DC; --s-veterinaria: #F07F97; --s-qualidade: #3BB3B5; --s-nutricao: #A5CF5E; --s-comercial: #B79AF2; }
-  }
-  :root[data-theme="dark"] { --s-manutencao: #4BA6DC; --s-veterinaria: #F07F97; --s-qualidade: #3BB3B5; --s-nutricao: #A5CF5E; --s-comercial: #B79AF2; }
   .setor-cor-manutencao { --cor: var(--s-manutencao); }
   .setor-cor-veterinaria { --cor: var(--s-veterinaria); }
   .setor-cor-qualidade { --cor: var(--s-qualidade); }
@@ -1565,9 +1560,6 @@
   .setor-q-evol .grafico { margin-top: 6px; }
 
   /* =========== MANUTENÇÃO: OS, equipamentos, painel =========== */
-  :root { --os-aberta: var(--soon); --os-agendada: var(--s-manutencao); --os-andamento: #7B4FC4; --os-concluida: var(--accent); --os-cancelada: var(--ink-soft); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --os-andamento: #B79AF2; } }
-  :root[data-theme="dark"] { --os-andamento: #B79AF2; }
   .os-st-aberta { --st: var(--os-aberta); } .os-st-agendada { --st: var(--os-agendada); } .os-st-andamento { --st: var(--os-andamento); }
   .os-st-concluida { --st: var(--os-concluida); } .os-st-cancelada { --st: var(--os-cancelada); }
   .os-status { display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
@@ -1825,11 +1817,6 @@
   .nutri-chips { margin-top: 8px; }
 
   /* ================= MANUTENÇÃO PREVENTIVA, TESTE, RESFRIADOR E CONFORTO ================= */
-  :root { --itu-verde: var(--accent); --itu-amarelo: #A88000; --itu-laranja: #C4620E; --itu-vermelho: var(--tax); }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --itu-amarelo: #E3C04A; --itu-laranja: #F2994A; }
-  }
-  :root[data-theme="dark"] { --itu-amarelo: #E3C04A; --itu-laranja: #F2994A; }
   .perigo-txt { color: var(--tax) !important; }
   .link-inline { background: none; border: none; padding: 0; margin: 0; font: inherit; font-weight: 700; color: var(--accent-txt); text-decoration: underline; cursor: pointer; }
 
@@ -2064,48 +2051,8 @@
   /* =====================================================================
      VISUAL PROFISSIONAL (2026): uma fonte, uma escala, uma paleta, um jeito
      de cartão. Só aparência: nada aqui muda o que o app faz.
+     As cores e medidas ficam nos TOKENS, no começo do estilo.
      ===================================================================== */
-  :root {
-    --fonte: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    --fs-tela: 22px; --fs-secao: 17px; --fs-texto: 15px; --fs-legenda: 13px;
-    --raio: 14px; --pad: 16px; --gap-secao: 24px;
-    --bg: #F3F5F2; --surface: #FFFFFF; --surface-2: #F6F8F5; --ink: #16221B; --ink-soft: #5A6A60; --line: #E1E7E2;
-    --accent: #007A3D; --accent-txt: #007A3D; --accent-ink: #FFFFFF; --accent-suave: #E3F1E9;
-    --brand: #009A52; --brand-deep: #0B5E36; --gold: #F2D300; --gold-ink: #3A3000;
-    --info: #1A7FBF; --info-txt: #15679C; --info-bg: #E5F0F8;
-    --tax: #B5412B; --soon: #9A6410; --soon-bg: #FBF0DA;
-    --sombra: 0 1px 2px rgba(16, 34, 24, 0.05), 0 2px 10px rgba(16, 34, 24, 0.06);
-    --shadow: var(--sombra); --shadow-press: var(--sombra);
-    --tab-bg: rgba(255, 255, 255, 0.94); --topo-bg: rgba(243, 245, 242, 0.92);
-    --skel: #E5EBE6; --skel-luz: #F3F6F4; --ic-vazio: #C3CEC6;
-    --art-bg: var(--accent-suave);
-    --s-manutencao: #1A7FBF; --s-veterinaria: #A64D63; --s-qualidade: #0E7F84; --s-nutricao: #4F7F1C; --s-comercial: #8A6A12;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0E1411; --surface: #161E19; --surface-2: #1B241F; --ink: #E4ECE7; --ink-soft: #98A89E; --line: #27322B;
-      --accent: #2E6F4E; --accent-txt: #7FBE99; --accent-ink: #FFFFFF; --accent-suave: #1B2C23;
-      --brand: #2E6F4E; --brand-deep: #235A3F; --gold: #E0C44A; --gold-ink: #2A2300;
-      --info: #5B9FCC; --info-txt: #8DBFE2; --info-bg: #16283A;
-      --tax: #E68A70; --soon: #D8B25C; --soon-bg: #2D291B;
-      --sombra: 0 1px 2px rgba(0, 0, 0, 0.45);
-      --tab-bg: rgba(22, 30, 25, 0.95); --topo-bg: rgba(14, 20, 17, 0.92);
-      --skel: #1D2621; --skel-luz: #27312B; --ic-vazio: #3A4740;
-      --s-manutencao: #5B9FCC; --s-veterinaria: #D98A9C; --s-qualidade: #4FB0B3; --s-nutricao: #93BD5C; --s-comercial: #D0B25A;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #0E1411; --surface: #161E19; --surface-2: #1B241F; --ink: #E4ECE7; --ink-soft: #98A89E; --line: #27322B;
-    --accent: #2E6F4E; --accent-txt: #7FBE99; --accent-ink: #FFFFFF; --accent-suave: #1B2C23;
-    --brand: #2E6F4E; --brand-deep: #235A3F; --gold: #E0C44A; --gold-ink: #2A2300;
-    --info: #5B9FCC; --info-txt: #8DBFE2; --info-bg: #16283A;
-    --tax: #E68A70; --soon: #D8B25C; --soon-bg: #2D291B;
-    --sombra: 0 1px 2px rgba(0, 0, 0, 0.45);
-    --tab-bg: rgba(22, 30, 25, 0.95); --topo-bg: rgba(14, 20, 17, 0.92);
-    --skel: #1D2621; --skel-luz: #27312B; --ic-vazio: #3A4740;
-    --s-manutencao: #5B9FCC; --s-veterinaria: #D98A9C; --s-qualidade: #4FB0B3; --s-nutricao: #93BD5C; --s-comercial: #D0B25A;
-  }
-
   /* ---------- tipografia: uma família, quatro tamanhos ---------- */
   body, button, input, select, textarea { font-family: var(--fonte); }
   body { font-size: var(--fs-texto); line-height: 1.45; letter-spacing: 0; }
@@ -2168,7 +2115,7 @@
   .rota-item, .rota-atalho, .tabela-wrap, .ini-kpi, .ini-atalho, .pv-uso, .cf-bloco {
     box-shadow: var(--sombra) !important;
   }
-  .card { padding: var(--pad) !important; margin-bottom: var(--gap-secao); border: 1px solid var(--line); }
+  .card { padding: var(--pad) !important; margin-bottom: var(--gap-bloco); border: 1px solid var(--line); }
   .record, .produtor-card, .painel-item, .enc-card, .os-card, .pv-item, .eq-card, .lote-card, .rota-item, .setor-card { padding-top: var(--pad); padding-bottom: var(--pad); }
   .record, .produtor-card, .enc-card, .os-card, .eq-card, .lote-card { padding-left: var(--pad); padding-right: var(--pad); }
   .record, .produtor-card, .painel-item, .enc-card, .os-card, .pv-item, .eq-card, .lote-card, .rota-item { margin-bottom: 10px; }
@@ -2183,7 +2130,7 @@
   .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
   .delete-btn { min-height: 48px; border-radius: 12px; font-weight: 600; font-size: var(--fs-texto); }
   .bloco-editar { font-weight: 600; font-size: var(--fs-legenda); color: var(--accent-txt); background: var(--accent-suave); border: none; border-radius: 999px; padding: 6px 12px; min-height: 34px; }
-  .fab { width: 56px; height: 56px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22); font-size: 0 !important; }
+  .fab { width: 56px; height: 56px; box-shadow: var(--sombra-flutua); font-size: 0 !important; }
   .fab::before { content: ''; width: 26px; height: 26px; background: var(--accent-ink);
     -webkit-mask: var(--m-plus) center / contain no-repeat; mask: var(--m-plus) center / contain no-repeat; }
   .seg-leite { border-radius: var(--raio); box-shadow: none; background: var(--surface-2); }
@@ -2376,7 +2323,7 @@
   /* aviso curto que some sozinho */
   .aviso-rapido { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 80;
     max-width: calc(100vw - 32px); padding: 11px 18px; border-radius: 999px; background: var(--ink); color: var(--bg);
-    font-size: var(--fs-legenda); font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.25); pointer-events: none; }
+    font-size: var(--fs-legenda); font-weight: 600; box-shadow: var(--sombra-flutua); pointer-events: none; }
   .aviso-rapido[hidden] { display: none; }
   /* Administração: uma linha por item, abre ao tocar */
   .adm-dobra { padding-top: var(--pad) !important; padding-bottom: var(--pad) !important; }
@@ -2836,89 +2783,173 @@
   @media (max-width: 350px) { .ap-como-sub { display: none; } .ap-como-op { min-height: 84px; } }
 
   /* =====================================================================
-     VISUAL NOVO DO INÍCIO (versão de teste)
-     Só vale com a classe "visual-novo" no <html>: abra o app com ?visual=novo
-     (ou Mais → "Testar o visual novo do Início"); ?visual=antigo volta ao atual.
-     Mesmas cores do app; muda o desenho: topo verde fino, números numa faixa
-     só, listas em linhas finas em vez de cartões com borda colorida e sombra.
+     PADRÃO VISUAL DAS TELAS (vale para todas)
+     Medidas e cores vêm dos TOKENS do começo do estilo. Topo verde fino no
+     Início; listas são um bloco branco com linhas finas, sem cartão com
+     sombra e borda colorida; título de lista pequeno e cinza.
      ===================================================================== */
+
+  /* ---------- lista: um bloco branco, uma linha por item ----------
+     Vale para qualquer container com class="lista". As linhas zeram borda,
+     raio e sombra de cartão (por isso o !important: os cartões antigos usam).
+     Cada linha tem a linha fina em cima e sobe 1px: a da primeira fica
+     escondida atrás da borda do bloco, mesmo que a primeira esteja oculta. */
+  .lista { background: var(--surface); border: 1px solid var(--line); border-radius: var(--raio); overflow: hidden; margin: 0 0 var(--gap-bloco); }
+  .lista:empty { display: none; }
+  .lista > * { margin: -1px 0 0 !important; border: none !important; border-top: 1px solid var(--line) !important; border-radius: 0 !important;
+    box-shadow: none !important; background: none; width: 100%; }
+  .lista > :is(button, .produtor-card, [role="button"]):active, .lista > details > summary:active,
+  .os-card:active { transform: none !important; filter: none !important; background: color-mix(in srgb, var(--ink) 5%, transparent) !important; }
+  .lista > .skel-lista { padding: 10px; }
+  .lista > .os-destaque { background: var(--accent-suave); }
+
+  /* título de lista e de bloco: pequeno e cinza (como "Hoje" no Início) */
+  .section-label, .hm-tit { font-size: var(--fs-legenda) !important; font-weight: 600 !important; color: var(--ink-soft) !important; }
+  .section-label { margin: var(--gap-secao) 0 8px; }
+
+  /* selo de situação: um tamanho só */
+  .os-status, .enc-status, .eq-sit { font-size: var(--fs-mini); font-weight: 600; padding: 2px 8px; }
+  .os-urg, .enc-urgente { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
+
+  /* ---------- Início ---------- */
   /* topo: faixa verde fina com logo, data e engrenagem (sem a foto e o degradê) */
-  html.visual-novo body[data-view="home"] .hero-banner {
+  body[data-view="home"] .hero-banner {
     min-height: 0 !important; margin-bottom: 14px !important; gap: 12px !important; border-radius: 0 !important;
     padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px !important;
     flex-direction: row !important; align-items: center !important; justify-content: flex-start !important;
     background: #0F6B3F !important;
   }
-  html.visual-novo body[data-view="home"] .hero-banner::before { display: none !important; }
-  html.visual-novo body[data-view="home"] .hero-topo { display: contents; }
-  html.visual-novo body[data-view="home"] .hero-banner .logo-badge { order: 1; padding: 4px 7px !important; border-radius: 8px !important; box-shadow: none !important; }
-  html.visual-novo body[data-view="home"] .hero-banner .logo-badge img { height: 20px !important; }
-  html.visual-novo body[data-view="home"] .hero-saud { order: 2; flex: 1; min-width: 0; }
-  html.visual-novo body[data-view="home"] .hero-saud::after,
-  html.visual-novo body[data-view="home"] .hero-entrada,
-  html.visual-novo body[data-view="home"] .hero-banner .greeting-text { display: none !important; }
-  html.visual-novo body[data-view="home"] .hero-data { margin: 0 !important; font-size: 14px !important; font-weight: 600 !important; color: #FFFFFF; }
-  html.visual-novo body[data-view="home"] .hero-config { order: 3; width: 36px !important; height: 36px !important; }
+  body[data-view="home"] .hero-banner::before { display: none !important; }
+  body[data-view="home"] .hero-topo { display: contents; }
+  body[data-view="home"] .hero-banner .logo-badge { order: 1; padding: 4px 7px !important; border-radius: 8px !important; box-shadow: none !important; }
+  body[data-view="home"] .hero-banner .logo-badge img { height: 20px !important; }
+  body[data-view="home"] .hero-saud { order: 2; flex: 1; min-width: 0; }
+  body[data-view="home"] .hero-saud::after,
+  body[data-view="home"] .hero-entrada,
+  body[data-view="home"] .hero-banner .greeting-text { display: none !important; }
+  body[data-view="home"] .hero-data { margin: 0 !important; font-size: 14px !important; font-weight: 600 !important; color: #FFFFFF; }
+  body[data-view="home"] .hero-config { order: 3; width: 36px !important; height: 36px !important; }
 
-  /* números do topo: uma faixa com divisórias finas */
-  html.visual-novo #ini-kpis { gap: 0 !important; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; margin-bottom: 12px !important; }
-  html.visual-novo #ini-kpis .ini-kpi { min-height: 0 !important; padding: 10px 12px !important; gap: 2px !important; border: none !important; border-radius: 0 !important;
-    background: none !important; box-shadow: none !important; }
-  html.visual-novo #ini-kpis .ini-kpi + .ini-kpi { border-left: 1px solid var(--line) !important; }
-  html.visual-novo #ini-kpis .ini-kpi-n { font-size: 22px !important; font-weight: 600 !important; }
-  html.visual-novo #ini-kpis .ini-kpi-rot { font-size: 12px !important; }
+  /* números do topo (Início e Plano preventivo): uma faixa com divisórias finas */
+  #ini-kpis, .pv-kpis { gap: 0 !important; border: 1px solid var(--line); border-radius: var(--raio); background: var(--surface); overflow: hidden; margin: 0 0 var(--gap-bloco) !important; }
+  #ini-kpis .ini-kpi, .pv-kpis .rh-tile { min-height: 0 !important; padding: 10px 12px !important; gap: 2px !important; border: none !important; border-radius: 0 !important;
+    background: none !important; box-shadow: none !important; outline: none !important; }
+  #ini-kpis .ini-kpi + .ini-kpi, .pv-kpis .rh-tile + .rh-tile { border-left: 1px solid var(--line) !important; }
+  #ini-kpis .ini-kpi-n, .pv-kpis .rh-valor { font-size: var(--fs-tela) !important; font-weight: 600 !important; margin-top: 0; }
+  #ini-kpis .ini-kpi-rot, .pv-kpis .rh-label { font-size: var(--fs-mini) !important; font-weight: 500; }
+  .pv-kpis .rh-sub { font-size: var(--fs-mini); }
+  .pv-kpis .rh-tile.sel { background: var(--accent-suave) !important; }
 
   /* atalhos: botões baixos, ícone ao lado do nome */
-  html.visual-novo #ini-atalhos { gap: 8px !important; margin-bottom: 14px !important; }
-  html.visual-novo #ini-atalhos .ini-atalho { flex-direction: row !important; justify-content: flex-start !important; gap: 8px !important; min-height: 46px !important;
-    padding: 8px 10px !important; border-radius: 10px !important; box-shadow: none !important; font-size: 13.5px !important; line-height: 1.2 !important; text-align: left !important; }
-  html.visual-novo #ini-atalhos .ini-atalho-ico { flex-shrink: 0; width: 26px !important; height: 26px !important; border-radius: 7px !important; }
-  html.visual-novo #ini-atalhos .ini-atalho-ico .ic { width: 16px !important; height: 16px !important; }
-  html.visual-novo #ini-atalhos .ini-atalho-nome { min-width: 0; }
+  #ini-atalhos { gap: 8px !important; margin-bottom: 14px !important; }
+  #ini-atalhos .ini-atalho { flex-direction: row !important; justify-content: flex-start !important; gap: 8px !important; min-height: 46px !important;
+    padding: 8px 10px !important; border-radius: var(--raio-p) !important; box-shadow: none !important; font-size: 13.5px !important; line-height: 1.2 !important; text-align: left !important; }
+  #ini-atalhos .ini-atalho-ico { flex-shrink: 0; width: 26px !important; height: 26px !important; border-radius: 7px !important; }
+  #ini-atalhos .ini-atalho-ico .ic { width: 16px !important; height: 16px !important; }
+  #ini-atalhos .ini-atalho-nome { min-width: 0; }
 
   /* aviso (Limp fora): linha fina */
-  html.visual-novo #view-home .hm-aviso { padding: 10px 12px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; }
+  #view-home .hm-aviso { padding: 10px 12px; border-radius: var(--raio-p); font-size: 14px; margin-bottom: var(--gap-bloco); }
 
   /* listas do dia: um bloco branco com o título pequeno e as OS em linhas */
-  html.visual-novo #home-manut .hm-card:not(.hm-dobra) { padding: 0 14px !important; margin-bottom: 12px !important; border: 1px solid var(--line) !important;
-    border-radius: 12px !important; box-shadow: none !important; background: var(--surface) !important; }
-  html.visual-novo #home-manut .hm-card:not(.hm-dobra) > .section-label,
-  html.visual-novo #home-manut .hm-card:not(.hm-dobra) > .bloco-topo { margin: 0 !important; padding: 12px 0 8px; }
-  html.visual-novo #home-manut .hm-tit { font-size: 13px !important; font-weight: 600 !important; color: var(--ink-soft) !important; }
-  html.visual-novo #home-manut .hm-tit.ruim { color: var(--tax) !important; }
-  html.visual-novo #home-manut .hm-tit.atencao { color: var(--soon) !important; }
-  html.visual-novo #home-manut .hm-data { font-size: 13px; font-weight: 500; }
-  html.visual-novo #home-manut .hm-tudo-certo { padding: 14px !important; font-size: 14px; }
-
-  /* OS em linha: produtor e situação em cima, "OS 0016 · tipo · data" embaixo, motivo em até 2 linhas */
-  html.visual-novo #view-home .os-card { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto auto;
-    grid-template-areas: "prod prod urg st" "num linha linha linha" "txt txt txt txt"; column-gap: 6px; row-gap: 2px; align-items: center;
-    padding: 11px 0 !important; margin: 0 !important; border: none !important; border-top: 1px solid var(--line) !important; border-radius: 0 !important;
-    background: none !important; box-shadow: none !important; }
-  html.visual-novo #view-home .os-card:active { transform: none; filter: none; background: color-mix(in srgb, var(--ink) 5%, transparent) !important; }
-  html.visual-novo #view-home .os-card > * { grid-column: 1 / -1; }
-  html.visual-novo #view-home .os-card-topo { display: contents !important; }
-  html.visual-novo #view-home .os-card .os-num { grid-area: num; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); }
-  html.visual-novo #view-home .os-card .os-num::after { content: ' ·'; }
-  html.visual-novo #view-home .os-card .os-urg { grid-area: urg; font-size: 11px; padding: 2px 6px; }
-  html.visual-novo #view-home .os-card .os-status { grid-area: st; margin: 0 !important; font-size: 11.5px; font-weight: 600; padding: 2px 8px; }
-  html.visual-novo #view-home .os-card .os-card-prod { grid-area: prod; margin: 0; font-size: 15px; font-weight: 600; min-width: 0;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  html.visual-novo #view-home .os-card .os-card-linha.l1 { grid-area: linha; margin: 0; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  html.visual-novo #view-home .os-card .os-card-txt { grid-area: txt; margin-top: 2px; font-size: 14px; color: var(--ink); }
-  html.visual-novo #view-home .hm-card .bloco-editar { margin: 4px 0 12px !important; background: none !important; padding: 6px 0 !important; min-height: 0; }
+  #home-manut .hm-card:not(.hm-dobra) { padding: 0 var(--pad) !important; margin-bottom: var(--gap-bloco) !important; border: 1px solid var(--line) !important;
+    border-radius: var(--raio) !important; box-shadow: none !important; background: var(--surface) !important; }
+  #home-manut .hm-card:not(.hm-dobra) > .section-label,
+  #home-manut .hm-card:not(.hm-dobra) > .bloco-topo { margin: 0 !important; padding: 12px 0 8px; }
+  #home-manut .hm-data { font-size: var(--fs-legenda); font-weight: 500; }
+  #home-manut .hm-tudo-certo { padding: 14px !important; font-size: 14px; }
+  #view-home .hm-card .bloco-editar { margin: 4px 0 12px !important; background: none !important; padding: 6px 0 !important; min-height: 0; }
 
   /* o resto do dia (Próximos 7 dias, revisões, componentes, encaminhamentos): linhas com o número e a seta */
-  html.visual-novo #home-manut .hm-dobra { padding: 0 14px !important; margin-bottom: 8px !important; border: 1px solid var(--line) !important;
-    border-radius: 12px !important; box-shadow: none !important; background: var(--surface) !important; }
-  html.visual-novo #home-manut .hm-dobra > summary { min-height: 50px; font-size: 15px !important; }
-  html.visual-novo #home-manut .hm-dobra[open] { padding-bottom: 10px !important; }
-  html.visual-novo #home-manut .hm-dobra[open] > summary { margin-bottom: 0 !important; }
-  html.visual-novo #home-manut .hm-dobra .painel-item,
-  html.visual-novo #home-manut .hm-dobra .pv-item,
-  html.visual-novo #home-manut .hm-dobra .enc-card { margin: 0 !important; padding: 10px 0 !important; border: none !important; border-top: 1px solid var(--line) !important;
+  #home-manut .hm-dobra { padding: 0 var(--pad) !important; margin-bottom: 8px !important; border: 1px solid var(--line) !important;
+    border-radius: var(--raio) !important; box-shadow: none !important; background: var(--surface) !important; }
+  #home-manut .hm-dobra > summary { min-height: 50px; font-size: var(--fs-texto) !important; }
+  #home-manut .hm-dobra[open] { padding-bottom: 10px !important; }
+  #home-manut .hm-dobra[open] > summary { margin-bottom: 0 !important; }
+  #home-manut .hm-dobra .painel-item,
+  #home-manut .hm-dobra .pv-item,
+  #home-manut .hm-dobra .enc-card { margin: 0 !important; padding: 10px 0 !important; border: none !important; border-top: 1px solid var(--line) !important;
     border-radius: 0 !important; box-shadow: none !important; background: none !important; }
-  .app-visual { display: block; margin: 0 auto 10px; }
+
+  /* ---------- OS em linha (Início, agenda e lista de OS) ----------
+     produtor e situação em cima, "OS 0016 · tipo · data · técnico" embaixo, motivo em até 2 linhas */
+  .os-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "prod prod urg st" "num linha linha linha" "txt txt txt txt";
+    column-gap: 6px; row-gap: 2px; align-items: center; }
+  .os-card > * { grid-column: 1 / -1; }
+  .os-card-topo { display: contents; }
+  .os-card .os-num { grid-area: num; font-size: var(--fs-legenda); font-weight: 500; color: var(--ink-soft); }
+  .os-card .os-num::after { content: ' ·'; }
+  .os-card .os-urg { grid-area: urg; }
+  .os-card .os-status { grid-area: st; margin: 0; }
+  .os-card .os-card-prod { grid-area: prod; margin: 0; font-size: var(--fs-texto); font-weight: 600; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .os-card .os-card-linha.l1 { grid-area: linha; margin: 0; font-size: var(--fs-legenda); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .os-card .os-card-linha.l1.atraso { white-space: normal; }
+  .os-card .os-card-txt { grid-area: txt; margin-top: 2px; font-size: 14px; color: var(--ink); }
+  .os-card .os-card-linha { font-size: var(--fs-legenda); margin-top: 2px; }
+  .lista > .os-card { padding: 11px var(--pad); }
+  /* dentro de um bloco com respiro (Início e agenda da semana): linha fina entre as OS, sem cartão */
+  .hm-card .os-card, .os-agenda-lista .os-card { padding: 11px 0 !important; margin: 0 !important; border: none !important; border-top: 1px solid var(--line) !important;
+    border-radius: 0 !important; box-shadow: none !important; background: none !important; }
+
+  /* ---------- Ordens de serviço ---------- */
+  .os-agenda-card .bloco-topo { margin-bottom: 4px; }
+  .os-agenda-lista { margin-top: 10px; }
+  .os-agenda-lista > .leite-ficha-sub { padding: 10px 0 0; margin: 0 !important; border-top: 1px solid var(--line); }
+  .os-agenda-lista .agenda-linha { padding: 0 0 10px; }
+
+  /* ---------- Produtores ---------- */
+  .rota-atalho { min-height: var(--linha-min); padding: 8px var(--pad); margin-bottom: var(--gap-bloco); border: 1px solid var(--line); }
+  .rota-atalho-txt b { font-weight: 600; }
+  #produtor-list > .produtor-card { padding: 11px 100px 11px var(--pad); min-height: var(--linha-min); cursor: pointer; }
+  .produtor-card .produtor-name { font-size: var(--fs-texto); font-weight: 600; margin: 0 0 1px; }
+  .produtor-card .produtor-local { margin: 0; }
+  .produtor-card .proxima { margin-top: 2px; }
+  .produtor-card .selos-produtor { margin-top: 5px; }
+  .produtor-card .rota-toggle { top: 0; bottom: 0; right: var(--pad); height: 32px; min-height: 32px; margin: auto 0; padding: 0 10px; font-size: var(--fs-mini); font-weight: 600; }
+
+  /* ---------- Tarefas (encaminhamentos) ---------- */
+  .lista > .enc-card { padding: 11px var(--pad); }
+  .enc-card .enc-setor { font-size: var(--fs-legenda); font-weight: 600; }
+  .enc-card .enc-prod { font-weight: 600; margin-top: 3px; }
+  .enc-card .enc-motivo { font-size: 14px; margin-top: 1px; -webkit-line-clamp: 2; }
+  .enc-card .enc-meta { margin-top: 3px; }
+
+  /* ---------- Plano preventivo e componentes da ficha ---------- */
+  .lista > .pv-item { padding: 10px var(--pad); min-height: var(--linha-min); }
+  .pv-item .pv-nome { font-weight: 600; }
+
+  /* ---------- Ficha do produtor ---------- */
+  .ficha-botoes { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .ficha-botoes .btn-secondary { padding: 0 12px; }
+  .ficha-botoes .btn-secondary .ic { display: none; }
+  .ficha-painel .add-record-btn { margin-bottom: var(--gap-bloco); }
+  /* resumo do topo (última visita, próxima revisão…): uma faixa com divisórias, como os números do Início */
+  .ficha-resumo.ficha-resumo-topo { gap: 0; margin: 12px 0 var(--gap-bloco); padding: 0; border: 1px solid var(--line); border-radius: var(--raio); background: var(--surface); }
+  .ficha-resumo-topo .fr-tile { flex: 1 0 140px; width: auto; border: none !important; border-radius: 0 !important; background: none; }
+  .ficha-resumo-topo .fr-tile + .fr-tile { border-left: 1px solid var(--line) !important; }
+  .fr-rot { font-size: var(--fs-mini); font-weight: 500; }
+  .fr-val { font-weight: 600; }
+  .lista > .record { padding: 12px var(--pad); }
+  .lista > .eq-card { padding: 10px var(--pad); }
+  .lista > .eq-card .eq-ico { width: 40px; height: 40px; border-radius: var(--raio-p); }
+
+  /* ---------- Mais ---------- */
+  #view-mais > .card { padding: 0 var(--pad) !important; }
+  #view-mais > .card > .section-label { margin: 0 !important; padding: 12px 0 2px; }
+  #view-mais > .card > .campo-dica { margin: 0 0 12px; }
+  #view-mais > .card.os-relatorio { padding-bottom: var(--pad) !important; }
+  .mais-item { min-height: var(--linha-min); font-weight: 600; }
+  /* seta no fim de quem abre outra tela (o Excel só baixa, fica sem) */
+  .mais-item:not(.exportar-excel)::after { content: ''; flex-shrink: 0; width: 18px; height: 18px; margin-left: auto; background: var(--ink-soft);
+    -webkit-mask: var(--m-chevron-right) center / contain no-repeat; mask: var(--m-chevron-right) center / contain no-repeat; }
+  .mais-item:has(.mais-n:not([hidden]))::after { margin-left: 8px; }
+
+  /* ---------- Administração: uma lista só, cada item abre ao tocar ---------- */
+  .adm-lista > .adm-dobra { padding: 0 var(--pad) !important; }
+  .adm-lista > .adm-dobra > summary { min-height: var(--linha-min); padding: 10px 0; }
+  .adm-lista > .adm-dobra[open] { padding-bottom: var(--pad) !important; }
+  .adm-lista > .adm-dobra[open] > summary { margin-bottom: 6px; }
+  .adm-lista .adm-tit { font-size: var(--fs-texto) !important; }
 
 </style>
 </head>
@@ -2986,73 +3017,75 @@
     <div class="detail-header"><h1>Administração</h1></div>
 
     <!-- cada item é uma linha; toque para abrir. Pedidos de acesso abre sozinho quando há alguém esperando. -->
-    <details class="card adm-dobra" id="adm-sec-pedidos">
-      <summary><span class="adm-tit">Pedidos de acesso</span><span class="adm-n" id="adm-pendentes-n"></span></summary>
-      <div id="adm-pendentes"></div>
-      <div class="leite-ficha-sub" id="adm-pendentes-vazio">Nenhum pedido esperando.</div>
-    </details>
+    <div class="lista adm-lista">
+      <details class="card adm-dobra" id="adm-sec-pedidos">
+        <summary><span class="adm-tit">Pedidos de acesso</span><span class="adm-n" id="adm-pendentes-n"></span></summary>
+        <div id="adm-pendentes"></div>
+        <div class="leite-ficha-sub" id="adm-pendentes-vazio">Nenhum pedido esperando.</div>
+      </details>
 
-    <details class="card adm-dobra">
-      <summary><span class="adm-tit">Usuários</span><span class="adm-resumo">Papéis, permissões e bloqueio</span></summary>
-      <button type="button" class="bloco-editar adm-acao" id="adm-adicionar">+ Adicionar pessoa</button>
-      <div id="adm-usuarios"></div>
-      <div class="leite-ficha-sub" id="adm-usuarios-vazio" hidden>Ninguém cadastrado ainda.</div>
-    </details>
+      <details class="card adm-dobra">
+        <summary><span class="adm-tit">Usuários</span><span class="adm-resumo">Papéis, permissões e bloqueio</span></summary>
+        <button type="button" class="bloco-editar adm-acao" id="adm-adicionar">+ Adicionar pessoa</button>
+        <div id="adm-usuarios"></div>
+        <div class="leite-ficha-sub" id="adm-usuarios-vazio" hidden>Ninguém cadastrado ainda.</div>
+      </details>
 
-    <details class="card adm-dobra" id="adm-sec-config">
-      <summary><span class="adm-tit">Configurações gerais</span><span class="adm-resumo">ICMS, margem, comissão e limites do PMLS</span></summary>
-      <button type="button" class="bloco-editar adm-acao" id="adm-config-alterar">✎ Alterar</button>
-      <div class="leite-ficha-sub" id="adm-config-resumo"></div>
-    </details>
+      <details class="card adm-dobra" id="adm-sec-config">
+        <summary><span class="adm-tit">Configurações gerais</span><span class="adm-resumo">ICMS, margem, comissão e limites do PMLS</span></summary>
+        <button type="button" class="bloco-editar adm-acao" id="adm-config-alterar">✎ Alterar</button>
+        <div class="leite-ficha-sub" id="adm-config-resumo"></div>
+      </details>
+
+      <details class="card adm-dobra">
+        <summary><span class="adm-tit">Catálogo de peças</span><span class="adm-resumo">Aparecem para escolher na OS</span></summary>
+        <button type="button" class="bloco-editar adm-acao" id="adm-peca-nova">+ Peça</button>
+        <div class="field" style="margin:8px 0 6px"><input type="text" id="adm-pecas-busca" placeholder="Buscar peça" autocomplete="off" aria-label="Buscar peça no catálogo"></div>
+        <div id="adm-pecas"></div>
+        <div class="leite-ficha-sub" id="adm-pecas-vazio">Nenhuma peça cadastrada.</div>
+      </details>
+
+      <details class="card adm-dobra" id="adm-prev-card">
+        <summary><span class="adm-tit">Plano preventivo</span><span class="adm-resumo">Vida útil dos componentes</span></summary>
+        <button type="button" class="bloco-editar adm-acao" id="adm-prev-novo">+ Componente</button>
+        <div class="campo-dica" style="margin-top:0">Na ordenha, a próxima troca sai do uso de cada produtor. Toque num componente para alterar.</div>
+        <div class="leite-ficha-sub" id="adm-prev-origem" hidden></div>
+        <div id="adm-prev-comps"></div>
+        <div class="leite-ficha-sub" id="adm-prev-vazio" hidden>Nenhum componente no plano.</div>
+      </details>
+
+      <details class="card adm-dobra">
+        <summary><span class="adm-tit">Referências técnicas</span><span class="adm-resumo">Ordenhadeira, resfriador e conforto (ITU)</span></summary>
+        <button type="button" class="bloco-editar adm-acao" id="adm-prev-ref-alterar">✎ Alterar</button>
+        <div class="campo-dica" style="margin-top:0">O que ficar fora da referência aparece em vermelho.</div>
+        <div id="adm-prev-ref"></div>
+      </details>
+
+      <details class="card adm-dobra" id="adm-demo-card">
+        <summary><span class="adm-tit">Modo demonstração</span><span class="adm-demo-st" id="adm-demo-st">Desligado</span></summary>
+        <div class="leite-ficha-sub">Dados fictícios para apresentações. Vale só neste aparelho; os dados reais não mudam.</div>
+        <button type="button" class="add-record-btn adm-demo-btn" id="adm-demo-ligar"><svg class="ic" aria-hidden="true"><use href="#i-presentation"/></svg><span id="adm-demo-ligar-txt">Ligar modo demonstração</span></button>
+        <button type="button" class="btn-secondary adm-demo-btn" id="adm-demo-recriar" hidden><svg class="ic" aria-hidden="true"><use href="#i-refresh-cw"/></svg>Recriar dados de demonstração</button>
+      </details>
+
+      <details class="card adm-dobra">
+        <summary><span class="adm-tit">Backup completo</span><span class="adm-resumo">Excel com todos os dados</span></summary>
+        <div class="leite-ficha-sub">Todos os dados do app, inclusive produtores arquivados.</div>
+        <button type="button" class="add-record-btn" id="adm-backup" style="margin-top:12px;">💾 Baixar backup completo</button>
+      </details>
+
+      <details class="card adm-dobra">
+        <summary><span class="adm-tit">Registro de atividades</span><span class="adm-resumo">As últimas 200 ações</span></summary>
+        <button type="button" class="bloco-editar adm-acao" id="adm-atividades-atualizar">↻ Atualizar</button>
+        <div id="adm-atividades"></div>
+      </details>
+    </div>
 
     <div class="card" id="adm-modulos-card">
       <div class="section-label" style="margin-top:0">Módulos ativos</div>
       <div class="campo-dica" style="margin-top:0">Desligar um módulo tira ele do app para todo mundo. Nada é apagado: ao ligar de novo, tudo volta como estava. A Manutenção fica sempre ligada.</div>
       <div id="adm-modulos"></div>
     </div>
-
-    <details class="card adm-dobra">
-      <summary><span class="adm-tit">Catálogo de peças</span><span class="adm-resumo">Aparecem para escolher na OS</span></summary>
-      <button type="button" class="bloco-editar adm-acao" id="adm-peca-nova">+ Peça</button>
-      <div class="field" style="margin:8px 0 6px"><input type="text" id="adm-pecas-busca" placeholder="Buscar peça" autocomplete="off" aria-label="Buscar peça no catálogo"></div>
-      <div id="adm-pecas"></div>
-      <div class="leite-ficha-sub" id="adm-pecas-vazio">Nenhuma peça cadastrada.</div>
-    </details>
-
-    <details class="card adm-dobra" id="adm-prev-card">
-      <summary><span class="adm-tit">Plano preventivo</span><span class="adm-resumo">Vida útil dos componentes</span></summary>
-      <button type="button" class="bloco-editar adm-acao" id="adm-prev-novo">+ Componente</button>
-      <div class="campo-dica" style="margin-top:0">Na ordenha, a próxima troca sai do uso de cada produtor. Toque num componente para alterar.</div>
-      <div class="leite-ficha-sub" id="adm-prev-origem" hidden></div>
-      <div id="adm-prev-comps"></div>
-      <div class="leite-ficha-sub" id="adm-prev-vazio" hidden>Nenhum componente no plano.</div>
-    </details>
-
-    <details class="card adm-dobra">
-      <summary><span class="adm-tit">Referências técnicas</span><span class="adm-resumo">Ordenhadeira, resfriador e conforto (ITU)</span></summary>
-      <button type="button" class="bloco-editar adm-acao" id="adm-prev-ref-alterar">✎ Alterar</button>
-      <div class="campo-dica" style="margin-top:0">O que ficar fora da referência aparece em vermelho.</div>
-      <div id="adm-prev-ref"></div>
-    </details>
-
-    <details class="card adm-dobra" id="adm-demo-card">
-      <summary><span class="adm-tit">Modo demonstração</span><span class="adm-demo-st" id="adm-demo-st">Desligado</span></summary>
-      <div class="leite-ficha-sub">Dados fictícios para apresentações. Vale só neste aparelho; os dados reais não mudam.</div>
-      <button type="button" class="add-record-btn adm-demo-btn" id="adm-demo-ligar"><svg class="ic" aria-hidden="true"><use href="#i-presentation"/></svg><span id="adm-demo-ligar-txt">Ligar modo demonstração</span></button>
-      <button type="button" class="btn-secondary adm-demo-btn" id="adm-demo-recriar" hidden><svg class="ic" aria-hidden="true"><use href="#i-refresh-cw"/></svg>Recriar dados de demonstração</button>
-    </details>
-
-    <details class="card adm-dobra">
-      <summary><span class="adm-tit">Backup completo</span><span class="adm-resumo">Excel com todos os dados</span></summary>
-      <div class="leite-ficha-sub">Todos os dados do app, inclusive produtores arquivados.</div>
-      <button type="button" class="add-record-btn" id="adm-backup" style="margin-top:12px;">💾 Baixar backup completo</button>
-    </details>
-
-    <details class="card adm-dobra">
-      <summary><span class="adm-tit">Registro de atividades</span><span class="adm-resumo">As últimas 200 ações</span></summary>
-      <button type="button" class="bloco-editar adm-acao" id="adm-atividades-atualizar">↻ Atualizar</button>
-      <div id="adm-atividades"></div>
-    </details>
   </div>
 
   <!-- HOME -->
@@ -3339,7 +3372,7 @@
       <select id="pv-f-comp" aria-label="Componente"></select>
     </div>
     <div class="lista-contagem" id="pv-contagem"></div>
-    <div id="pv-lista"></div>
+    <div id="pv-lista" class="lista"></div>
     <div class="empty-state" id="pv-vazio" hidden></div>
   </div>
 
@@ -3392,7 +3425,7 @@
       </details>
       <div class="lista-contagem" id="os-contagem"></div>
     </div>
-    <div id="os-lista"></div>
+    <div id="os-lista" class="lista"></div>
     <div class="empty-state" id="os-vazio" hidden>Nenhuma OS com esses filtros.</div>
   </div>
 
@@ -3426,7 +3459,6 @@
       </div>
     </div>
     <div class="app-versao" id="app-versao"></div>
-    <button type="button" class="cr-link app-visual" id="app-visual" data-perm="admin"></button>
   </div>
 
   <!-- ENCAMINHAMENTOS -->
@@ -3442,7 +3474,7 @@
       <button type="button" class="active" data-st="abertos">Abertos</button>
       <button type="button" data-st="resolvidos">Resolvidos</button>
     </div>
-    <div id="enc-lista"></div>
+    <div id="enc-lista" class="lista"></div>
     <div class="empty-state" id="enc-vazio" hidden></div>
   </div>
 
@@ -3560,7 +3592,7 @@
       </div>
       <div class="lista-contagem" id="produtor-contagem"></div>
     </div>
-    <div id="produtor-list"></div>
+    <div id="produtor-list" class="lista"></div>
     <div class="empty-state" id="produtor-empty" hidden>Nenhum produtor cadastrado ainda. Toque no + para adicionar o primeiro.</div>
     <div class="lista-botoes">
       <button type="button" class="btn-secondary" id="btn-importar" data-perm="admin">📥 Importar planilha</button>
@@ -3613,7 +3645,7 @@
         <button type="button" class="bloco-editar" id="ficha-encaminhar" data-perm="algum:2">+ Encaminhar</button>
       </div>
       <div class="ficha-enc-vazio" id="ficha-enc-vazio">Nenhum encaminhamento aberto para este produtor.</div>
-      <div id="ficha-enc-lista"></div>
+      <div id="ficha-enc-lista" class="lista"></div>
     </div>
 
     <div class="ficha-abas" role="tablist" aria-label="Ficha do produtor">
@@ -3660,19 +3692,19 @@
       </div>
       <div id="manut-sub-os">
         <div class="card limp-ficha" id="limp-ficha" hidden></div>
-        <div id="visita-list"></div>
+        <div id="visita-list" class="lista"></div>
         <div class="empty-state" id="visita-empty" hidden>Nenhuma ordem de serviço ainda.</div>
       </div>
       <div id="manut-sub-equip" hidden>
         <button type="button" class="add-record-btn" id="add-equip-btn" data-perm="visitas:2">+ Cadastrar equipamento</button>
-        <div id="equip-list"></div>
+        <div id="equip-list" class="lista"></div>
         <div class="empty-state" id="equip-empty" hidden>Nenhum equipamento cadastrado. Cadastre a ordenhadeira, a bomba, o resfriador… e o histórico de cada um aparece aqui.</div>
       </div>
       <div id="manut-sub-prev" hidden>
         <div class="pv-uso" id="pv-uso"></div>
         <button type="button" class="add-record-btn" id="pv-gerar-os" data-perm="visitas:2">🛠 Gerar OS preventiva</button>
         <div class="pv-lembrete" id="pv-lembrete"></div>
-        <div id="pv-ficha-lista"></div>
+        <div id="pv-ficha-lista" class="lista"></div>
         <div class="empty-state" id="pv-ficha-vazio" hidden>Nenhum componente no plano. O Administrador cadastra em Administração → Plano de manutenção preventiva.</div>
         <div id="pv-ficha-ignorados"></div>
       </div>
@@ -5938,7 +5970,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.03.4';
+  const APP_VERSAO = '2026.11.03.5';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -12977,7 +13009,6 @@
     // com um setor só (Manutenção), o cartão de setores não tem o que escolher
     $('mais-setores-card').hidden = box.children.length < 2;
     $('app-versao').textContent = 'Auriverde · versão ' + APP_VERSAO;
-    $('app-visual').textContent = document.documentElement.classList.contains('visual-novo') ? 'Voltar ao visual atual do Início' : 'Testar o visual novo do Início';
     $('mais-quem').textContent = [nomeParaSaudar(), acesso.dono ? 'Administrador (dono do app)' : nomePapel(acesso.papel)].filter(Boolean).join(' · ');
     const meus = meusSetores().map(id => SETOR[id].nome);
     $('mais-meus-setores').textContent = meus.length ? 'Seus setores: ' + meus.join(', ') + '. Encaminhamentos para eles chegam para você.' : 'Você ainda não faz parte de nenhum setor.';
@@ -16489,13 +16520,6 @@
   $('mais-ordens').addEventListener('click', () => abrirOrdens());
   $('mais-chamado').addEventListener('click', () => abrirChamado({}));
   $('mais-tarefas').addEventListener('click', () => abrirEncaminhamentos());
-  // liga e desliga o visual novo do Início neste aparelho (é o mesmo que abrir com ?visual=novo / ?visual=antigo)
-  $('app-visual').addEventListener('click', () => {
-    const novo = !document.documentElement.classList.contains('visual-novo');
-    document.documentElement.classList.toggle('visual-novo', novo);
-    try { localStorage.setItem('auriverde_visual', novo ? 'novo' : 'antigo'); } catch (e) {}
-    showView('home');
-  });
 
   // ---------- "+ Novo" da barra: Nova OS, Chamado ou Produtor ----------
   // Na ficha de um produtor, a OS e o chamado já saem para ele (sem escolher de novo).
