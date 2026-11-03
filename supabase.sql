@@ -25,6 +25,9 @@ revoke all on public.app_config from anon, authenticated;
 -- 2. Documentos do app (tudo o que o app grava fica aqui)
 --    path    = caminho do registro, ex: produtores/abc123
 --    colecao = coleção do registro, ex: produtores  (calculada)
+--    dados   = o registro inteiro em JSON. Nenhum campo dentro dele é obrigatório:
+--              o cadastro rápido grava só nome, WhatsApp, cidade (e o GPS), e o
+--              resto do produtor fica vazio até alguém completar na ficha.
 -- ---------------------------------------------------------------------
 create table if not exists public.docs (
   path           text primary key,
