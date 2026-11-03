@@ -3,6 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+  // Visual novo do Início (versão de teste): ?visual=novo liga, ?visual=antigo volta.
+  // Fica guardado neste aparelho; roda antes do resto para a tela não piscar no visual antigo.
+  (function () {
+    try {
+      var v = new URLSearchParams(location.search).get('visual');
+      if (v === 'novo' || v === 'antigo') localStorage.setItem('auriverde_visual', v);
+      if (localStorage.getItem('auriverde_visual') === 'novo') document.documentElement.classList.add('visual-novo');
+    } catch (e) {}
+  })();
+</script>
 <script src="config.js"></script>
 <script>
   // Com o Supabase configurado em config.js, usa o banco compartilhado (login + tempo real).
@@ -2824,6 +2835,91 @@
   .ap-como-desligar { display: block; margin: 14px auto 0; }
   @media (max-width: 350px) { .ap-como-sub { display: none; } .ap-como-op { min-height: 84px; } }
 
+  /* =====================================================================
+     VISUAL NOVO DO INÍCIO (versão de teste)
+     Só vale com a classe "visual-novo" no <html>: abra o app com ?visual=novo
+     (ou Mais → "Testar o visual novo do Início"); ?visual=antigo volta ao atual.
+     Mesmas cores do app; muda o desenho: topo verde fino, números numa faixa
+     só, listas em linhas finas em vez de cartões com borda colorida e sombra.
+     ===================================================================== */
+  /* topo: faixa verde fina com logo, data e engrenagem (sem a foto e o degradê) */
+  html.visual-novo body[data-view="home"] .hero-banner {
+    min-height: 0 !important; margin-bottom: 14px !important; gap: 12px !important; border-radius: 0 !important;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px !important;
+    flex-direction: row !important; align-items: center !important; justify-content: flex-start !important;
+    background: #0F6B3F !important;
+  }
+  html.visual-novo body[data-view="home"] .hero-banner::before { display: none !important; }
+  html.visual-novo body[data-view="home"] .hero-topo { display: contents; }
+  html.visual-novo body[data-view="home"] .hero-banner .logo-badge { order: 1; padding: 4px 7px !important; border-radius: 8px !important; box-shadow: none !important; }
+  html.visual-novo body[data-view="home"] .hero-banner .logo-badge img { height: 20px !important; }
+  html.visual-novo body[data-view="home"] .hero-saud { order: 2; flex: 1; min-width: 0; }
+  html.visual-novo body[data-view="home"] .hero-saud::after,
+  html.visual-novo body[data-view="home"] .hero-entrada,
+  html.visual-novo body[data-view="home"] .hero-banner .greeting-text { display: none !important; }
+  html.visual-novo body[data-view="home"] .hero-data { margin: 0 !important; font-size: 14px !important; font-weight: 600 !important; color: #FFFFFF; }
+  html.visual-novo body[data-view="home"] .hero-config { order: 3; width: 36px !important; height: 36px !important; }
+
+  /* números do topo: uma faixa com divisórias finas */
+  html.visual-novo #ini-kpis { gap: 0 !important; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; margin-bottom: 12px !important; }
+  html.visual-novo #ini-kpis .ini-kpi { min-height: 0 !important; padding: 10px 12px !important; gap: 2px !important; border: none !important; border-radius: 0 !important;
+    background: none !important; box-shadow: none !important; }
+  html.visual-novo #ini-kpis .ini-kpi + .ini-kpi { border-left: 1px solid var(--line) !important; }
+  html.visual-novo #ini-kpis .ini-kpi-n { font-size: 22px !important; font-weight: 600 !important; }
+  html.visual-novo #ini-kpis .ini-kpi-rot { font-size: 12px !important; }
+
+  /* atalhos: botões baixos, ícone ao lado do nome */
+  html.visual-novo #ini-atalhos { gap: 8px !important; margin-bottom: 14px !important; }
+  html.visual-novo #ini-atalhos .ini-atalho { flex-direction: row !important; justify-content: flex-start !important; gap: 8px !important; min-height: 46px !important;
+    padding: 8px 10px !important; border-radius: 10px !important; box-shadow: none !important; font-size: 13.5px !important; line-height: 1.2 !important; text-align: left !important; }
+  html.visual-novo #ini-atalhos .ini-atalho-ico { flex-shrink: 0; width: 26px !important; height: 26px !important; border-radius: 7px !important; }
+  html.visual-novo #ini-atalhos .ini-atalho-ico .ic { width: 16px !important; height: 16px !important; }
+  html.visual-novo #ini-atalhos .ini-atalho-nome { min-width: 0; }
+
+  /* aviso (Limp fora): linha fina */
+  html.visual-novo #view-home .hm-aviso { padding: 10px 12px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; }
+
+  /* listas do dia: um bloco branco com o título pequeno e as OS em linhas */
+  html.visual-novo #home-manut .hm-card:not(.hm-dobra) { padding: 0 14px !important; margin-bottom: 12px !important; border: 1px solid var(--line) !important;
+    border-radius: 12px !important; box-shadow: none !important; background: var(--surface) !important; }
+  html.visual-novo #home-manut .hm-card:not(.hm-dobra) > .section-label,
+  html.visual-novo #home-manut .hm-card:not(.hm-dobra) > .bloco-topo { margin: 0 !important; padding: 12px 0 8px; }
+  html.visual-novo #home-manut .hm-tit { font-size: 13px !important; font-weight: 600 !important; color: var(--ink-soft) !important; }
+  html.visual-novo #home-manut .hm-tit.ruim { color: var(--tax) !important; }
+  html.visual-novo #home-manut .hm-tit.atencao { color: var(--soon) !important; }
+  html.visual-novo #home-manut .hm-data { font-size: 13px; font-weight: 500; }
+  html.visual-novo #home-manut .hm-tudo-certo { padding: 14px !important; font-size: 14px; }
+
+  /* OS em linha: produtor e situação em cima, "OS 0016 · tipo · data" embaixo, motivo em até 2 linhas */
+  html.visual-novo #view-home .os-card { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "prod prod urg st" "num linha linha linha" "txt txt txt txt"; column-gap: 6px; row-gap: 2px; align-items: center;
+    padding: 11px 0 !important; margin: 0 !important; border: none !important; border-top: 1px solid var(--line) !important; border-radius: 0 !important;
+    background: none !important; box-shadow: none !important; }
+  html.visual-novo #view-home .os-card:active { transform: none; filter: none; background: color-mix(in srgb, var(--ink) 5%, transparent) !important; }
+  html.visual-novo #view-home .os-card > * { grid-column: 1 / -1; }
+  html.visual-novo #view-home .os-card-topo { display: contents !important; }
+  html.visual-novo #view-home .os-card .os-num { grid-area: num; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); }
+  html.visual-novo #view-home .os-card .os-num::after { content: ' ·'; }
+  html.visual-novo #view-home .os-card .os-urg { grid-area: urg; font-size: 11px; padding: 2px 6px; }
+  html.visual-novo #view-home .os-card .os-status { grid-area: st; margin: 0 !important; font-size: 11.5px; font-weight: 600; padding: 2px 8px; }
+  html.visual-novo #view-home .os-card .os-card-prod { grid-area: prod; margin: 0; font-size: 15px; font-weight: 600; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.visual-novo #view-home .os-card .os-card-linha.l1 { grid-area: linha; margin: 0; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.visual-novo #view-home .os-card .os-card-txt { grid-area: txt; margin-top: 2px; font-size: 14px; color: var(--ink); }
+  html.visual-novo #view-home .hm-card .bloco-editar { margin: 4px 0 12px !important; background: none !important; padding: 6px 0 !important; min-height: 0; }
+
+  /* o resto do dia (Próximos 7 dias, revisões, componentes, encaminhamentos): linhas com o número e a seta */
+  html.visual-novo #home-manut .hm-dobra { padding: 0 14px !important; margin-bottom: 8px !important; border: 1px solid var(--line) !important;
+    border-radius: 12px !important; box-shadow: none !important; background: var(--surface) !important; }
+  html.visual-novo #home-manut .hm-dobra > summary { min-height: 50px; font-size: 15px !important; }
+  html.visual-novo #home-manut .hm-dobra[open] { padding-bottom: 10px !important; }
+  html.visual-novo #home-manut .hm-dobra[open] > summary { margin-bottom: 0 !important; }
+  html.visual-novo #home-manut .hm-dobra .painel-item,
+  html.visual-novo #home-manut .hm-dobra .pv-item,
+  html.visual-novo #home-manut .hm-dobra .enc-card { margin: 0 !important; padding: 10px 0 !important; border: none !important; border-top: 1px solid var(--line) !important;
+    border-radius: 0 !important; box-shadow: none !important; background: none !important; }
+  .app-visual { display: block; margin: 0 auto 10px; }
+
 </style>
 </head>
 <body>
@@ -3330,6 +3426,7 @@
       </div>
     </div>
     <div class="app-versao" id="app-versao"></div>
+    <button type="button" class="cr-link app-visual" id="app-visual" data-perm="admin"></button>
   </div>
 
   <!-- ENCAMINHAMENTOS -->
@@ -5841,7 +5938,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.03.3';
+  const APP_VERSAO = '2026.11.03.4';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -12880,6 +12977,7 @@
     // com um setor só (Manutenção), o cartão de setores não tem o que escolher
     $('mais-setores-card').hidden = box.children.length < 2;
     $('app-versao').textContent = 'Auriverde · versão ' + APP_VERSAO;
+    $('app-visual').textContent = document.documentElement.classList.contains('visual-novo') ? 'Voltar ao visual atual do Início' : 'Testar o visual novo do Início';
     $('mais-quem').textContent = [nomeParaSaudar(), acesso.dono ? 'Administrador (dono do app)' : nomePapel(acesso.papel)].filter(Boolean).join(' · ');
     const meus = meusSetores().map(id => SETOR[id].nome);
     $('mais-meus-setores').textContent = meus.length ? 'Seus setores: ' + meus.join(', ') + '. Encaminhamentos para eles chegam para você.' : 'Você ainda não faz parte de nenhum setor.';
@@ -16391,6 +16489,13 @@
   $('mais-ordens').addEventListener('click', () => abrirOrdens());
   $('mais-chamado').addEventListener('click', () => abrirChamado({}));
   $('mais-tarefas').addEventListener('click', () => abrirEncaminhamentos());
+  // liga e desliga o visual novo do Início neste aparelho (é o mesmo que abrir com ?visual=novo / ?visual=antigo)
+  $('app-visual').addEventListener('click', () => {
+    const novo = !document.documentElement.classList.contains('visual-novo');
+    document.documentElement.classList.toggle('visual-novo', novo);
+    try { localStorage.setItem('auriverde_visual', novo ? 'novo' : 'antigo'); } catch (e) {}
+    showView('home');
+  });
 
   // ---------- "+ Novo" da barra: Nova OS, Chamado ou Produtor ----------
   // Na ficha de um produtor, a OS e o chamado já saem para ele (sem escolher de novo).
