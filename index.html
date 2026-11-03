@@ -2340,6 +2340,28 @@
   .cr-rodape { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
   .cr-link { border: none; background: none; padding: 8px 0; color: var(--ink-soft); font-family: inherit; font-size: var(--fs-legenda); font-weight: 600; cursor: pointer; }
   #cr-completo { color: var(--accent-txt); }
+  /* "+ Novo" no meio da barra de baixo */
+  .tab-novo { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px;
+    min-height: 50px; padding: 0 0 2px; border: none; background: none; color: var(--accent-txt); font-family: inherit;
+    font-size: 11px; font-weight: 600; cursor: pointer; -webkit-user-select: none; user-select: none; }
+  .tab-novo-circ { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; margin-top: -18px;
+    border-radius: 50%; background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 4px var(--tab-bg, var(--surface)); }
+  .tab-novo-circ .ic { width: 24px; height: 24px; }
+  .tab-novo:active .tab-novo-circ { transform: scale(0.94); }
+  /* Novo produtor: o "+ Novo" da barra substitui o botão redondo da lista */
+  #fab-add-produtor { display: none !important; }
+  .novo-sheet h2 { margin-bottom: 8px; }
+  .novo-op { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 4px; border: none; border-bottom: 1px solid var(--line);
+    background: none; color: var(--ink); font-family: inherit; text-align: left; cursor: pointer; }
+  .novo-ico { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px;
+    background: var(--accent-suave); color: var(--accent-txt); }
+  .novo-ico .ic { width: 22px; height: 22px; }
+  .novo-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .novo-nome { font-size: var(--fs-texto); font-weight: 700; }
+  .novo-sub { font-size: var(--fs-legenda); color: var(--ink-soft); }
+  .novo-cancelar { width: 100%; margin-top: 14px; }
+  .mais-n { margin-left: auto; min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--tax); color: #FFFFFF;
+    font-size: 12px; font-weight: 700; text-align: center; }
   /* aviso curto que some sozinho */
   .aviso-rapido { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 80;
     max-width: calc(100vw - 32px); padding: 11px 18px; border-radius: 999px; background: var(--ink); color: var(--bg);
@@ -2942,7 +2964,8 @@
     <div class="ini-kpis" id="ini-kpis" hidden></div>
     <div class="ini-atalhos" id="ini-atalhos" hidden></div>
     <div id="home-manut" hidden>
-      <div class="hm-botoes">
+      <!-- Nova OS e chamado agora ficam só no "+ Novo" da barra -->
+      <div class="hm-botoes" hidden>
         <button type="button" class="add-record-btn" id="hm-nova-os" data-perm="visitas:2">+ Nova OS</button>
         <button type="button" class="btn-secondary" id="hm-chamado">📞 Abrir chamado</button>
       </div>
@@ -3226,7 +3249,8 @@
 
   <div id="view-ordens" hidden>
     <div class="detail-header"><h1>Ordens de serviço</h1><div class="leite-ficha-sub" id="os-sub"></div></div>
-    <div class="hm-botoes">
+    <!-- escondidos: Nova OS e chamado ficam no "+ Novo"; o botão continua para a tela vazia ("Nova OS") -->
+    <div class="hm-botoes" hidden>
       <button type="button" class="add-record-btn" id="os-nova" data-perm="visitas:2">+ Nova OS</button>
       <button type="button" class="btn-secondary" id="os-chamado">📞 Abrir chamado</button>
     </div>
@@ -3286,9 +3310,10 @@
     </div>
     <div class="card">
       <div class="section-label" style="margin-top:0">Atalhos</div>
-      <button type="button" class="mais-item" id="mais-ordens" data-perm="visitas:1">🛠 Ordens de serviço</button>
+      <button type="button" class="mais-item" id="mais-tarefas">✓ Tarefas <span class="mais-n" id="mais-tarefas-n" hidden></span></button>
+      <button type="button" class="mais-item" id="mais-ordens" data-perm="visitas:1" hidden>🛠 Ordens de serviço</button>
       <button type="button" class="mais-item" id="mais-preventivas" data-perm="visitas:1">🗓️ Plano preventivo</button>
-      <button type="button" class="mais-item" id="mais-chamado">📞 Abrir chamado de manutenção</button>
+      <button type="button" class="mais-item" id="mais-chamado" hidden>📞 Abrir chamado de manutenção</button>
       <button type="button" class="mais-item" id="mais-rota" data-perm="produtores:1">🗺️ Rota do dia</button>
       <button type="button" class="mais-item" id="mais-medias" data-perm="leite:1">🥛 Médias de todos os produtores</button>
       <button type="button" class="mais-item" id="mais-historico" data-perm="calc:1">🧮 Histórico de cálculos</button>
@@ -3526,7 +3551,8 @@
 
     <!-- aba Visitas -->
     <div class="ficha-painel" id="fa-visitas" data-painel="visitas" hidden>
-      <div class="os-botoes-ficha">
+      <!-- escondidos: na ficha, o "+ Novo" já abre a OS e o chamado deste produtor -->
+      <div class="os-botoes-ficha" hidden>
         <button type="button" class="add-record-btn" id="add-visita-btn" data-perm="visitas:2">+ Nova OS</button>
         <button type="button" class="btn-secondary" id="ficha-chamado">📞 Chamado</button>
       </div>
@@ -4116,16 +4142,16 @@
       <span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="f" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect class="f" width="8" height="4" x="8" y="2" rx="1" ry="1"/><path class="d" d="M12 11h4"/><path class="d" d="M12 16h4"/><path class="d" d="M8 11h.01"/><path class="d" d="M8 16h.01"/></svg><span class="tab-n" id="tab-os-n" hidden></span></span>
       <span>OS</span>
     </button>
+    <button type="button" class="tab-novo" id="tab-novo" aria-label="Novo: OS, chamado ou produtor">
+      <span class="tab-novo-circ"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
+      <span>Novo</span>
+    </button>
     <button type="button" class="tab" data-tab="visitas" data-perm="produtores:1">
       <span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="f" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle class="f" cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
       <span>Produtores</span>
     </button>
-    <button type="button" class="tab" data-tab="encaminhamentos">
-      <span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="f" cx="12" cy="12" r="10"/><path class="d" d="m9 12 2 2 4-4"/></svg><span class="tab-n" id="tab-enc-n" hidden>0</span></span>
-      <span>Tarefas</span>
-    </button>
     <button type="button" class="tab" data-tab="mais">
-      <span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="f" cx="12" cy="12" r="10"/><path class="d" d="M17 12h.01"/><path class="d" d="M12 12h.01"/><path class="d" d="M7 12h.01"/></svg></span>
+      <span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="f" cx="12" cy="12" r="10"/><path class="d" d="M17 12h.01"/><path class="d" d="M12 12h.01"/><path class="d" d="M7 12h.01"/></svg><span class="tab-n" id="tab-enc-n" hidden>0</span></span>
       <span>Mais</span>
     </button>
   </div>
@@ -4907,6 +4933,26 @@
       <button type="button" class="btn-secondary" id="cfg-comissao-cancel">Cancelar</button>
       <button type="button" class="btn-primary" id="cfg-comissao-save">Salvar</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: "+ Novo" da barra de baixo (o único lugar para criar OS, chamado ou produtor) -->
+<div class="modal-backdrop" id="modal-novo" hidden>
+  <div class="modal-sheet novo-sheet">
+    <h2>Novo</h2>
+    <button type="button" class="novo-op" id="novo-os" data-perm="visitas:2">
+      <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-list"/></svg></span>
+      <span class="novo-txt"><span class="novo-nome">Nova OS</span><span class="novo-sub" id="novo-os-sub">Escolha o produtor e registre o serviço</span></span>
+    </button>
+    <button type="button" class="novo-op" id="novo-chamado">
+      <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-headset"/></svg></span>
+      <span class="novo-txt"><span class="novo-nome">Abrir chamado</span><span class="novo-sub" id="novo-chamado-sub">Problema relatado pelo produtor, para agendar</span></span>
+    </button>
+    <button type="button" class="novo-op" id="novo-produtor" data-perm="produtores:2">
+      <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span>
+      <span class="novo-txt"><span class="novo-nome">Novo produtor</span><span class="novo-sub">Cadastro rápido: nome, WhatsApp e cidade</span></span>
+    </button>
+    <button type="button" class="btn-secondary novo-cancelar" id="novo-cancelar">Cancelar</button>
   </div>
 </div>
 
@@ -5795,7 +5841,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.03';
+  const APP_VERSAO = '2026.11.03.2';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -5837,7 +5883,7 @@
   const TAB_DA_VIEW = {
     entrada: 'home', admin: 'mais', home: 'home', calc: 'mais', historico: 'mais', produtores: 'visitas', produtor: 'visitas', rota: 'visitas',
     leite: 'home', medias: 'home', pmls: 'home', vendas: 'mais', 'venda-form': 'mais', venda: 'mais',
-    encaminhamentos: 'encaminhamentos', mais: 'mais', ordens: 'ordens', preventivas: 'ordens'
+    encaminhamentos: 'mais', mais: 'mais', ordens: 'ordens', preventivas: 'ordens'
   };
   function showView(name) {
     // sem acesso liberado, a única tela é a de entrada
@@ -12988,6 +13034,9 @@
     const badge = $('tab-enc-n');
     badge.textContent = n > 99 ? '99+' : String(n);
     badge.hidden = !n;
+    // Tarefas saiu da barra e fica no Mais: o número aparece na aba Mais e no item Tarefas
+    $('mais-tarefas-n').textContent = badge.textContent;
+    $('mais-tarefas-n').hidden = !n;
     renderSetoresHome();
     if (!$('view-home').hidden) renderInicio();
     if (!$('view-encaminhamentos').hidden) renderEncaminhamentos();
@@ -16305,6 +16354,35 @@
   $('nav-ordens').addEventListener('click', () => abrirOrdens());
   $('mais-ordens').addEventListener('click', () => abrirOrdens());
   $('mais-chamado').addEventListener('click', () => abrirChamado({}));
+  $('mais-tarefas').addEventListener('click', () => abrirEncaminhamentos());
+
+  // ---------- "+ Novo" da barra: Nova OS, Chamado ou Produtor ----------
+  // Na ficha de um produtor, a OS e o chamado já saem para ele (sem escolher de novo).
+  function produtorDaFicha() {
+    return document.body.dataset.view === 'produtor' && currentProdutorId ? produtores.find(p => p.id === currentProdutorId) : null;
+  }
+  function abrirNovo() {
+    const p = produtorDaFicha();
+    $('novo-os-sub').textContent = p ? 'Para ' + p.nome : 'Escolha o produtor e registre o serviço';
+    $('novo-chamado-sub').textContent = p ? 'Para ' + p.nome + ', para agendar' : 'Problema relatado pelo produtor, para agendar';
+    $('modal-novo').hidden = false;
+  }
+  function fecharNovo() { $('modal-novo').hidden = true; }
+  $('tab-novo').addEventListener('click', abrirNovo);
+  $('novo-cancelar').addEventListener('click', fecharNovo);
+  $('modal-novo').addEventListener('click', e => { if (e.target === $('modal-novo')) fecharNovo(); });
+  $('novo-os').addEventListener('click', () => {
+    const p = produtorDaFicha();
+    fecharNovo();
+    if (p) abrirNovaOSDoProdutor(p.id, fichaVoltarPara);
+    else novaOSEscolhendoProdutor(voltarDaTelaAtual());
+  });
+  $('novo-chamado').addEventListener('click', () => {
+    const p = produtorDaFicha();
+    fecharNovo();
+    abrirChamado(p ? { produtorId: p.id } : {});
+  });
+  $('novo-produtor').addEventListener('click', () => { fecharNovo(); abrirCadastroRapido(); });
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
   $('os-chamado').addEventListener('click', () => abrirChamado({}));
@@ -19842,6 +19920,7 @@
       if (!$('dialogo').hidden) { fecharDialogo(false); armar(); return; }
       if (!$('foto-viewer').hidden) { fecharVisualizador(); if (algumaJanela()) armar(); else rearmar(); return; }
       if (!$('modal-filtros').hidden) { $('modal-filtros').hidden = true; rearmar(); return; }
+      if (!$('modal-novo').hidden) { $('modal-novo').hidden = true; rearmar(); return; }
       if (algumaJanela()) { armar(); return; }
       if (telaAtual().startsWith('p-')) { apVoltar(telaAtual()); rearmar(); return; }
       if (!$('topo').hidden && topoVoltarAlvo) { topoVoltarAlvo.click(); rearmar(); return; }
