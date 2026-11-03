@@ -1,0 +1,48 @@
+# Mantém o Supabase acordado.
+# No plano grátis, o Supabase pausa o projeto quando o banco passa uma semana sem uso
+# (foi isso que deixou o app dando "Load failed"). Esta tarefa faz, todo dia, uma consulta
+# mínima ao banco com a mesma chave publicável do app, lida do config.js (não há segredo aqui).
+# Se ela falhar, o GitHub manda e-mail: abra o Supabase e veja se o projeto foi pausado.
+name: Manter o Supabase acordado
+
+on:
+  schedule:
+    - cron: '17 10 * * *'   # todo dia às 07:17, horário de Brasília (o GitHub usa UTC)
+  workflow_dispatch:        # botão "Run workflow" na aba Actions, para rodar na hora
+  push:
+    branches: [main]
+    paths: ['.github/workflows/manter-supabase.yml']
+
+permissions:
+  actions: write            # só para o último passo (manter esta tarefa ligada)
+
+jobs:
+  acordar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Consulta mínima ao banco
+        env:
+          CONFIG: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/config.js
+        run: |
+          cfg=$(curl -fsS --retry 3 "$CONFIG")
+          url=$(printf '%s\n' "$cfg" | sed -n "s/^ *supabaseUrl: *[\"']\([^\"']*\)[\"'].*/\1/p")
+          chave=$(printf '%s\n' "$cfg" | sed -n "s/^ *supabaseKey: *[\"']\([^\"']*\)[\"'].*/\1/p")
+          if [ -z "$url" ] || [ -z "$chave" ]; then echo "::error::config.js sem supabaseUrl ou supabaseKey"; exit 1; fi
+          # GraphQL "{ __typename }": roda uma função dentro do banco e não lê nenhum dado do app
+          codigo=$(curl -sS --retry 3 --retry-all-errors -o resposta.json -w '%{http_code}' -X POST "$url/graphql/v1" \
+            -H "apikey: $chave" -H "Content-Type: application/json" -d '{"query":"{ __typename }"}') || codigo=000
+          if [ "$codigo" != 200 ]; then
+            echo "::error::O Supabase não respondeu (HTTP $codigo). Veja se o projeto foi pausado."
+            head -c 300 resposta.json 2>/dev/null; exit 1
+          fi
+          echo "Supabase respondeu (HTTP 200): banco acordado."
+
+      - name: Manter esta tarefa ligada
+        # repositório público: o GitHub desliga tarefas agendadas depois de 60 dias sem mudanças
+        # no repositório; religar pela API a cada execução mantém esta ativa
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh api -X PUT "repos/$REPO/actions/workflows/manter-supabase.yml/enable" && echo "Tarefa mantida ligada."

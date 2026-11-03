@@ -21,6 +21,7 @@ App instalável (PWA) hospedado no GitHub Pages, com banco compartilhado no Supa
 | `sw.js`, `manifest.webmanifest`, `icon-*.png` | instalação e uso sem internet |
 | `img/` | logo do topo e ícone da aba do navegador |
 | `fontes/` | fonte IBM Plex Sans da tela (`.woff2`) e do PDF (`.ttf`, baixada só ao gerar PDF) |
+| `.github/workflows/manter-supabase.yml` | tarefa diária que não deixa o Supabase pausar (ver abaixo) |
 
 Ao trocar um arquivo de `img/` ou `fontes/`, aumente a `VERSAO` no `sw.js`: esses arquivos ficam guardados no celular e só são baixados de novo quando a versão muda.
 
@@ -31,6 +32,14 @@ Ao trocar um arquivo de `img/` ou `fontes/`, aumente a `VERSAO` no `sw.js`: esse
 4. Supabase → **Project Settings → API**: copie **Project URL** e **Publishable (anon) key** para o `config.js`.
 5. Suba todos os arquivos no GitHub e ative o GitHub Pages.
 6. Abra o app, **crie a conta com o e-mail do dono** — ela entra direto como Administrador.
+
+## Supabase sem pausar
+No plano grátis, o Supabase pausa o projeto quando o banco fica uma semana sem uso, e o app passa a dar "Load failed".
+Para isso não acontecer, a tarefa **Manter o Supabase acordado** (aba **Actions** do GitHub) faz todo dia, às 07:17,
+uma consulta mínima ao banco com a chave publicável do `config.js`. Ela não lê nem grava dados do app.
+- Se a tarefa falhar, o GitHub manda e-mail. Entre no Supabase e, se o projeto estiver pausado, clique em **Restore**.
+- O Supabase também avisa por e-mail uma semana antes de pausar.
+- Para rodar na hora: Actions → Manter o Supabase acordado → **Run workflow**.
 
 ## Nunca coloque no config.js
 A chave **service_role / secret** nem a senha do banco.
