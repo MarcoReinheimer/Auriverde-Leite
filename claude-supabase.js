@@ -105,35 +105,31 @@
   }
 
   // ---------- tela de login ----------
+  // usa as cores e medidas do app (tokens do index.html), então segue o modo claro/escuro escolhido;
+  // o valor depois da vírgula em cada var() só vale se o estilo do app não tiver carregado
   const CSS = `
-  #av-login{position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0f4d39 0%,#1F6F54 45%,#EFF2F0 45.1%);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 32px) 16px 32px;font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;color:#16211C}
+  #av-login{position:fixed;inset:0;z-index:99999;overflow-y:auto;padding-bottom:32px;background:var(--bg,#F3F5F2);color:var(--ink,#16221B);font-family:var(--fonte,'IBM Plex Sans',system-ui,-apple-system,sans-serif)}
   #av-login[hidden]{display:none}
-  #av-login .av-box{width:100%;max-width:400px}
-  #av-login .av-logo{width:64px;height:64px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18);margin-bottom:14px}
-  #av-login .av-logo img{width:52px;height:52px;object-fit:contain}
-  #av-login h1{color:#fff;font-size:24px;margin:0 0 4px;font-weight:700}
-  #av-login .av-sub{color:rgba(255,255,255,.85);font-size:14.5px;margin:0 0 22px}
-  #av-login .av-card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 6px 24px rgba(0,0,0,.12)}
-  #av-login h2{font-size:18px;margin:0 0 14px}
-  #av-login label{display:block;font-size:13px;font-weight:600;color:#55645C;margin:0 0 6px}
-  #av-login input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:12px;border:1px solid #D8DED9;border-radius:10px;background:#F6F8F7;color:#16211C;margin-bottom:14px}
-  #av-login input:focus{outline:none;border-color:#1F6F54}
-  #av-login .av-btn{width:100%;padding:13px;border:none;border-radius:10px;background:#1F6F54;color:#fff;font:inherit;font-size:16px;font-weight:600;cursor:pointer}
+  #av-login .av-topo{display:flex;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:#0F6B3F}
+  #av-login .av-logo{display:inline-flex;align-items:center;padding:4px 7px;border-radius:8px;background:#fff}
+  #av-login .av-logo img{display:block;height:20px}
+  #av-login .av-box{box-sizing:border-box;width:100%;max-width:400px;margin:0 auto;padding:24px 16px 0}
+  #av-login h1{font-size:22px;font-weight:700;line-height:1.2;margin:0 0 4px}
+  #av-login .av-sub{color:var(--ink-soft,#5A6A60);font-size:14px;margin:0 0 18px}
+  #av-login .av-card{background:var(--surface,#fff);border:1px solid var(--line,#E1E7E2);border-radius:var(--raio,12px);padding:18px var(--pad,14px)}
+  #av-login h2{font-size:17px;font-weight:600;margin:0 0 14px}
+  #av-login label{display:block;font-size:13px;font-weight:600;color:var(--ink-soft,#5A6A60);margin:0 0 6px}
+  #av-login input{box-sizing:border-box;width:100%;min-height:50px;margin-bottom:14px;padding:12px 14px;border:1.5px solid var(--line,#E1E7E2);border-radius:12px;background:var(--bg,#F3F5F2);color:var(--ink,#16221B);font:inherit;font-size:16px}
+  #av-login input:focus{outline:none;border-color:var(--accent,#007A3D)}
+  #av-login .av-btn{width:100%;min-height:50px;padding:12px;border:none;border-radius:12px;background:var(--accent,#007A3D);color:var(--accent-ink,#fff);font:inherit;font-size:16px;font-weight:600;cursor:pointer}
   #av-login .av-btn[disabled]{opacity:.6}
-  #av-login .av-links{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
-  #av-login .av-link{background:none;border:none;color:#1F6F54;font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:6px 0}
+  #av-login .av-links{display:flex;justify-content:space-between;gap:8px;margin-top:8px;flex-wrap:wrap}
+  #av-login .av-link{min-height:40px;padding:8px 0;border:none;background:none;color:var(--accent-txt,#007A3D);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
   #av-login .av-msg{font-size:14px;line-height:1.45;border-radius:10px;padding:10px 12px;margin-bottom:14px}
-  #av-login .av-msg.erro{background:#FBE9E5;color:#9A3A22}
-  #av-login .av-msg.ok{background:#E3F2EA;color:#1F6F54}
-  #av-login .av-rodape{text-align:center;color:#55645C;font-size:12.5px;margin-top:16px}
-  @media (prefers-color-scheme: dark){
-    #av-login{background:linear-gradient(160deg,#0b2a20 0%,#123d2f 45%,#121815 45.1%);color:#ECF2EE}
-    #av-login .av-card{background:#1B2420}
-    #av-login input{background:#121815;border-color:#2C3934;color:#ECF2EE}
-    #av-login label,#av-login .av-rodape{color:#93A399}
-    #av-login .av-link{color:#6FC7A0}
-  }
-  #av-sair{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:60;background:rgba(255,255,255,.92);border:1px solid #D8DED9;color:#55645C;border-radius:999px;padding:9px 14px;font:600 13px 'IBM Plex Sans',system-ui,sans-serif;cursor:pointer}
+  #av-login .av-msg.erro{background:color-mix(in srgb,var(--tax,#B5412B) 12%,var(--surface,#fff));color:var(--tax,#B5412B)}
+  #av-login .av-msg.ok{background:var(--accent-suave,#E3F1E9);color:var(--accent-txt,#007A3D)}
+  #av-login .av-rodape{text-align:center;color:var(--ink-soft,#5A6A60);font-size:12.5px;margin-top:16px}
+  #av-sair{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:60;padding:9px 14px;border:1px solid var(--line,#E1E7E2);border-radius:999px;background:var(--surface,#fff);color:var(--ink-soft,#5A6A60);font:600 13px var(--fonte,'IBM Plex Sans',system-ui,sans-serif);cursor:pointer}
   body:not([data-view="entrada"]) #av-sair{display:none}
   `;
   let caixa = null;
@@ -145,11 +141,10 @@
     caixa = document.createElement('div');
     caixa.id = 'av-login';
     caixa.hidden = true;
-    const icone = document.querySelector('link[rel="apple-touch-icon"]');
     caixa.innerHTML =
+      '<div class="av-topo"><span class="av-logo"><img alt="Auriverde" src="img/logo-auriverde.png"></span></div>' +
       '<div class="av-box">' +
-      '<div class="av-logo"><img alt="Auriverde" src="' + (icone ? icone.getAttribute('href') : 'icon-180.png') + '"></div>' +
-      '<h1>Auriverde</h1><p class="av-sub">Manutenção de ordenha, resfriador e conforto animal</p>' +
+      '<h1>Boas-vindas à Auriverde</h1><p class="av-sub">Manutenção de ordenha, resfriador e conforto animal</p>' +
       '<div class="av-card" id="av-card"></div>' +
       '<div class="av-rodape">Seus dados ficam protegidos: cada pessoa só vê o que tem permissão.</div>' +
       '</div>';
