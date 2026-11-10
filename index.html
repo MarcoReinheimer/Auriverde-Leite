@@ -5082,11 +5082,16 @@
 
     <div class="os-sec">
       <div class="os-sec-tit">Margem</div>
+      <div class="field">
+        <label>Origem das peças (ICMS)</label>
+        <div class="toggle" id="om-origem"><button type="button" data-o="dentro">Dentro de SC</button><button type="button" data-o="fora">Fora de SC</button></div>
+      </div>
       <div class="rate-row">
-        <div class="field"><label for="om-margem">Margem sobre a Ordemax (%)</label><input type="text" inputmode="decimal" id="om-margem" class="mono-input" placeholder="Ex.: 30" autocomplete="off"></div>
+        <div class="field"><label for="om-margem">Margem (%)</label><input type="text" inputmode="decimal" id="om-margem" class="mono-input" autocomplete="off"></div>
         <div class="field"><label for="om-validade">Validade (dias)</label><input type="text" inputmode="numeric" id="om-validade" class="mono-input" autocomplete="off"></div>
       </div>
-      <div class="campo-dica">Para um grupo com margem diferente, toque no valor da margem dele.</div>
+      <div class="campo-dica" id="om-conta"></div>
+      <div class="campo-dica">Para um grupo com margem diferente, digite no campo dele.</div>
       <div class="lista om-grupos" id="om-grupos"></div>
       <div class="os-totais" id="om-totais"></div>
     </div>
@@ -5105,7 +5110,8 @@
 
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="om-fechar">Fechar</button>
-      <button type="button" class="btn-primary" id="om-gerar">Gerar PDF</button>
+      <button type="button" class="btn-secondary" id="om-baixar">Baixar PDF</button>
+      <button type="button" class="btn-primary" id="om-enviar">Enviar</button>
     </div>
   </div>
 </div>
@@ -6099,7 +6105,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.10.1';
+  const APP_VERSAO = '2026.11.10.2';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -16765,11 +16771,15 @@
     return r;
   }
 
-  let ordemaxAtual = null;
+  // preço de cada grupo pela mesma conta da Calculadora: (custo − ICMS da origem) ÷ divisor, divisor = (80 − margem) ÷ 100
+  let ordemaxAtual = null, omOrigem = 'fora';
   const arredOm = n => Math.round(n * 100) / 100;
   const pctLido = v => { const s = String(v == null ? '' : v).trim(); return s === '' ? null : parseMoney(s); };
-  function margemDoGrupo(g) { const m = g.margem != null ? g.margem : pctLido($('om-margem').value); return Number.isFinite(m) ? m : 0; }
-  function valorComMargem(g) { return arredOm(g.valor * (1 + margemDoGrupo(g) / 100)); }
+  const margemValida = m => Number.isFinite(m) && m > 0 && m < 80;
+  function margemGeral() { const m = pctLido($('om-margem').value); return margemValida(m) ? m : Number(config.margemPadrao); }
+  function margemDoGrupo(g) { return margemValida(g.margem) ? g.margem : margemGeral(); }
+  function valorComMargem(g) { return arredOm(precoPelaFormula(g.valor, omOrigem, margemDoGrupo(g))); }
+  function pintarOrigemOm() { $('om-origem').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.o === omOrigem)); }
   function renderOrdemax() {
     const o = ordemaxAtual;
     const box = $('om-grupos');
@@ -16784,14 +16794,17 @@
       d.querySelector('.om-g-sub').textContent = 'Ordemax ' + fmt(g.valor) + ' · ' + plural(g.itens.length, 'peça', 'peças');
       const inp = d.querySelector('input');
       inp.value = g.margem != null ? String(g.margem).replace('.', ',') : '';
-      inp.placeholder = String(pctLido($('om-margem').value) || 0).replace('.', ',');
+      inp.placeholder = numTxt(margemGeral());
       inp.classList.toggle('proprio', g.margem != null);
       inp.addEventListener('change', () => { g.margem = pctLido(inp.value); renderOrdemax(); });
       box.appendChild(d);
     });
     const custo = arredOm(o.grupos.reduce((s, g) => s + g.valor, 0));
     const total = arredOm(o.grupos.reduce((s, g) => s + valorComMargem(g), 0));
-    $('om-totais').innerHTML = '<div><span>Custo Ordemax</span><span></span></div><div><span>Margem</span><span></span></div><div class="tot"><span>Total do orçamento</span><span></span></div>';
+    const div = (80 - margemGeral()) / 100;
+    $('om-conta').textContent = 'Mesma conta da Calculadora: (custo − ICMS ' + numTxt(aliquotaDaOrigem(omOrigem)) + '%) ÷ ' +
+      div.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '. Margem padrão da Auriverde: ' + numTxt(config.margemPadrao) + '%.';
+    $('om-totais').innerHTML = '<div><span>Custo Ordemax</span><span></span></div><div><span>Diferença sobre o custo</span><span></span></div><div class="tot"><span>Total do orçamento</span><span></span></div>';
     const v = $('om-totais').querySelectorAll('div span:last-child');
     v[0].textContent = fmt(custo);
     v[1].textContent = fmt(arredOm(total - custo)) + (custo ? ' (' + fmtPct((total / custo - 1) * 100) + ')' : '');
@@ -16811,7 +16824,9 @@
     $('om-telefone').value = '';
     $('om-pagamento').value = o.pagamento || '';
     $('om-obs').value = o.obs || '';
-    $('om-margem').value = cfg.margem != null ? String(cfg.margem).replace('.', ',') : '';
+    $('om-margem').value = numTxt(config.margemPadrao);
+    omOrigem = cfg.origem === 'dentro' ? 'dentro' : 'fora';
+    pintarOrigemOm();
     $('om-validade').value = String(cfg.validade || o.validade || 7);
     $('om-empresa').value = cfg.empresa || 'Auriverde';
     renderOrdemax();
@@ -16819,6 +16834,7 @@
     $('modal-ordemax').querySelector('.modal-sheet').scrollTop = 0;
   }
   $('om-margem').addEventListener('input', renderOrdemax);
+  $('om-origem').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { omOrigem = b.dataset.o; pintarOrigemOm(); renderOrdemax(); }));
   $('om-escolher').addEventListener('click', () => {
     escolherProdutor('Orçamento para qual produtor?', pid => {
       const p = produtoresTodos.find(x => x.id === pid) || produtores.find(x => x.id === pid);
@@ -16843,16 +16859,16 @@
     }
   });
 
-  async function gerarPdfOrdemax() {
+  // modo 'baixar' salva o PDF no aparelho; 'enviar' abre o compartilhar (WhatsApp…) e, se não der, baixa
+  async function gerarPdfOrdemax(modo) {
     const o = ordemaxAtual;
     if (!o) return;
     const cliente = $('om-cliente').value.trim();
     if (!cliente) { avisar('Preencha o nome do cliente.'); return; }
-    const margem = pctLido($('om-margem').value);
     const validade = Math.max(1, Math.round(parseMoney($('om-validade').value) || 7));
     const empresa = $('om-empresa').value.split('\n').map(s => s.trim()).filter(Boolean);
-    gravarLS('auriverde_ordemax', { margem, validade, empresa: empresa.join('\n') });
-    const btn = $('om-gerar'), txt = btn.textContent;
+    gravarLS('auriverde_ordemax', { origem: omOrigem, validade, empresa: empresa.join('\n') });
+    const btn = $(modo === 'baixar' ? 'om-baixar' : 'om-enviar'), txt = btn.textContent;
     btn.disabled = true; btn.textContent = 'Gerando PDF…';
     try {
       const JsPDF = await carregarJsPDF();
@@ -16935,7 +16951,7 @@
       let compartilhou = false;
       try {
         const f = new File([blob], nome, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.share && navigator.canShare({ files: [f] })) {
+        if (modo !== 'baixar' && navigator.canShare && navigator.share && navigator.canShare({ files: [f] })) {
           await navigator.share({ files: [f], title: 'Orçamento ' + cliente, text: 'Segue o orçamento da Auriverde: ' + fmt(total) + '.' });
           compartilhou = true;
         }
@@ -16947,7 +16963,8 @@
       btn.disabled = false; btn.textContent = txt;
     }
   }
-  $('om-gerar').addEventListener('click', gerarPdfOrdemax);
+  $('om-baixar').addEventListener('click', () => gerarPdfOrdemax('baixar'));
+  $('om-enviar').addEventListener('click', () => gerarPdfOrdemax('enviar'));
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
   $('os-chamado').addEventListener('click', () => abrirChamado({}));
