@@ -2998,6 +2998,25 @@
   .os-form .modal-actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
     background: var(--bg); border-top: 1px solid var(--line); }
 
+  /* ---------- Orçamento Ordemax ---------- */
+  .om-form.modal-sheet { background: var(--bg); padding-left: 12px; padding-right: 12px; padding-bottom: 0; scroll-padding-bottom: 84px; }
+  .om-form h2 { padding: 0 4px; margin-bottom: 2px !important; }
+  .om-sub { padding: 0 4px; margin: 0 0 12px; font-size: var(--fs-legenda); color: var(--ink-soft); }
+  .om-aviso { margin: 0 0 12px; padding: 10px 12px; border-radius: var(--raio-p); background: var(--soon-bg); color: var(--soon); font-size: var(--fs-legenda); font-weight: 600; }
+  .om-form .os-sec { margin: 0 0 var(--gap-bloco); padding: 12px var(--pad) 2px; border: 1px solid var(--line); border-radius: var(--raio); background: var(--surface); }
+  .om-form .os-sec-tit { margin: 0 0 10px; font-size: var(--fs-legenda) !important; font-weight: 600 !important; color: var(--ink-soft) !important; }
+  .om-escolher { display: flex; margin: 0 0 12px; }
+  .om-grupos { margin: 4px 0 12px; }
+  .om-grupo { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; row-gap: 2px; align-items: center; padding: 10px 12px; }
+  .om-g-nome { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+  .om-g-final { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .om-g-sub { font-size: 12.5px; color: var(--ink-soft); }
+  .om-g-margem { display: inline-flex; align-items: center; justify-self: end; gap: 2px; font-size: 12.5px; color: var(--ink-soft); }
+  .om-g-margem input { width: 64px; min-height: 32px !important; padding: 4px 6px !important; font-size: 14px !important; text-align: right; border-radius: 8px !important; }
+  .om-g-margem input.proprio { border-color: var(--accent) !important; color: var(--accent-txt); font-weight: 600; }
+  .om-form .modal-actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg); border-top: 1px solid var(--line); }
+
 </style>
 </head>
 <body>
@@ -5046,6 +5065,51 @@
 </div>
 
 <!-- MODAL: escolher produtor (registrar a partir da tela do setor) -->
+<!-- MODAL: orçamento a partir do PDF da Ordemax -->
+<div class="modal-backdrop" id="modal-ordemax" hidden>
+  <div class="modal-sheet modal-grande om-form">
+    <h2>Orçamento Ordemax</h2>
+    <div class="om-sub" id="om-sub"></div>
+    <div class="om-aviso" id="om-aviso" hidden></div>
+
+    <div class="os-sec">
+      <div class="os-sec-tit">Cliente</div>
+      <button type="button" class="bloco-editar om-escolher" id="om-escolher">Escolher produtor cadastrado</button>
+      <div class="field"><label for="om-cliente">Nome</label><input type="text" id="om-cliente" autocomplete="off"></div>
+      <div class="field"><label for="om-endereco">Endereço</label><input type="text" id="om-endereco" autocomplete="off"></div>
+      <div class="field"><label for="om-telefone">Telefone / WhatsApp</label><input type="tel" inputmode="tel" id="om-telefone" autocomplete="off"></div>
+    </div>
+
+    <div class="os-sec">
+      <div class="os-sec-tit">Margem</div>
+      <div class="rate-row">
+        <div class="field"><label for="om-margem">Margem sobre a Ordemax (%)</label><input type="text" inputmode="decimal" id="om-margem" class="mono-input" placeholder="Ex.: 30" autocomplete="off"></div>
+        <div class="field"><label for="om-validade">Validade (dias)</label><input type="text" inputmode="numeric" id="om-validade" class="mono-input" autocomplete="off"></div>
+      </div>
+      <div class="campo-dica">Para um grupo com margem diferente, toque no valor da margem dele.</div>
+      <div class="lista om-grupos" id="om-grupos"></div>
+      <div class="os-totais" id="om-totais"></div>
+    </div>
+
+    <div class="os-sec">
+      <div class="os-sec-tit">Condições</div>
+      <div class="field"><label for="om-pagamento">Condição de pagamento</label><input type="text" id="om-pagamento" autocomplete="off"></div>
+      <div class="field"><label for="om-obs">Observações</label><textarea id="om-obs"></textarea></div>
+    </div>
+
+    <div class="os-sec">
+      <div class="os-sec-tit">Dados da Auriverde no orçamento</div>
+      <div class="field"><textarea id="om-empresa" placeholder="Auriverde&#10;CNPJ 00.000.000/0000-00&#10;Endereço · Cidade/SC&#10;Telefone"></textarea>
+        <div class="campo-dica">Uma informação por linha. Fica guardado neste aparelho para os próximos orçamentos.</div></div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="om-fechar">Fechar</button>
+      <button type="button" class="btn-primary" id="om-gerar">Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="modal-escolher-produtor" hidden>
   <div class="modal-sheet">
     <h2 id="mep-titulo">Escolha o produtor</h2>
@@ -5128,6 +5192,11 @@
       <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-forward"/></svg></span>
       <span class="novo-txt"><span class="novo-nome">Encaminhar</span><span class="novo-sub" id="novo-enc-sub">Tarefa para outro setor ou pessoa</span></span>
     </button>
+    <button type="button" class="novo-op" id="novo-ordemax" data-perm="visitas:2">
+      <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-file-up"/></svg></span>
+      <span class="novo-txt"><span class="novo-nome">Orçamento Ordemax</span><span class="novo-sub">Importa o PDF do Configmax e aplica a margem</span></span>
+    </button>
+    <input type="file" id="ordemax-arq" accept="application/pdf,.pdf" hidden>
     <button type="button" class="novo-op" id="novo-produtor" data-perm="produtores:2">
       <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span>
       <span class="novo-txt"><span class="novo-nome">Novo produtor</span><span class="novo-sub">Cadastro rápido: nome, WhatsApp e cidade</span></span>
@@ -6030,7 +6099,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.03.9';
+  const APP_VERSAO = '2026.11.10.1';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -16616,6 +16685,269 @@
     if (p) abrirNovoEncaminhamento({ produtorId: p.id });
   });
   $('novo-produtor').addEventListener('click', () => { fecharNovo(); abrirCadastroRapido(); });
+
+  // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
+  // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
+  // aplica a margem em cada grupo e gera o orçamento com os dados da Auriverde. O PDF não sai do aparelho.
+  const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+  const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  let pdfjsPromise = null;
+  function carregarPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfjsPromise) {
+      pdfjsPromise = new Promise((ok, falha) => {
+        const s = document.createElement('script');
+        s.src = PDFJS_URL;
+        s.onload = () => {
+          if (!window.pdfjsLib) { pdfjsPromise = null; falha(new Error('o leitor de PDF não carregou')); return; }
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+          ok(window.pdfjsLib);
+        };
+        s.onerror = () => { pdfjsPromise = null; falha(new Error('sem internet para baixar o leitor de PDF')); };
+        document.head.appendChild(s);
+      });
+    }
+    return pdfjsPromise;
+  }
+  // o texto do PDF em linhas, na ordem de leitura (de cima para baixo e da esquerda para a direita)
+  async function linhasDoPdf(buf) {
+    const pdfjs = await carregarPdfJs();
+    const pdf = await pdfjs.getDocument({ data: buf }).promise;
+    const linhas = [];
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const { items } = await (await pdf.getPage(n)).getTextContent();
+      const porY = [];
+      items.forEach(it => {
+        if (!it.str || !it.str.trim()) return;
+        const x = it.transform[4], y = it.transform[5];
+        let l = porY.find(q => Math.abs(q.y - y) < 2.5);
+        if (!l) { l = { y, partes: [] }; porY.push(l); }
+        l.partes.push({ x, s: it.str, fim: x + (it.width || 0) });
+      });
+      porY.sort((a, b) => b.y - a.y).forEach(l => {
+        l.partes.sort((a, b) => a.x - b.x);
+        let txt = '', fim = null;
+        l.partes.forEach(p => { if (fim != null && p.x - fim > 1) txt += ' '; txt += p.s; fim = p.fim; });
+        linhas.push(txt.replace(/\s+/g, ' ').trim());
+      });
+    }
+    return linhas;
+  }
+  function lerOrcamentoOrdemax(linhas) {
+    const r = { titulo: '', cliente: '', endereco: '', pagamento: '', obs: '', grupos: [], total: 0, validade: 0 };
+    const depois = (rot, l) => l.replace(new RegExp('^' + rot + '\\s*:\\s*', 'i'), '').trim();
+    let grupo = null, m;
+    linhas.forEach(l => {
+      if (/^Configura[cç][aã]o d/i.test(l)) { r.titulo = l.replace(/\s*Pedido n.*$/i, '').trim(); return; }
+      if (/^CLIENTE\s*:/i.test(l)) {
+        const e = l.search(/\s+ENDERE[CÇ]O\s*:/i);
+        r.cliente = depois('CLIENTE', e > 0 ? l.slice(0, e) : l);
+        if (e > 0) r.endereco = depois('ENDERE[CÇ]O', l.slice(e).trim());
+        return;
+      }
+      if (/^COND\.? ?PAGAMENTO\s*:/i.test(l)) { r.pagamento = depois('COND\\.? ?PAGAMENTO', l); return; }
+      if (/^TRANSPORTADORA\s*:/i.test(l)) return;
+      if (/^OBSERVA[CÇ][OÕ]ES\s*:/i.test(l)) { r.obs = depois('OBSERVA[CÇ][OÕ]ES', l); return; }
+      if ((m = l.match(/^Valor Total\s*:?\s*R\$\s*([\d.]+,\d{2})/i))) { r.total = parseMoney(m[1]); return; }
+      if ((m = l.match(/v[aá]lido por (\d+) dias/i))) { r.validade = Number(m[1]); return; }
+      if (/^Configmax\b/i.test(l)) return;
+      // grupo: nome em maiúsculas e o valor do grupo ("UNIDADE FINAL R$ 10.113,95")
+      if ((m = l.match(/^([^a-z]+?)\s+R\$\s*([\d.]+,\d{2})$/)) && /[A-Z]/.test(m[1])) {
+        grupo = { nome: m[1].trim(), valor: parseMoney(m[2]), margem: null, itens: [] };
+        r.grupos.push(grupo);
+        return;
+      }
+      // peça: código, descrição, quantidade e unidade ("128799-0 Tubo Inox 75mm 6 Mt")
+      if (grupo && (m = l.match(/^(\S+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)(?:\s+([A-Za-z]{1,4}))?$/))) {
+        grupo.itens.push({ codigo: m[1], descricao: m[2], qtd: m[3].replace('.', ','), un: m[4] || '' });
+      }
+    });
+    return r;
+  }
+
+  let ordemaxAtual = null;
+  const arredOm = n => Math.round(n * 100) / 100;
+  const pctLido = v => { const s = String(v == null ? '' : v).trim(); return s === '' ? null : parseMoney(s); };
+  function margemDoGrupo(g) { const m = g.margem != null ? g.margem : pctLido($('om-margem').value); return Number.isFinite(m) ? m : 0; }
+  function valorComMargem(g) { return arredOm(g.valor * (1 + margemDoGrupo(g) / 100)); }
+  function renderOrdemax() {
+    const o = ordemaxAtual;
+    const box = $('om-grupos');
+    box.innerHTML = '';
+    o.grupos.forEach(g => {
+      const d = document.createElement('div');
+      d.className = 'om-grupo';
+      d.innerHTML = '<span class="om-g-nome"></span><span class="om-g-final"></span>' +
+        '<span class="om-g-sub"></span><label class="om-g-margem"><input type="text" inputmode="decimal" class="mono-input" aria-label="Margem do grupo">%</label>';
+      d.querySelector('.om-g-nome').textContent = g.nome;
+      d.querySelector('.om-g-final').textContent = fmt(valorComMargem(g));
+      d.querySelector('.om-g-sub').textContent = 'Ordemax ' + fmt(g.valor) + ' · ' + plural(g.itens.length, 'peça', 'peças');
+      const inp = d.querySelector('input');
+      inp.value = g.margem != null ? String(g.margem).replace('.', ',') : '';
+      inp.placeholder = String(pctLido($('om-margem').value) || 0).replace('.', ',');
+      inp.classList.toggle('proprio', g.margem != null);
+      inp.addEventListener('change', () => { g.margem = pctLido(inp.value); renderOrdemax(); });
+      box.appendChild(d);
+    });
+    const custo = arredOm(o.grupos.reduce((s, g) => s + g.valor, 0));
+    const total = arredOm(o.grupos.reduce((s, g) => s + valorComMargem(g), 0));
+    $('om-totais').innerHTML = '<div><span>Custo Ordemax</span><span></span></div><div><span>Margem</span><span></span></div><div class="tot"><span>Total do orçamento</span><span></span></div>';
+    const v = $('om-totais').querySelectorAll('div span:last-child');
+    v[0].textContent = fmt(custo);
+    v[1].textContent = fmt(arredOm(total - custo)) + (custo ? ' (' + fmtPct((total / custo - 1) * 100) + ')' : '');
+    v[2].textContent = fmt(total);
+  }
+  function abrirOrdemax(o, nomeArq) {
+    ordemaxAtual = o;
+    const cfg = lerLS('auriverde_ordemax', {});
+    $('om-sub').textContent = [o.titulo, nomeArq].filter(Boolean).join(' · ');
+    const soma = arredOm(o.grupos.reduce((s, g) => s + g.valor, 0));
+    const avisos = [];
+    if (o.total && Math.abs(soma - o.total) > 0.05) avisos.push('A soma dos grupos (' + fmt(soma) + ') não bate com o total do PDF (' + fmt(o.total) + '). Confira antes de enviar.');
+    $('om-aviso').textContent = avisos.join(' ');
+    $('om-aviso').hidden = !avisos.length;
+    $('om-cliente').value = o.cliente || '';
+    $('om-endereco').value = o.endereco || '';
+    $('om-telefone').value = '';
+    $('om-pagamento').value = o.pagamento || '';
+    $('om-obs').value = o.obs || '';
+    $('om-margem').value = cfg.margem != null ? String(cfg.margem).replace('.', ',') : '';
+    $('om-validade').value = String(cfg.validade || o.validade || 7);
+    $('om-empresa').value = cfg.empresa || 'Auriverde';
+    renderOrdemax();
+    $('modal-ordemax').hidden = false;
+    $('modal-ordemax').querySelector('.modal-sheet').scrollTop = 0;
+  }
+  $('om-margem').addEventListener('input', renderOrdemax);
+  $('om-escolher').addEventListener('click', () => {
+    escolherProdutor('Orçamento para qual produtor?', pid => {
+      const p = produtoresTodos.find(x => x.id === pid) || produtores.find(x => x.id === pid);
+      if (!p) return;
+      $('om-cliente').value = p.nome || '';
+      $('om-endereco').value = localDoProdutor(p) || '';
+      $('om-telefone').value = p.telefone || '';
+    });
+  });
+  $('om-fechar').addEventListener('click', () => { $('modal-ordemax').hidden = true; });
+  $('novo-ordemax').addEventListener('click', () => { fecharNovo(); $('ordemax-arq').value = ''; $('ordemax-arq').click(); });
+  $('ordemax-arq').addEventListener('change', async () => {
+    const f = $('ordemax-arq').files && $('ordemax-arq').files[0];
+    if (!f) return;
+    avisoRapido('Lendo o PDF…');
+    try {
+      const o = lerOrcamentoOrdemax(await linhasDoPdf(await f.arrayBuffer()));
+      if (!o.grupos.length) { avisar('Não encontrei os grupos de peças neste PDF. Ele precisa ser o orçamento gerado pelo Configmax da Ordemax.'); return; }
+      abrirOrdemax(o, f.name);
+    } catch (e) {
+      avisar('Não consegui ler o PDF: ' + (e && e.message ? e.message : e));
+    }
+  });
+
+  async function gerarPdfOrdemax() {
+    const o = ordemaxAtual;
+    if (!o) return;
+    const cliente = $('om-cliente').value.trim();
+    if (!cliente) { avisar('Preencha o nome do cliente.'); return; }
+    const margem = pctLido($('om-margem').value);
+    const validade = Math.max(1, Math.round(parseMoney($('om-validade').value) || 7));
+    const empresa = $('om-empresa').value.split('\n').map(s => s.trim()).filter(Boolean);
+    gravarLS('auriverde_ordemax', { margem, validade, empresa: empresa.join('\n') });
+    const btn = $('om-gerar'), txt = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Gerando PDF…';
+    try {
+      const JsPDF = await carregarJsPDF();
+      const doc = registrarFontePdf(new JsPDF({ unit: 'mm', format: 'a4' }));
+      const F = doc.__fonte, W = 210, M = 15, D = W - M;
+      const VERDE = [0, 122, 61], CINZA = [90, 106, 96], TINTA = [22, 34, 27], LINHA = [225, 231, 226];
+      let y = 15;
+      const novaPagina = h => { if (y + h > 280) { doc.addPage(); y = 15; } };
+      const texto = (s, x, yy, opt) => doc.text(pdfTxt(s), x, yy, opt);
+      // cabeçalho: logo e dados da Auriverde
+      const logo = logoParaPdf();
+      if (logo) doc.addImage(logo, 'PNG', M, y, 27, 18.2);
+      doc.setTextColor(...TINTA); doc.setFont(F, 'bold'); doc.setFontSize(11);
+      texto(empresa[0] || 'Auriverde', D, y + 4, { align: 'right' });
+      doc.setFont(F, 'normal'); doc.setFontSize(8.5); doc.setTextColor(...CINZA);
+      empresa.slice(1, 6).forEach((l, i) => texto(l, D, y + 8.5 + i * 4, { align: 'right' }));
+      y += 26;
+      doc.setDrawColor(...VERDE); doc.setLineWidth(0.6); doc.line(M, y, D, y);
+      y += 8;
+      doc.setTextColor(...TINTA); doc.setFont(F, 'bold'); doc.setFontSize(15);
+      texto('Orçamento', M, y);
+      doc.setFont(F, 'normal'); doc.setFontSize(9); doc.setTextColor(...CINZA);
+      texto('Emitido em ' + fmtDate(todayISO()) + ' · válido por ' + validade + ' dias', D, y, { align: 'right' });
+      y += 5.5;
+      if (o.titulo) { doc.setFontSize(10); doc.setTextColor(...TINTA); texto(o.titulo.replace(/\s*n[ºo°]\s*\S+$/i, ''), M, y); y += 5; }
+      // cliente
+      y += 3;
+      doc.setFillColor(243, 245, 242); doc.roundedRect(M, y, D - M, 18, 2, 2, 'F');
+      doc.setFontSize(8); doc.setTextColor(...CINZA); texto('CLIENTE', M + 4, y + 5);
+      doc.setFont(F, 'bold'); doc.setFontSize(11); doc.setTextColor(...TINTA); texto(cliente, M + 4, y + 10.5);
+      doc.setFont(F, 'normal'); doc.setFontSize(9); doc.setTextColor(...CINZA);
+      texto([$('om-endereco').value.trim(), $('om-telefone').value.trim()].filter(Boolean).join(' · '), M + 4, y + 15);
+      y += 25;
+      // grupos e peças
+      o.grupos.forEach(g => {
+        novaPagina(16);
+        doc.setFillColor(227, 241, 233); doc.rect(M, y - 4.5, D - M, 7, 'F');
+        doc.setFont(F, 'bold'); doc.setFontSize(9.5); doc.setTextColor(...TINTA);
+        texto(g.nome, M + 2, y);
+        texto(fmt(valorComMargem(g)), D - 2, y, { align: 'right' });
+        y += 6;
+        doc.setFont(F, 'normal'); doc.setFontSize(8.5);
+        g.itens.forEach(it => {
+          const desc = doc.splitTextToSize(pdfTxt(it.descricao), 118);
+          novaPagina(desc.length * 4 + 1.5);
+          doc.setTextColor(...CINZA); texto(it.codigo, M + 2, y);
+          doc.setTextColor(...TINTA); doc.text(desc, M + 30, y);
+          texto(it.qtd + (it.un ? ' ' + it.un : ''), D - 2, y, { align: 'right' });
+          y += desc.length * 4 + 1.2;
+          doc.setDrawColor(...LINHA); doc.setLineWidth(0.15); doc.line(M + 2, y - 2.6, D - 2, y - 2.6);
+        });
+        y += 3;
+      });
+      // total
+      const total = arredOm(o.grupos.reduce((s, g) => s + valorComMargem(g), 0));
+      novaPagina(30);
+      doc.setDrawColor(...VERDE); doc.setLineWidth(0.6); doc.line(M, y, D, y);
+      y += 8;
+      doc.setFont(F, 'bold'); doc.setFontSize(13); doc.setTextColor(...VERDE);
+      texto('Total', M, y); texto(fmt(total), D, y, { align: 'right' });
+      y += 9;
+      doc.setFont(F, 'normal'); doc.setFontSize(9); doc.setTextColor(...TINTA);
+      [['Condição de pagamento', $('om-pagamento').value.trim()], ['Observações', $('om-obs').value.trim()]].forEach(([rot, val]) => {
+        if (!val) return;
+        const l = doc.splitTextToSize(pdfTxt(rot + ': ' + val), D - M);
+        novaPagina(l.length * 4.5 + 2);
+        doc.text(l, M, y); y += l.length * 4.5 + 2;
+      });
+      // assinaturas
+      novaPagina(30);
+      y += 18;
+      doc.setDrawColor(...CINZA); doc.setLineWidth(0.2);
+      doc.line(M, y, M + 75, y); doc.line(D - 75, y, D, y);
+      doc.setFontSize(8.5); doc.setTextColor(...CINZA);
+      texto(empresa[0] || 'Auriverde', M, y + 4.5); texto(cliente, D - 75, y + 4.5);
+      const n = doc.getNumberOfPages();
+      for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(...CINZA); texto('Página ' + i + ' de ' + n, D, 290, { align: 'right' }); }
+      const nome = 'orcamento-' + slug(cliente) + '-' + todayISO() + '.pdf';
+      const blob = doc.output('blob');
+      let compartilhou = false;
+      try {
+        const f = new File([blob], nome, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.share && navigator.canShare({ files: [f] })) {
+          await navigator.share({ files: [f], title: 'Orçamento ' + cliente, text: 'Segue o orçamento da Auriverde: ' + fmt(total) + '.' });
+          compartilhou = true;
+        }
+      } catch (e) { if (e && e.name === 'AbortError') compartilhou = true; }
+      if (!compartilhou) await baixarArquivo(nome, blob, 'o PDF');
+    } catch (e) {
+      avisar('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e));
+    } finally {
+      btn.disabled = false; btn.textContent = txt;
+    }
+  }
+  $('om-gerar').addEventListener('click', gerarPdfOrdemax);
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
   $('os-chamado').addEventListener('click', () => abrirChamado({}));
