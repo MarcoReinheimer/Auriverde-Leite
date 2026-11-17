@@ -2337,7 +2337,7 @@
   .adm-dobra[open] > summary { margin-bottom: 12px; }
   .adm-dobra[open] > summary::after { transform: rotate(180deg); }
   .adm-acao { display: block; margin: 0 0 10px auto; }
-  .adm-acoes-pecas { display: flex; justify-content: flex-end; gap: 8px; margin: 0 0 10px; }
+  .adm-acoes-pecas { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin: 0 0 10px; }
   .dados-completar { display: block; width: 100%; margin-top: 6px; padding: 10px 0 2px; border: none; border-top: 1px dashed var(--line);
     background: none; color: var(--accent-txt); font-family: inherit; font-size: var(--fs-legenda); font-weight: 600; text-align: left; cursor: pointer; }
   .bloco-linhas > .dados-completar:first-child { border-top: none; padding-top: 2px; }
@@ -3110,7 +3110,7 @@
 
       <details class="card adm-dobra">
         <summary><span class="adm-tit">Catálogo de peças</span><span class="adm-resumo">Aparecem para escolher na OS</span></summary>
-        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
+        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-pecas-conforto">Tabela Conforto</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
         <input type="file" id="adm-pecas-ordemax-arq" accept=".xml,text/xml,application/xml" hidden>
         <div class="field" style="margin:8px 0 6px"><input type="text" id="adm-pecas-busca" placeholder="Buscar peça" autocomplete="off" aria-label="Buscar peça no catálogo"></div>
         <div id="adm-pecas"></div>
@@ -6127,7 +6127,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.4';
+  const APP_VERSAO = '2026.11.17.5';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -15421,6 +15421,28 @@
   // protegido no arquivo, então entra em branco). Códigos que já estão no catálogo ficam como estão.
   $('adm-pecas-ordemax').addEventListener('click', () => { $('adm-pecas-ordemax-arq').value = ''; $('adm-pecas-ordemax-arq').click(); });
   $('adm-pecas-ordemax-arq').addEventListener('change', () => { const f = $('adm-pecas-ordemax-arq').files[0]; if (f) importarCatalogoOrdemax(f); });
+  // Tabela de Preço Conforto Animal da Ordemax (02/06/2025), já limpa em tabelas/: cadastra os itens novos
+  // com preço e atualiza o preço dos que já estão no catálogo (pelo código; sem código, pela descrição)
+  const TABELA_CONFORTO = 'tabelas/conforto-animal-2025-06-02.json';
+  $('adm-pecas-conforto').addEventListener('click', importarTabelaConforto);
+  async function importarTabelaConforto() {
+    let tab;
+    try { const r = await fetch(TABELA_CONFORTO); if (!r.ok) throw new Error('HTTP ' + r.status); tab = await r.json(); }
+    catch (e) { avisar('Não consegui abrir a tabela de Conforto Animal: ' + (e && e.message ? e.message : e)); return; }
+    const chave = p => (p.codigo || '').trim().toLowerCase() || 'd:' + normalizarBusca(p.descricao || '');
+    const porChave = new Map(pecasCatalogo.map(p => [chave(p), p]));
+    const novas = [], muda = [];
+    tab.itens.forEach(i => { const p = porChave.get(chave(i)); if (!p) novas.push(i); else if (Math.abs((Number(p.preco) || 0) - i.preco) > 0.004) muda.push([p, i]); });
+    if (!novas.length && !muda.length) { avisar('A tabela de Conforto Animal já está no catálogo, com os mesmos preços.'); return; }
+    const resumo = [novas.length && plural(novas.length, 'item novo', 'itens novos'), muda.length && plural(muda.length, 'preço atualizado', 'preços atualizados')].filter(Boolean).join(' e ');
+    if (!(await confirmar(tab.fonte + ': ' + resumo + '. Importar para o catálogo?', 'Importar'))) return;
+    const agora = Date.now();
+    novas.forEach(i => gravar('set', 'pecas/' + novoId(), { codigo: i.codigo, descricao: i.descricao, unidade: i.unidade, preco: i.preco, finame: i.finame, mda: i.mda,
+      origem: 'ordemax-conforto', tabela: tab.data, criadoPor: viewerId || null, criadoEm: agora }));
+    muda.forEach(([p, i]) => gravar('update', 'pecas/' + p.id, { preco: i.preco, tabela: tab.data, atualizadoPor: viewerId || null, atualizadoEm: agora }));
+    registrarAtividade('importou', 'peca', '', 'Tabela Conforto Animal: ' + resumo);
+    avisoRapido('Tabela de Conforto Animal importada');
+  }
   async function importarCatalogoOrdemax(arquivo) {
     let lidos = [];
     try {
