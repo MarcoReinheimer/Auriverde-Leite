@@ -60,6 +60,13 @@
    "qtdPadrao": 1
   },
   {
+   "descricao": "BOMBA DE ASPERSÃO 1,5CV",
+   "preco": 2800.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 0
+  },
+  {
    "descricao": "FILTRO DE BRONZE",
    "preco": 279.9,
    "unidade": "un",
@@ -88,7 +95,7 @@
    "qtdPadrao": 15
   },
   {
-   "descricao": "CANO GALVANIZADO 1/2\"",
+   "descricao": "CANO GALVANIZADO 1/2\" (BARRA DE 6 M)",
    "preco": 42.3,
    "unidade": "un",
    "grupo": "ASPERSÃO",

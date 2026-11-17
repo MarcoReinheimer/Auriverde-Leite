@@ -3049,6 +3049,14 @@
   .cz-forn.active .cz-forn-ok { display: block; }
   .cz-tipos button.active::after { content: ''; position: absolute; top: 12px; right: 12px; width: 9px; height: 9px; border-radius: 999px; background: var(--accent); }
   .cz-lista { padding: 14px 14px 2px; }
+  /* Kit aspersão: dimensionar pela pista */
+  .cz-pista { margin: 0 0 12px; padding: 14px; border: 1px solid var(--line); border-radius: var(--raio); background: var(--surface); }
+  .cz-pista .cz-etapa .ic { width: 18px; height: 18px; color: var(--accent-txt); }
+  .cz-pista-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
+  .cz-pista-campos .field { margin: 0; min-width: 0; }
+  .cz-pista-res { margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+  .cz-pista-res.pendente { font-weight: 400; color: var(--ink-soft); }
+  .cz-pista .campo-dica { margin-top: 4px; }
   .cz-ferr { position: sticky; top: 0; z-index: 3; margin: 0 -14px; padding: 8px 14px 10px; background: var(--surface); border-bottom: 1px solid var(--line); }
   .cz-busca { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--bg); cursor: text; }
   .cz-busca:focus-within { border-color: var(--accent); }
@@ -3151,6 +3159,8 @@
     .cz-cfg { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; padding: 16px; }
     .cz-tipos { grid-template-columns: 1fr; }
     .cz-lista { padding: 16px 16px 4px; }
+    .cz-pista { padding: 16px; }
+    .cz-pista-campos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .cz-ferr { margin: 0 -16px; padding: 8px 16px 12px; }
     .cz-chips { flex-wrap: wrap; margin: 12px 0 0; padding: 0; overflow: visible; }
     .cz-item { grid-template-columns: minmax(0, 1fr) 150px auto 120px; grid-template-areas: "txt preco passo sub"; gap: 16px; margin: 0 -16px; padding: 12px 16px; scroll-margin-top: 150px; }

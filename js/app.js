@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.13';
+  const APP_VERSAO = '2026.11.17.14';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -11177,6 +11177,7 @@
   function totalConforto() { return arredOm(ccTabela.reduce((s, i) => s + i.preco * (ccQtd[i.id] || 0), 0)); }
   function renderConfigurador() {
     renderFornConforto();
+    pintarPista();
     $('cc-tipo').querySelectorAll('button').forEach(b => { const on = b.dataset.t === ccTipo; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on); });
     $('cc-fonte').textContent = ccFonte;
     $('cz-busca').value = ccBusca;
@@ -11400,6 +11401,80 @@
     linha.scrollIntoView({ block: 'center', behavior: 'smooth' });
     linha.classList.remove('pisca'); void linha.offsetWidth; linha.classList.add('pisca');
   }
+  // ---------- Kit aspersão: dimensionar pela pista ----------
+  // Regras (mude aqui): espaço entre bicos (m), comprimento da barra de cano (m), barras de cano galvanizado,
+  // até quantos metros de pista vai a bomba de 1,5 CV (acima disso, a de 3 CV) e metros de pista por ventilador.
+  const REGRAS_ASPERSAO = { espacoBico: 1.6, barraCano: 6, barrasGalvanizado: 1, metrosBomba3cv: 20, metrosPorVentilador: 10 };
+  // m = metros de pista, L = linhas de bicos, d = distância da bomba até a pista (m), P = nº de postes
+  let ccPista = { m: 50, L: 1, d: 0, P: null, calculado: false };
+  const paraCima = x => Math.ceil(x - 1e-9);
+  function contaPista(p) {
+    const R = REGRAS_ASPERSAO;
+    return { L: p.L, bicos: paraCima(p.m / R.espacoBico) * p.L, canos: paraCima((p.m * p.L + p.d) / R.barraCano),
+      consolas: p.P > 0 ? p.P * p.L : 0, bomba3: p.m > R.metrosBomba3cv, ventiladores: paraCima(p.m / R.metrosPorVentilador) };
+  }
+  // quantidade de cada item do kit, pela descrição (null = a conta não mexe nesse item)
+  function qtdPistaDoItem(desc, c) {
+    const t = normalizarBusca(desc).replace(/\s+/g, ' ').trim();
+    if (/^bico de aspers/.test(t) || /^anti ?gotejo/.test(t)) return c.bicos;
+    if (/^abracadeira injetada/.test(t) || /^consol[ae] de fixa/.test(t)) return c.consolas;   // 1 consola por poste em cada linha
+    if (/^abracadeira 50/.test(t)) return c.bicos + 1;          // a mais vai no manômetro
+    if (/^cano galvanizado/.test(t)) return REGRAS_ASPERSAO.barrasGalvanizado;   // prende o cano nos postes, junto da consola
+    if (/^cano 50/.test(t)) return c.canos;
+    if (/^curva 50/.test(t) || /^adaptador 50/.test(t)) return 2 * c.L;
+    if (/^te 50/.test(t)) return c.L;
+    if (/^registro/.test(t)) return c.L + 1;
+    if (/^bomba/.test(t) && /1[,.]5 ?cv/.test(t)) return c.bomba3 ? 0 : 1;
+    if (/^bomba/.test(t) && /\b3 ?cv/.test(t)) return c.bomba3 ? 1 : 0;
+    if (/^filtro de bronze|^manometro|^valvula de retencao/.test(t)) return 1;
+    if (/^ventilador/.test(t)) return c.ventiladores;
+    return null;
+  }
+  const pistaOk = () => ccPista.m > 0 && ccPista.L >= 1;
+  function lerPista() {
+    const num = id => { const t = $(id).value.trim(); return t === '' ? null : parseMoney(t); };
+    const m = num('cz-p-metros'), L = num('cz-p-linhas'), d = num('cz-p-dist'), P = num('cz-p-postes');
+    ccPista.m = m;
+    ccPista.L = L == null ? null : Math.round(L);
+    ccPista.d = d > 0 ? d : 0;
+    ccPista.P = P == null ? null : Math.max(0, Math.round(P));
+  }
+  // preenche as quantidades do kit; depois a pessoa ainda pode mudar à mão
+  function aplicarPista() {
+    if (!pistaOk()) return;
+    const c = contaPista(ccPista);
+    ccTabela.forEach(i => { const q = qtdPistaDoItem(i.descricao, c); if (q == null) return; if (q > 0) ccQtd[i.id] = q; else delete ccQtd[i.id]; });
+    ccPista.calculado = true;
+  }
+  function pintarPista() {
+    const kit = ccForn === 'kit';
+    $('cz-pista').hidden = !kit;
+    if (!kit) return;
+    const por = (id, v) => { if (document.activeElement !== $(id)) $(id).value = v == null ? '' : String(v).replace('.', ','); };
+    por('cz-p-metros', ccPista.m); por('cz-p-linhas', ccPista.L); por('cz-p-dist', ccPista.d); por('cz-p-postes', ccPista.P);
+    const res = $('cz-pista-res'), av = $('cz-pista-aviso');
+    let aviso = '';
+    if (!pistaOk()) { res.textContent = ''; aviso = 'Informe os metros de pista e as linhas de bicos.'; }
+    else if (!ccPista.calculado) res.textContent = 'Agora estão as quantidades do kit padrão. Mude um campo para calcular pela pista.';
+    else {
+      const c = contaPista(ccPista);
+      res.textContent = [plural(c.bicos, 'bico', 'bicos'), plural(c.canos, 'barra de cano', 'barras de cano'), 'bomba ' + (c.bomba3 ? '3 CV' : '1,5 CV'),
+        plural(c.ventiladores, 'ventilador', 'ventiladores')].join(' · ');
+      if (!(ccPista.P > 0)) aviso = 'Informe o nº de postes.';
+    }
+    res.classList.toggle('pendente', !pistaOk() || !ccPista.calculado);
+    res.hidden = !res.textContent;
+    av.textContent = aviso;
+    av.hidden = !aviso;
+  }
+  ['cz-p-metros', 'cz-p-linhas', 'cz-p-dist', 'cz-p-postes'].forEach(id => {
+    $(id).addEventListener('input', () => {
+      lerPista();
+      aplicarPista();
+      pintarPista(); marcarChipsConforto(); renderItensConforto(); renderResumoConforto();
+    });
+    $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') $(id).blur(); });
+  });
   async function trocarFornConforto(f) {
     if (f === ccForn) return;
     if (ccTabela && ccTabela.some(i => ccQtd[i.id] > 0) && !(await confirmar('Trocar de fornecedor limpa os itens escolhidos. Trocar?', 'Trocar'))) return;
@@ -11407,6 +11482,8 @@
     ccQtd = {};
     // o kit já vem montado: cada item com a quantidade padrão
     ccTabela.forEach(i => { if (Number(i.qtdPadrao) > 0 && !(ccTipo === 'compost' && (i.grupo === 'BAIAS' || i.grupo === 'FREE STALL'))) ccQtd[i.id] = Number(i.qtdPadrao); });
+    // voltou para o kit depois de já ter dimensionado: refaz a conta com os mesmos campos
+    if (f === 'kit' && ccPista.calculado) aplicarPista();
     renderConfigurador();
   }
   $('nav-conforto').addEventListener('click', abrirConfiguradorConforto);
@@ -11425,6 +11502,7 @@
   $('cz-limpar').addEventListener('click', async () => {
     if (!(await confirmar('Tirar todos os itens escolhidos?', 'Limpar'))) return;
     ccQtd = {};
+    ccPista.calculado = false;
     renderConfigurador();
   });
   $('cz-ver-resumo').addEventListener('click', () => $('cz-resumo').scrollIntoView({ block: 'start', behavior: 'smooth' }));
