@@ -2417,6 +2417,7 @@
   input[type="email"] { width: 100%; min-height: 50px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink);
     font-family: inherit; font-size: 16px; box-sizing: border-box; outline: none; }
   .os-sec .rate-row { margin-bottom: 14px; }
+  .os-sec .rate-row > .field { margin-bottom: 0; }
   #manut-seg .seg-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; line-height: 1.2; }
   #manut-seg .seg-n { margin-left: 0 !important; }
   .pv-kpis .rh-tile.sel { outline-color: var(--accent) !important; }
@@ -3017,23 +3018,159 @@
   .om-g-margem { display: inline-flex; align-items: center; justify-self: end; gap: 2px; font-size: 12.5px; color: var(--ink-soft); }
   .om-g-margem input { width: 64px; min-height: 32px !important; padding: 4px 6px !important; font-size: 14px !important; text-align: right; border-radius: 8px !important; }
   .om-g-margem input.proprio { border-color: var(--accent) !important; color: var(--accent-txt); font-weight: 600; }
-  @media (max-width: 520px) {
-    #cc-forn { display: grid; grid-template-columns: 1fr 1fr; }
-    #cc-forn button { border-right: 0; }
-    #cc-forn button:nth-child(odd) { border-right: 1px solid var(--line); }
-    #cc-forn button:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  /* ---------- Configurador Conforto Animal ---------- */
+  /* celular: uma coluna que rola inteira, busca e grupos presos no alto, total preso embaixo.
+     computador: janela larga, lista à esquerda e resumo fixo à direita */
+  .cz-sheet.modal-sheet { padding: 0; background: var(--bg); }
+  .cz-sheet.modal-sheet::before { margin: 10px auto 6px; }
+  .cz-topo { display: flex; align-items: center; gap: 12px; padding: 4px 14px 12px; }
+  .cz-topo-ic { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px;
+    background: color-mix(in srgb, var(--conforto) 16%, transparent); color: var(--conforto); }
+  .cz-topo-ic .ic { width: 22px; height: 22px; }
+  .cz-topo-txt { flex: 1; min-width: 0; }
+  .cz-topo h2 { margin: 0 !important; font-size: 19px !important; line-height: 1.2; }
+  .cz-fonte { margin-top: 2px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.3; }
+  .cz-x { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px;
+    border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+  .cz-x .ic { width: 20px; height: 20px; }
+  .cz-principal { padding: 0 12px; }
+  .cz-etapa { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .cz-etapa > b { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px;
+    background: var(--accent-suave); color: var(--accent-txt); font-size: 12px; font-weight: 700; }
+  .cz-cfg, .cz-lista, .cz-resumo { border: 1px solid var(--line); border-radius: var(--raio); background: var(--surface); }
+  .cz-cfg { display: grid; gap: 16px; margin: 0 0 12px; padding: 14px; }
+  .cz-forns, .cz-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .cz-forn, .cz-tipos button { position: relative; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-height: 60px;
+    padding: 9px 30px 9px 12px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink);
+    font-family: inherit; text-align: left; cursor: pointer; }
+  .cz-forn-nome, .cz-tipos button b { font-size: 15px; font-weight: 700; line-height: 1.2; }
+  .cz-forn-sub, .cz-tipos button span { font-size: 12px; color: var(--ink-soft); line-height: 1.25; }
+  .cz-forn-nome + .cz-forn-sub { margin-top: 1px; }
+  @media (max-width: 480px) {
+    .cz-topo-ic { width: 38px; height: 38px; }
+    .cz-topo h2 { font-size: 17.5px !important; }
+    .cz-fonte { font-size: 12px; }
   }
-  .cc-grupo { margin: 0 0 8px; border: 1px solid var(--line); border-radius: var(--raio-p); background: var(--surface); }
-  .cc-grupo > summary { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; font-weight: 600; font-size: 14px; }
-  .cc-grupo > summary .cc-g-nome { flex: 1; }
-  .cc-grupo > summary .cc-g-sub { font-size: 12.5px; color: var(--accent-txt); font-weight: 600; }
-  .cc-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 9px 12px; border-top: 1px solid var(--line); }
-  .cc-i-nome { font-size: 13.5px; font-weight: 500; overflow-wrap: anywhere; }
-  .cc-i-preco { grid-column: 1; font-size: 12px; color: var(--ink-soft); }
-  .cc-passo { grid-row: 1 / span 2; grid-column: 2; display: inline-flex; align-items: center; gap: 4px; }
-  .cc-passo button { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--ink); font-size: 18px; font-weight: 600; cursor: pointer; }
-  .cc-passo input { width: 52px; min-height: 34px !important; padding: 4px !important; text-align: center; font-size: 15px !important; border-radius: 8px !important; }
-  .cc-item.on .cc-i-nome { color: var(--accent-txt); font-weight: 600; }
+  .cz-forn.active, .cz-tipos button.active { border-color: var(--accent); background: var(--accent-suave); box-shadow: inset 0 0 0 1px var(--accent); }
+  .cz-forn.active .cz-forn-nome, .cz-tipos button.active b { color: var(--accent-txt); }
+  .cz-forn-ok { position: absolute; top: 9px; right: 9px; width: 16px; height: 16px; color: var(--accent-txt); display: none; }
+  .cz-forn.active .cz-forn-ok { display: block; }
+  .cz-tipos button.active::after { content: ''; position: absolute; top: 12px; right: 12px; width: 9px; height: 9px; border-radius: 999px; background: var(--accent); }
+  .cz-lista { padding: 14px 14px 2px; }
+  .cz-ferr { position: sticky; top: 0; z-index: 3; margin: 0 -14px; padding: 8px 14px 10px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .cz-busca { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--bg); cursor: text; }
+  .cz-busca:focus-within { border-color: var(--accent); }
+  .cz-busca .ic { color: var(--ink-soft); }
+  .cz-busca input[type="search"] { flex: 1; min-width: 0; min-height: 42px !important; padding: 0 !important; border: none !important; background: transparent !important;
+    box-shadow: none !important; outline: none; color: var(--ink); }
+  .cz-chips { display: flex; gap: 6px; margin: 10px -14px 0; padding: 0 14px 2px; overflow-x: auto; scrollbar-width: none; }
+  .cz-chips::-webkit-scrollbar { display: none; }
+  .cz-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 999px;
+    background: var(--bg); color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+  .cz-chip .ic { color: var(--ink-soft); }
+  .cz-chip-n { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+    background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700; }
+  .cz-chip-n:empty { display: none; }
+  .cz-chip.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .cz-chip.active .ic { color: var(--accent-ink); }
+  .cz-chip.active .cz-chip-n { background: var(--accent-ink); color: var(--accent); }
+  .cz-g-tit { display: flex; align-items: center; gap: 8px; padding: 14px 0 8px; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+  .cz-g-tit .cz-g-n { margin-left: auto; font-weight: 500; }
+  .cz-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "txt passo" "preco sub"; gap: 6px 12px; align-items: center;
+    margin: 0 -14px; padding: 12px 14px; border-top: 1px solid var(--line); scroll-margin-top: 140px; }
+  .cz-g-tit + .cz-item { border-top-color: transparent; }
+  .cz-item.on { background: var(--accent-suave); }
+  .cz-i-txt { grid-area: txt; min-width: 0; }
+  .cz-i-nome { font-size: 14.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .cz-i-det { margin-top: 3px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.35; overflow-wrap: anywhere; }
+  .cz-i-preco { grid-area: preco; display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; }
+  .cz-i-preco b { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cz-i-preco span { font-size: 12.5px; color: var(--ink-soft); }
+  .cz-passo { grid-area: passo; display: inline-flex; align-items: center; justify-self: end; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+  .cz-passo button { width: 40px; height: 40px; border: none; background: transparent; color: var(--accent-txt); font-family: inherit; font-size: 21px; font-weight: 600; line-height: 1; cursor: pointer; }
+  .cz-passo button:disabled { color: var(--ic-vazio); cursor: default; }
+  .cz-passo input[type="text"] { width: 50px; min-height: 40px !important; padding: 0 2px !important; border: none !important; border-left: 1px solid var(--line) !important;
+    border-right: 1px solid var(--line) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+    text-align: center; font-size: 16px !important; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .cz-item.on .cz-passo { border-color: var(--accent); }
+  .cz-i-sub { grid-area: sub; justify-self: end; font-size: 14px; font-weight: 700; color: var(--accent-txt); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cz-item.pisca { animation: cz-pisca 1.4s ease-out; }
+  @keyframes cz-pisca { 0%, 40% { background: color-mix(in srgb, var(--accent) 30%, transparent); } }
+  .cz-fam { margin: 0 -14px; padding: 12px 14px; border-top: 1px solid var(--line); }
+  .cz-g-tit + .cz-fam { border-top-color: transparent; }
+  .cz-fam.on { background: var(--accent-suave); }
+  .cz-f-topo { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; }
+  .cz-f-nome { font-size: 14.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .cz-f-faixa { font-size: 12.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .cz-f-det { margin-top: 3px; font-size: 12.5px; color: var(--ink-soft); }
+  .cz-tams { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .cz-tam { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 54px; min-height: 38px; padding: 0 10px; border: 1.5px solid var(--line);
+    border-radius: 10px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .cz-tam b { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+    background: var(--accent); color: var(--accent-ink); font-size: 11.5px; }
+  .cz-tam b:empty { display: none; }
+  .cz-tam.tem { border-color: var(--accent); color: var(--accent-txt); }
+  .cz-tam.active { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+  .cz-tam.active b { background: var(--accent-ink); color: var(--accent); }
+  .cz-fam .cz-item { margin: 10px 0 0; padding: 10px 0 0; border-top: 1px dashed var(--line); background: none !important; }
+  .cz-fam .cz-item .cz-i-nome { font-size: 14px; }
+  .cz-f-dica { margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
+  .cz-vazio { padding: 28px 8px; text-align: center; font-size: 14px; color: var(--ink-soft); }
+  .cz-resumo { margin: 12px 12px 0; padding: 14px; scroll-margin-top: 12px; }
+  .cz-limpar { margin-left: auto; min-height: 32px; padding: 0 4px; border: none; background: none; color: var(--tax); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .cz-sel-vazio { display: flex; align-items: center; gap: 10px; padding: 14px; border: 1.5px dashed var(--line); border-radius: 12px; font-size: 13.5px; color: var(--ink-soft); line-height: 1.4; }
+  .cz-sel-vazio .ic { width: 22px; height: 22px; flex: none; }
+  .cz-s-g { display: flex; align-items: center; gap: 6px; padding: 12px 0 4px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+  .cz-s-g:first-child { padding-top: 0; }
+  .cz-s-g span { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .cz-s-item { display: grid; grid-template-columns: minmax(0, 1fr) auto 34px; gap: 8px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); }
+  .cz-s-txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 0; border: none; background: none; color: var(--ink); font-family: inherit; text-align: left; cursor: pointer; }
+  .cz-s-nome { font-size: 13.5px; font-weight: 600; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .cz-s-q { font-size: 12px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .cz-s-val { font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cz-s-rm { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: none; border-radius: 10px; background: none; color: var(--ink-soft); cursor: pointer; }
+  .cz-s-rm:hover { background: var(--bg); color: var(--tax); }
+  .cz-tot { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--line); }
+  .cz-tot span { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); }
+  .cz-tot strong { font-size: 21px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cz-tot-dica { margin-top: 4px; font-size: 12px; color: var(--ink-soft); }
+  .cz-continuar { display: none; flex: none !important; width: 100%; margin-top: 14px; }
+  .cz-barra { position: sticky; bottom: 0; z-index: 4; display: flex; align-items: center; gap: 10px; margin-top: 12px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--bg); border-top: 1px solid var(--line); }
+  .cz-barra-tot { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 0; border: none; background: none;
+    color: var(--ink); font-family: inherit; text-align: left; cursor: pointer; }
+  .cz-barra-tot span { font-size: 12.5px; color: var(--ink-soft); }
+  .cz-barra-tot strong { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .cz-barra .btn-primary { flex: none; min-height: 50px; padding: 0 24px; }
+  @media (hover: hover) {
+    .cz-item:not(.on):hover { background: var(--surface-2); }
+    .cz-tam:not(.active):hover, .cz-chip:not(.active):hover, .cz-forn:not(.active):hover, .cz-tipos button:not(.active):hover { border-color: var(--ink-soft); }
+    .cz-passo button:not(:disabled):hover { background: var(--accent-suave); }
+  }
+  @media (min-width: 900px) {
+    .cz-fundo { align-items: center; justify-content: center; padding: 24px; }
+    .cz-sheet.modal-sheet { display: flex; flex-direction: column; width: 100%; max-width: 1240px; height: min(920px, calc(100vh - 48px)); max-height: none !important;
+      border-radius: 20px; overflow: hidden; }
+    .cz-sheet.modal-sheet::before { display: none; }
+    .cz-topo { padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--surface); }
+    .cz-topo h2 { font-size: 21px !important; }
+    .cz-corpo { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 390px; }
+    .cz-principal { overflow-y: auto; overscroll-behavior: contain; padding: 20px 24px 24px; }
+    .cz-cfg { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; padding: 16px; }
+    .cz-tipos { grid-template-columns: 1fr; }
+    .cz-lista { padding: 16px 16px 4px; }
+    .cz-ferr { margin: 0 -16px; padding: 8px 16px 12px; }
+    .cz-chips { flex-wrap: wrap; margin: 12px 0 0; padding: 0; overflow: visible; }
+    .cz-item { grid-template-columns: minmax(0, 1fr) 150px auto 120px; grid-template-areas: "txt preco passo sub"; gap: 16px; margin: 0 -16px; padding: 12px 16px; scroll-margin-top: 150px; }
+    .cz-fam { margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+    .cz-fam .cz-item { margin: 10px 0 0; padding: 10px 0 0; }
+    .cz-i-preco { flex-direction: column; align-items: flex-end; gap: 0; text-align: right; }
+    .cz-i-sub { min-width: 0; }
+    .cz-resumo { display: flex; flex-direction: column; margin: 0; padding: 20px; border: none; border-left: 1px solid var(--line); border-radius: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .cz-sel { flex: 1; }
+    .cz-continuar { display: block; }
+    .cz-barra { display: none; }
+  }
   .om-form .om-acoes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
   .om-form .om-acoes button { padding-left: 4px; padding-right: 4px; }
   .om-form .modal-actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
@@ -5105,7 +5242,7 @@
 <!-- MODAL: orçamento a partir do PDF da Ordemax, no modelo da Auriverde (SAC-029) -->
 <div class="modal-backdrop" id="modal-ordemax" hidden>
   <div class="modal-sheet modal-grande om-form">
-    <h2>Orçamento Ordemax</h2>
+    <h2 id="om-titulo">Orçamento Ordemax</h2>
     <div class="om-sub" id="om-sub"></div>
     <div class="om-aviso" id="om-aviso" hidden></div>
 
@@ -5166,26 +5303,49 @@
   </div>
 </div>
 
-<!-- MODAL: configurador de Conforto Animal (itens da tabela da Ordemax) -->
-<div class="modal-backdrop" id="modal-conforto" hidden>
-  <div class="modal-sheet modal-grande om-form">
-    <h2>Configurador Conforto Animal</h2>
-    <div class="om-sub" id="cc-fonte"></div>
-    <div class="os-sec">
-      <div class="os-sec-tit">Fornecedor</div>
-      <div class="field"><div class="toggle" id="cc-forn"><button type="button" data-f="ordemax">Ordemax</button><button type="button" data-f="mx">MX do Brasil</button><button type="button" data-f="lero">Lero Solar</button><button type="button" data-f="feilfer">Feilfer</button></div></div>
-      <div class="os-sec-tit">Tipo do galpão</div>
-      <div class="field"><div class="toggle" id="cc-tipo"><button type="button" data-t="freestall">Free Stall</button><button type="button" data-t="compost">Compost Barn</button></div></div>
+<!-- MODAL: configurador de Conforto Animal (tabelas de preço dos fornecedores) -->
+<div class="modal-backdrop cz-fundo" id="modal-conforto" hidden>
+  <div class="modal-sheet modal-grande cz-sheet" id="cz-sheet" role="dialog" aria-modal="true" aria-labelledby="cz-titulo">
+    <div class="cz-topo">
+      <span class="cz-topo-ic"><svg class="ic" aria-hidden="true"><use href="#i-fan"/></svg></span>
+      <div class="cz-topo-txt"><h2 id="cz-titulo">Configurador Conforto Animal</h2><div class="cz-fonte" id="cc-fonte"></div></div>
+      <button type="button" class="cz-x" id="cc-fechar" aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
-    <div class="os-sec">
-      <div class="os-sec-tit">Itens</div>
-      <div class="campo-dica">Toque num grupo para abrir e ajuste a quantidade de cada item.</div>
-      <div id="cc-grupos"></div>
-      <div class="os-totais"><div class="tot"><span>Total (custo do fornecedor)</span><span id="cc-total">R$ 0,00</span></div></div>
+    <div class="cz-corpo">
+      <div class="cz-principal" id="cz-principal">
+        <section class="cz-cfg">
+          <div class="cz-cfg-forn">
+            <div class="cz-etapa"><b>1</b>Fornecedor</div>
+            <div class="cz-forns" id="cc-forn"></div>
+          </div>
+          <div class="cz-cfg-tipo">
+            <div class="cz-etapa"><b>2</b>Tipo do galpão</div>
+            <div class="cz-tipos" id="cc-tipo">
+              <button type="button" data-t="freestall"><b>Free Stall</b><span>Com baias e separadores</span></button>
+              <button type="button" data-t="compost"><b>Compost Barn</b><span>Cama coletiva, sem baias</span></button>
+            </div>
+          </div>
+        </section>
+        <section class="cz-lista">
+          <div class="cz-etapa"><b>3</b>Itens</div>
+          <div class="cz-ferr" id="cz-ferr">
+            <label class="cz-busca"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="cz-busca" placeholder="Buscar item ou código" autocomplete="off" enterkeyhint="search" aria-label="Buscar item ou código"></label>
+            <div class="cz-chips" id="cz-chips"></div>
+          </div>
+          <div class="cz-itens" id="cc-grupos"></div>
+        </section>
+      </div>
+      <aside class="cz-resumo" id="cz-resumo" aria-label="Resumo">
+        <div class="cz-etapa"><b>4</b>Resumo<button type="button" class="cz-limpar" id="cz-limpar" hidden>Limpar</button></div>
+        <div class="cz-sel" id="cz-sel"></div>
+        <div class="cz-tot"><span>Total (custo do fornecedor)</span><strong id="cc-total">R$ 0,00</strong></div>
+        <div class="cz-tot-dica">A margem e o ICMS entram no próximo passo.</div>
+        <button type="button" class="btn-primary cz-continuar" id="cc-continuar">Continuar para o orçamento</button>
+      </aside>
     </div>
-    <div class="modal-actions">
-      <button type="button" class="btn-secondary" id="cc-fechar">Fechar</button>
-      <button type="button" class="btn-primary" id="cc-continuar">Continuar para o orçamento</button>
+    <div class="cz-barra">
+      <button type="button" class="cz-barra-tot" id="cz-ver-resumo"><span id="cz-barra-qtd">Nenhum item</span><strong id="cz-barra-total">R$ 0,00</strong></button>
+      <button type="button" class="btn-primary" id="cz-barra-continuar">Continuar</button>
     </div>
   </div>
 </div>
@@ -6175,7 +6335,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.9';
+  const APP_VERSAO = '2026.11.17.10';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -16966,7 +17126,7 @@
         '<span class="om-g-sub"></span><label class="om-g-margem"><input type="text" inputmode="decimal" class="mono-input" aria-label="Margem do grupo">%</label>';
       d.querySelector('.om-g-nome').textContent = g.nome;
       d.querySelector('.om-g-final').textContent = fmt(valorComMargem(g));
-      d.querySelector('.om-g-sub').textContent = 'Ordemax ' + fmt(g.valor) + ' · ' + plural(g.itens.length, 'peça', 'peças');
+      d.querySelector('.om-g-sub').textContent = (o.fornecedor || 'Ordemax') + ' ' + fmt(g.valor) + ' · ' + (o.tipo === 'conforto' ? plural(g.itens.length, 'item', 'itens') : plural(g.itens.length, 'peça', 'peças'));
       const inp = d.querySelector('input');
       inp.value = g.margem != null ? String(g.margem).replace('.', ',') : '';
       inp.placeholder = numTxt(margemGeral());
@@ -16989,6 +17149,7 @@
   function abrirOrdemax(o, nomeArq) {
     ordemaxAtual = o;
     const cfg = lerLS('auriverde_ordemax', {});
+    $('om-titulo').textContent = o.tipo === 'conforto' ? 'Orçamento Conforto Animal' : 'Orçamento Ordemax';
     $('om-sub').textContent = [o.titulo, nomeArq].filter(Boolean).join(' · ');
     const soma = arredOm(o.grupos.reduce((s, g) => s + g.valor, 0));
     const avisos = [];
@@ -17200,74 +17361,325 @@
   const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' }, lero: { nome: 'Lero Solar', url: 'tabelas/lero-solar.json', origem: 'fora' }, feilfer: { nome: 'Feilfer', url: 'tabelas/feilfer-2026-04.json', origem: 'dentro' } };
   let ccForn = 'ordemax', ccFonte = '';
   const ccTabelas = {};
-  let ccTabela = null, ccTipo = 'freestall', ccQtd = {};
-  async function carregarFornecedor(f) {
+  let ccTabela = null, ccTipo = 'freestall', ccQtd = {}, ccGrupoSel = '', ccBusca = '', ccTamAtivo = {};
+  // tamanho da contenção (2X4 = 2 fileiras de 4 vacas): o mesmo modelo em vários tamanhos vira um cartão só
+  const RE_TAM_CONFORTO = /(^|[^\d,.])(\d{1,2})X(\d{1,2})(?![\d,.])/i;
+  const CC_ICONES = { 'VENTILAÇÃO': 'fan', 'BEZERREIRO': 'baby', 'FREE STALL': 'warehouse', 'BAIAS': 'bed-double', 'CONTENÇÃO': 'shield-check', 'BEBEDOUROS': 'droplets',
+    'PISO': 'layout-grid', 'AQUECIMENTO': 'thermometer', 'ASPERSÃO': 'snowflake', 'MANEJO': 'tractor', 'INSTALAÇÃO': 'wrench', 'ACESSÓRIOS': 'package', 'OUTROS': 'circle-ellipsis' };
+  const ORDEM_GRUPOS_CONFORTO = [...GRUPOS_CONFORTO.map(g => g[0]).filter(g => g !== 'ACESSÓRIOS'), 'ACESSÓRIOS', 'OUTROS'];
+  async function carregarTabelaConforto(f) {
     if (!ccTabelas[f]) {
       const r = await fetch(FORNECEDORES_CONFORTO[f].url); if (!r.ok) throw new Error('HTTP ' + r.status);
       const tab = await r.json();
-      ccTabelas[f] = { fonte: tab.fonte, itens: tab.itens.map((i, n) => ({ ...i, id: f + n, grupo: (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0] })) };
+      ccTabelas[f] = { fonte: tab.fonte, itens: tab.itens.map((i, n) => ({ ...i, id: f + n,
+        grupo: (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0],
+        busca: normalizarBusca(i.descricao + ' ' + (i.codigo || '')) })) };
+      const chaves = {};
+      ccTabelas[f].itens.forEach(i => {
+        const m = i.descricao.match(RE_TAM_CONFORTO);
+        if (!m) return;
+        i.tam = (m[2] + 'X' + m[3]).toUpperCase();
+        i.fam = i.grupo + '|' + normalizarBusca(i.descricao.replace(RE_TAM_CONFORTO, '$1#'));
+        chaves[i.fam] = (chaves[i.fam] || 0) + 1;
+      });
+      ccTabelas[f].itens.forEach(i => { if (i.fam && chaves[i.fam] < 2) { delete i.fam; delete i.tam; } });
     }
-    ccForn = f; ccTabela = ccTabelas[f].itens; ccFonte = ccTabelas[f].fonte;
+    return ccTabelas[f];
+  }
+  // nome do modelo sem o tamanho: "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X4" -> "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO"
+  function nomeFamiliaConforto(desc) {
+    return desc.replace(/\s*\(\s*\d{1,2}X\d{1,2}\s*\)/i, '').replace(/\s*[–-]?\s*(^|[^\d,.])\d{1,2}X\d{1,2}(?![\d,.])\s*/i, '$1 ')
+      .replace(/\s+[–-]\s*$/, '').replace(/\s+/g, ' ').trim();
+  }
+  async function carregarFornecedor(f) {
+    const t = await carregarTabelaConforto(f);
+    ccForn = f; ccTabela = t.itens; ccFonte = t.fonte; ccGrupoSel = ''; ccBusca = ''; ccTamAtivo = {};
+  }
+  // as tabelas vêm em CAIXA ALTA: na tela fica só a primeira letra maiúscula, mantendo siglas e medidas (MX, CV, MM, 2X4, 220V)
+  function textoItemConforto(s) {
+    s = String(s || '').replace(/\s+/g, ' ').trim();
+    if (s !== s.toLocaleUpperCase('pt-BR')) return s;
+    const t = s.replace(/\S+/g, w => {
+      const letras = w.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, '');
+      if (/^[A-Za-z]\/$/.test(w)) return w.toLocaleLowerCase('pt-BR');
+      if (/\d/.test(w) || (letras && !/[AEIOUÁÉÍÓÚÂÊÔÃÕÀÜ]/i.test(letras))) return w;
+      return w.toLocaleLowerCase('pt-BR');
+    });
+    return t.replace(/^[^A-Za-zÀ-ÿ]*[a-zà-ÿ]/, c => c.toLocaleUpperCase('pt-BR'));
+  }
+  // o que está entre parênteses no fim da descrição vira a linha de detalhe
+  function partesItemConforto(desc) {
+    const t = textoItemConforto(desc);
+    const m = t.match(/^(.*\S)\s*\(([^()]+)\)\s*$/);
+    return m && m[1].length > 8 ? { nome: m[1].replace(/\s*[–-]\s*$/, ''), det: m[2].trim() } : { nome: t, det: '' };
+  }
+  const unConforto = i => i.unidade === 'm' ? 'metro' : i.unidade === 'm2' ? 'm²' : 'unidade';
+  const qtdConforto = (i, q) => String(q).replace('.', ',') + (i.unidade === 'm' ? ' m' : i.unidade === 'm2' ? ' m²' : '');
+  const nomeGrupoConforto = g => g.charAt(0) + g.slice(1).toLocaleLowerCase('pt-BR');
+  function gruposVisiveisConforto() {
+    return ORDEM_GRUPOS_CONFORTO.filter(g => !(ccTipo === 'compost' && (g === 'BAIAS' || g === 'FREE STALL')) && ccTabela.some(i => i.grupo === g));
   }
   async function abrirConfiguradorConforto() {
     try { await carregarFornecedor(ccForn); }
     catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
     renderConfigurador();
     $('modal-conforto').hidden = false;
-    $('modal-conforto').querySelector('.modal-sheet').scrollTop = 0;
+    $('cz-sheet').scrollTop = 0; $('cz-principal').scrollTop = 0;
+    // as outras tabelas carregam por trás, para os cartões mostrarem quantos itens cada fornecedor tem
+    Promise.allSettled(Object.keys(FORNECEDORES_CONFORTO).map(carregarTabelaConforto)).then(() => { if (!$('modal-conforto').hidden) renderFornConforto(); });
   }
   function totalConforto() { return arredOm(ccTabela.reduce((s, i) => s + i.preco * (ccQtd[i.id] || 0), 0)); }
   function renderConfigurador() {
-    $('cc-tipo').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.t === ccTipo));
-    $('cc-forn').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.f === ccForn));
+    renderFornConforto();
+    $('cc-tipo').querySelectorAll('button').forEach(b => { const on = b.dataset.t === ccTipo; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on); });
     $('cc-fonte').textContent = ccFonte;
+    $('cz-busca').value = ccBusca;
+    const grupos = gruposVisiveisConforto();
+    if (!grupos.includes(ccGrupoSel)) ccGrupoSel = grupos[0] || '';
+    renderChipsConforto(grupos);
+    renderItensConforto();
+    renderResumoConforto();
+  }
+  function renderFornConforto() {
+    const box = $('cc-forn');
+    box.innerHTML = '';
+    Object.entries(FORNECEDORES_CONFORTO).forEach(([k, f]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cz-forn' + (k === ccForn ? ' active' : ''); b.dataset.f = k;
+      b.setAttribute('aria-pressed', k === ccForn);
+      b.innerHTML = '<span class="cz-forn-nome"></span><span class="cz-forn-sub"></span><span class="cz-forn-sub cz-forn-n"></span>' + iconeHtml('check', 'cz-forn-ok');
+      b.querySelector('.cz-forn-nome').textContent = f.nome;
+      const t = ccTabelas[k];
+      b.querySelector('.cz-forn-sub').textContent = f.origem === 'dentro' ? 'Dentro de SC' : 'Fora de SC';
+      b.querySelector('.cz-forn-n').textContent = t ? plural(t.itens.length, 'item', 'itens') : ' ';
+      b.addEventListener('click', () => trocarFornConforto(k));
+      box.appendChild(b);
+    });
+  }
+  function renderChipsConforto(grupos) {
+    const box = $('cz-chips');
+    box.innerHTML = '';
+    grupos.forEach(g => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cz-chip'; b.dataset.g = g;
+      b.innerHTML = iconeHtml(CC_ICONES[g] || 'package') + '<span></span><b class="cz-chip-n"></b>';
+      b.querySelector('span').textContent = nomeGrupoConforto(g);
+      b.addEventListener('click', () => {
+        ccGrupoSel = g; ccBusca = ''; $('cz-busca').value = '';
+        marcarChipsConforto(); renderItensConforto(); voltarAoTopoDaLista();
+        b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      });
+      box.appendChild(b);
+    });
+    marcarChipsConforto();
+  }
+  function marcarChipsConforto() {
+    $('cz-chips').querySelectorAll('.cz-chip').forEach(b => {
+      const g = b.dataset.g, n = ccTabela.filter(i => i.grupo === g && ccQtd[i.id] > 0).length, on = !ccBusca.trim() && g === ccGrupoSel;
+      b.classList.toggle('active', on); b.setAttribute('aria-pressed', on);
+      b.querySelector('.cz-chip-n').textContent = n || '';
+    });
+  }
+  // quem rola: no computador a coluna da lista, no celular a janela inteira
+  function voltarAoTopoDaLista() {
+    const p = $('cz-principal'), sc = p.scrollHeight > p.clientHeight + 1 && getComputedStyle(p).overflowY === 'auto' ? p : $('cz-sheet');
+    const d = $('cc-grupos').getBoundingClientRect().top - $('cz-ferr').getBoundingClientRect().bottom;
+    if (d < 0) sc.scrollTop += d;
+  }
+  function renderItensConforto() {
     const box = $('cc-grupos');
     box.innerHTML = '';
-    [...GRUPOS_CONFORTO.map(g => g[0]).filter(g => g !== 'ACESSÓRIOS'), 'ACESSÓRIOS', 'OUTROS'].filter(g => !(ccTipo === 'compost' && (g === 'BAIAS' || g === 'FREE STALL'))).forEach(g => {
-      const itens = ccTabela.filter(i => i.grupo === g);
-      if (!itens.length) return;
-      const det = document.createElement('details');
-      det.className = 'cc-grupo';
-      det.open = itens.some(i => ccQtd[i.id] > 0);
-      det.innerHTML = '<summary><span class="cc-g-nome"></span><span class="cc-g-sub"></span></summary>';
-      det.querySelector('.cc-g-nome').textContent = g.charAt(0) + g.slice(1).toLocaleLowerCase('pt-BR');
-      const sub = det.querySelector('.cc-g-sub');
-      const pintarSub = () => { const v = itens.reduce((s, i) => s + i.preco * (ccQtd[i.id] || 0), 0); sub.textContent = v ? fmt(v) : ''; $('cc-total').textContent = fmt(totalConforto()); };
-      itens.forEach(i => {
-        const d = document.createElement('div');
-        d.className = 'cc-item';
-        d.innerHTML = '<span class="cc-i-nome"></span><span class="cc-i-preco"></span><span class="cc-passo"><button type="button" aria-label="Menos">−</button><input type="text" inputmode="decimal" aria-label="Quantidade"><button type="button" aria-label="Mais">+</button></span>';
-        d.querySelector('.cc-i-nome').textContent = i.descricao;
-        d.querySelector('.cc-i-preco').textContent = fmt(i.preco) + (i.unidade === 'm' ? ' por metro' : i.unidade === 'm2' ? ' por m²' : ' cada') + (i.codigo ? ' · ' + i.codigo : '');
-        const inp = d.querySelector('input');
-        const mostrar = () => { const q = ccQtd[i.id] || 0; inp.value = q ? String(q).replace('.', ',') : ''; inp.placeholder = '0'; d.classList.toggle('on', q > 0); pintarSub(); };
-        const por = (q) => { ccQtd[i.id] = Math.max(0, Math.round(q * 100) / 100); mostrar(); };
-        const [menos, mais] = d.querySelectorAll('button');
-        menos.addEventListener('click', () => por((ccQtd[i.id] || 0) - 1));
-        mais.addEventListener('click', () => por((ccQtd[i.id] || 0) + 1));
-        inp.addEventListener('change', () => por(parseMoney(inp.value) || 0));
-        mostrar();
-        det.appendChild(d);
+    const termos = normalizarBusca(ccBusca.trim()).split(/\s+/).filter(Boolean);
+    const titulo = (g, n) => {
+      const h = document.createElement('div');
+      h.className = 'cz-g-tit';
+      h.innerHTML = iconeHtml(CC_ICONES[g] || 'package') + '<span></span><span class="cz-g-n"></span>';
+      h.children[1].textContent = nomeGrupoConforto(g);
+      h.children[2].textContent = plural(n, 'item', 'itens');
+      box.appendChild(h);
+    };
+    // modelos com vários tamanhos viram um cartão
+    const listar = (its, achados) => {
+      const feitas = new Set();
+      its.forEach(i => {
+        if (!i.fam) { box.appendChild(linhaItemConforto(i)); return; }
+        if (feitas.has(i.fam)) return;
+        feitas.add(i.fam);
+        const membros = ccTabela.filter(x => x.fam === i.fam);
+        const ativo = membros.find(x => x.id === ccTamAtivo[i.fam]);
+        if (achados && !(ativo && achados.includes(ativo))) ccTamAtivo[i.fam] = i.id;
+        box.appendChild(cartaoFamiliaConforto(membros));
       });
-      pintarSub();
-      box.appendChild(det);
+    };
+    if (termos.length) {
+      let achou = 0;
+      gruposVisiveisConforto().forEach(g => {
+        const its = ccTabela.filter(i => i.grupo === g && termos.every(t => i.busca.includes(t)));
+        if (!its.length) return;
+        achou += its.length;
+        titulo(g, its.length);
+        listar(its, its);
+      });
+      if (!achou) { const v = document.createElement('div'); v.className = 'cz-vazio'; v.textContent = 'Nenhum item com “' + ccBusca.trim() + '” na tabela da ' + FORNECEDORES_CONFORTO[ccForn].nome + '.'; box.appendChild(v); }
+      return;
+    }
+    const its = ccTabela.filter(i => i.grupo === ccGrupoSel);
+    if (!its.length) return;
+    titulo(ccGrupoSel, its.length);
+    listar(its, null);
+  }
+  function cartaoFamiliaConforto(membros) {
+    const fam = membros[0].fam;
+    const p = partesItemConforto(nomeFamiliaConforto(membros[0].descricao));
+    const c = document.createElement('div');
+    c.className = 'cz-fam'; c.dataset.fam = fam;
+    c.innerHTML = '<div class="cz-f-topo"><div class="cz-f-nome"></div><div class="cz-f-faixa"></div></div><div class="cz-f-det"></div><div class="cz-tams" role="group"></div>';
+    c.querySelector('.cz-f-nome').textContent = p.nome;
+    const det = c.querySelector('.cz-f-det');
+    det.textContent = p.det; det.hidden = !p.det;
+    const precos = membros.map(i => i.preco), min = Math.min(...precos), max = Math.max(...precos);
+    c.querySelector('.cz-f-faixa').textContent = membros.length + ' tamanhos · ' + (min === max ? fmt(min) : 'de ' + fmt(min) + ' a ' + fmt(max));
+    const tams = c.querySelector('.cz-tams');
+    tams.setAttribute('aria-label', 'Tamanhos de ' + p.nome);
+    const ativo = membros.find(i => i.id === ccTamAtivo[fam]) || membros.find(i => ccQtd[i.id] > 0);
+    membros.forEach(i => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cz-tam' + (ativo === i ? ' active' : ''); b.dataset.id = i.id;
+      b.setAttribute('aria-pressed', ativo === i);
+      b.innerHTML = '<span></span><b></b>';
+      b.querySelector('span').textContent = i.tam;
+      b.addEventListener('click', () => { ccTamAtivo[fam] = i.id; c.replaceWith(cartaoFamiliaConforto(membros)); });
+      tams.appendChild(b);
     });
-    $('cc-total').textContent = fmt(totalConforto());
+    c._atualizar = () => {
+      tams.querySelectorAll('.cz-tam').forEach(b => { const q = ccQtd[b.dataset.id] || 0; b.querySelector('b').textContent = q ? String(q).replace('.', ',') : ''; b.classList.toggle('tem', q > 0); });
+      c.classList.toggle('on', membros.some(i => ccQtd[i.id] > 0));
+    };
+    if (ativo) c.appendChild(linhaItemConforto(ativo, { nome: 'Tamanho ' + ativo.tam, aoMudar: () => c._atualizar() }));
+    else { const h = document.createElement('div'); h.className = 'cz-f-dica'; h.textContent = 'Toque no tamanho para ver o preço e pôr a quantidade.'; c.appendChild(h); }
+    c._atualizar();
+    return c;
+  }
+  function linhaItemConforto(i, op) {
+    op = op || {};
+    const p = op.nome ? { nome: op.nome, det: '' } : partesItemConforto(i.descricao);
+    const d = document.createElement('div');
+    d.className = 'cz-item'; d.dataset.id = i.id; d.title = i.descricao;
+    d.innerHTML = '<div class="cz-i-txt"><div class="cz-i-nome"></div><div class="cz-i-det"></div></div><div class="cz-i-preco"><b></b><span></span></div>'
+      + '<div class="cz-passo"><button type="button" aria-label="Tirar um">−</button><input type="text" inputmode="decimal" placeholder="0"><button type="button" aria-label="Pôr mais um">+</button></div>'
+      + '<div class="cz-i-sub"></div>';
+    d.querySelector('.cz-i-nome').textContent = p.nome;
+    const det = d.querySelector('.cz-i-det');
+    det.textContent = [p.det, i.codigo ? 'Cód. ' + i.codigo : ''].filter(Boolean).join(' · ');
+    det.hidden = !det.textContent;
+    d.querySelector('.cz-i-preco b').textContent = fmt(i.preco);
+    d.querySelector('.cz-i-preco span').textContent = 'por ' + unConforto(i);
+    const inp = d.querySelector('input'), sub = d.querySelector('.cz-i-sub'), [menos, mais] = d.querySelectorAll('button');
+    inp.setAttribute('aria-label', 'Quantidade de ' + p.nome);
+    d._mostrar = () => {
+      const q = ccQtd[i.id] || 0;
+      inp.value = q ? String(q).replace('.', ',') : '';
+      menos.disabled = !q;
+      d.classList.toggle('on', q > 0);
+      sub.textContent = q ? fmt(arredOm(i.preco * q)) : '';
+    };
+    const por = (q) => {
+      q = Math.max(0, Math.round(q * 100) / 100);
+      if (q) ccQtd[i.id] = q; else delete ccQtd[i.id];
+      d._mostrar(); if (op.aoMudar) op.aoMudar(); marcarChipsConforto(); renderResumoConforto();
+    };
+    menos.addEventListener('click', () => por((ccQtd[i.id] || 0) - 1));
+    mais.addEventListener('click', () => por((ccQtd[i.id] || 0) + 1));
+    inp.addEventListener('focus', () => inp.select());
+    inp.addEventListener('change', () => por(parseMoney(inp.value) || 0));
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') inp.blur(); });
+    d._mostrar();
+    return d;
+  }
+  function renderResumoConforto() {
+    const sel = ccTabela.filter(i => ccQtd[i.id] > 0);
+    const box = $('cz-sel');
+    box.innerHTML = '';
+    if (!sel.length) {
+      box.innerHTML = '<div class="cz-sel-vazio">' + iconeHtml('list-checks') + '<span>Os itens que você escolher aparecem aqui, separados por grupo, com o total.</span></div>';
+    } else {
+      ORDEM_GRUPOS_CONFORTO.forEach(g => {
+        const its = sel.filter(i => i.grupo === g);
+        if (!its.length) return;
+        const h = document.createElement('div');
+        h.className = 'cz-s-g';
+        h.innerHTML = iconeHtml(CC_ICONES[g] || 'package') + '<b></b><span></span>';
+        h.querySelector('b').textContent = nomeGrupoConforto(g);
+        h.querySelector('span').textContent = fmt(arredOm(its.reduce((s, i) => s + i.preco * ccQtd[i.id], 0)));
+        box.appendChild(h);
+        its.forEach(i => {
+          const r = document.createElement('div');
+          r.className = 'cz-s-item';
+          r.innerHTML = '<button type="button" class="cz-s-txt"><span class="cz-s-nome"></span><span class="cz-s-q"></span></button><span class="cz-s-val"></span>'
+            + '<button type="button" class="cz-s-rm">' + iconeHtml('x') + '</button>';
+          const nome = partesItemConforto(i.descricao).nome;
+          r.querySelector('.cz-s-nome').textContent = nome;
+          r.querySelector('.cz-s-q').textContent = qtdConforto(i, ccQtd[i.id]) + ' × ' + fmt(i.preco);
+          r.querySelector('.cz-s-val').textContent = fmt(arredOm(i.preco * ccQtd[i.id]));
+          r.querySelector('.cz-s-txt').addEventListener('click', () => irParaItemConforto(i));
+          const rm = r.querySelector('.cz-s-rm');
+          rm.setAttribute('aria-label', 'Tirar ' + nome);
+          rm.addEventListener('click', () => {
+            delete ccQtd[i.id];
+            const linha = $('cc-grupos').querySelector('.cz-item[data-id="' + i.id + '"]');
+            if (linha) linha._mostrar();
+            const card = i.fam && [...$('cc-grupos').querySelectorAll('.cz-fam')].find(c => c.dataset.fam === i.fam);
+            if (card) card._atualizar();
+            marcarChipsConforto(); renderResumoConforto();
+          });
+          box.appendChild(r);
+        });
+      });
+    }
+    const total = fmt(totalConforto());
+    $('cc-total').textContent = total;
+    $('cz-barra-total').textContent = total;
+    $('cz-barra-qtd').textContent = sel.length ? plural(sel.length, 'item', 'itens') + ' · ver resumo' : 'Nenhum item escolhido';
+    $('cz-limpar').hidden = !sel.length;
+  }
+  function irParaItemConforto(i) {
+    ccGrupoSel = i.grupo; ccBusca = ''; $('cz-busca').value = '';
+    if (i.fam) ccTamAtivo[i.fam] = i.id;
+    marcarChipsConforto(); renderItensConforto();
+    const linha = $('cc-grupos').querySelector('.cz-item[data-id="' + i.id + '"]');
+    if (!linha) return;
+    linha.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    linha.classList.remove('pisca'); void linha.offsetWidth; linha.classList.add('pisca');
+  }
+  async function trocarFornConforto(f) {
+    if (f === ccForn) return;
+    if (ccTabela && ccTabela.some(i => ccQtd[i.id] > 0) && !(await confirmar('Trocar de fornecedor limpa os itens escolhidos. Trocar?', 'Trocar'))) return;
+    try { await carregarFornecedor(f); } catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
+    ccQtd = {};
+    renderConfigurador();
   }
   $('nav-conforto').addEventListener('click', abrirConfiguradorConforto);
   $('cc-tipo').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.t === ccTipo) return;
     ccTipo = b.dataset.t;
-    if (ccTipo === 'compost') ccTabela.filter(i => i.grupo === 'BAIAS' || i.grupo === 'FREE STALL').forEach(i => { delete ccQtd[i.id]; });
+    if (ccTipo === 'compost') {
+      const fora = ccTabela.filter(i => (i.grupo === 'BAIAS' || i.grupo === 'FREE STALL') && ccQtd[i.id] > 0);
+      fora.forEach(i => { delete ccQtd[i.id]; });
+      if (fora.length) avisoRapido('Tirei ' + plural(fora.length, 'item', 'itens') + ' de baias e free stall, que não vão no compost barn.');
+    }
     renderConfigurador();
   }));
-  $('cc-forn').querySelectorAll('button').forEach(b => b.addEventListener('click', async () => {
-    if (b.dataset.f === ccForn) return;
-    if (ccTabela && ccTabela.some(i => ccQtd[i.id] > 0) && !(await confirmar('Trocar de fornecedor limpa os itens escolhidos. Trocar?', 'Trocar'))) return;
+  $('cz-busca').addEventListener('input', () => { ccBusca = $('cz-busca').value; marcarChipsConforto(); renderItensConforto(); });
+  $('cz-busca').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('cz-busca').blur(); });
+  $('cz-limpar').addEventListener('click', async () => {
+    if (!(await confirmar('Tirar todos os itens escolhidos?', 'Limpar'))) return;
     ccQtd = {};
-    try { await carregarFornecedor(b.dataset.f); } catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
     renderConfigurador();
-  }));
+  });
+  $('cz-ver-resumo').addEventListener('click', () => $('cz-resumo').scrollIntoView({ block: 'start', behavior: 'smooth' }));
+  $('cz-barra-continuar').addEventListener('click', () => $('cc-continuar').click());
   $('cc-fechar').addEventListener('click', () => { $('modal-conforto').hidden = true; });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('modal-conforto').hidden && $('dialogo').hidden) $('modal-conforto').hidden = true; });
   $('cc-continuar').addEventListener('click', () => {
     const sel = ccTabela.filter(i => ccQtd[i.id] > 0);
     if (!sel.length) { avisar('Escolha pelo menos um item.'); return; }
