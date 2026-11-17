@@ -2382,6 +2382,7 @@
   .vazio-acao { display: flex; justify-content: center; margin: 0 0 20px; }
   .empty-state[hidden] + .vazio-acao { display: none; }
   .empty-state .vazio-tit { display: block; margin-bottom: 6px; font-size: 17px; font-weight: 700; color: var(--ink); }
+  .painel-ver-todas { margin: 0 0 10px; }
   .vazio-acao .btn-secondary { min-height: 44px; padding: 0 18px; width: auto; }
   .leite-ficha-sub.vazio-com-icone::before { content: ''; display: block; width: 40px; height: 40px; margin: 6px auto 8px; background: var(--ic-vazio);
     -webkit-mask: var(--m-inbox) center / contain no-repeat; mask: var(--m-inbox) center / contain no-repeat; }
@@ -3469,12 +3470,14 @@
     <div id="painel-revisoes" hidden data-perm="visitas:1">
       <div class="section-label">Próximas revisões</div>
       <div id="painel-revisoes-list"></div>
+      <button type="button" class="bloco-editar painel-ver-todas" id="painel-revisoes-mais" hidden></button>
     </div>
-      <div class="card" data-perm="visitas:1">
-        <div class="section-label" style="margin-top:0">Últimas OS concluídas</div>
-        <div id="setor-ultimas-visitas"></div>
-        <div class="leite-ficha-sub" id="setor-ultimas-visitas-vazio">Nenhuma OS concluída ainda.</div>
-      </div>
+    <div data-perm="visitas:1">
+      <div class="section-label">Últimas OS concluídas</div>
+      <div id="setor-ultimas-visitas"></div>
+      <div class="leite-ficha-sub" id="setor-ultimas-visitas-vazio">Nenhuma OS concluída ainda.</div>
+      <button type="button" class="bloco-editar painel-ver-todas" id="setor-ultimas-mais" hidden>Ver todas</button>
+    </div>
     </div>
 
     <div data-setor-bloco="veterinaria" hidden>
@@ -7643,6 +7646,9 @@
   // Painel da tela inicial: todas as próximas revisões, da mais urgente para a mais distante.
   // Atrasadas em vermelho, próximos 15 dias em amarelo, as demais neutras.
   // Sem nenhuma revisão agendada, o painel some.
+  // No setor mostra só as 5 primeiras (a data mais antiga vem antes, então as vencidas ficam no topo);
+  // "Ver todas" abre a lista inteira ali mesmo.
+  var revisoesTodas = false;
   function renderPainelRevisoes() {
     const container = $('painel-revisoes-list');
     container.innerHTML = '';
@@ -7651,8 +7657,11 @@
       .sort((a, b) => a.proximaRevisao.localeCompare(b.proximaRevisao));
 
     $('painel-revisoes').hidden = agendadas.length === 0;
+    const mais = $('painel-revisoes-mais');
+    mais.hidden = agendadas.length <= 5;
+    mais.textContent = revisoesTodas ? 'Ver só as 5 primeiras' : 'Ver todas (' + agendadas.length + ')';
 
-    agendadas.forEach(p => {
+    (revisoesTodas ? agendadas : agendadas.slice(0, 5)).forEach(p => {
       const st = proximaStatus(p.proximaRevisao);
       const item = document.createElement('div');
       item.className = 'painel-item ' + st.cls;
@@ -7663,6 +7672,7 @@
       container.appendChild(item);
     });
   }
+  $('painel-revisoes-mais').addEventListener('click', () => { revisoesTodas = !revisoesTodas; renderPainelRevisoes(); });
 
   // Devolve (Promise) o id do produtor criado, ou null se não conseguiu.
   // Aceita só o nome (texto) ou o cadastro completo (objeto).
@@ -13372,6 +13382,7 @@
     if (!SETOR[id] || !podeVerSetor(id)) return;
     if (currentProdutorId) closeProdutorDetail();
     setorAberto = id;
+    revisoesTodas = false;
     showView('setor');
   }
   function renderSetor() {
@@ -13403,10 +13414,18 @@
   function renderUltimasVisitas() {
     const box = $('setor-ultimas-visitas');
     box.innerHTML = '';
-    const lista = produtores.filter(p => p.ultimaVisitaData).sort((a, b) => b.ultimaVisitaData.localeCompare(a.ultimaVisitaData)).slice(0, 8);
+    const lista = produtores.filter(p => p.ultimaVisitaData).sort((a, b) => b.ultimaVisitaData.localeCompare(a.ultimaVisitaData)).slice(0, 5);
     lista.forEach(p => itemProdutor(box, p, p.nome, fmtDate(p.ultimaVisitaData) + ' · ' + (CAT_LABEL[p.ultimaVisitaCategoria] || 'Visita'), 'ok', 'visitas'));
     $('setor-ultimas-visitas-vazio').hidden = lista.length > 0;
+    const n = osVisiveis().filter(o => statusOS(o) === 'concluida').length;
+    $('setor-ultimas-mais').hidden = !lista.length;
+    $('setor-ultimas-mais').textContent = n ? 'Ver todas (' + n + ')' : 'Ver todas';
   }
+  // "Ver todas": a tela de OS já filtrada pelas concluídas
+  $('setor-ultimas-mais').addEventListener('click', () => {
+    Object.assign(osFiltro, { status: 'concluida', periodo: '', tipo: '', tecnico: '' });
+    abrirOrdens(true);
+  });
   function renderQualidadeAlertas() {
     const box = $('setor-q-alertas');
     box.innerHTML = '';
