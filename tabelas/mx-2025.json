@@ -1,0 +1,2403 @@
+{
+ "fonte": "MX do Brasil - Tabela de preço 2025 Revenda (à vista)",
+ "fornecedor": "MX do Brasil",
+ "uf": "SC",
+ "data": "2025",
+ "itens": [
+  {
+   "codigo": "2102",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X2",
+   "secao": "",
+   "preco": 8388.0,
+   "prazo5": 9394.0,
+   "prazo11": 10652.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2103",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X3",
+   "secao": "",
+   "preco": 10006.0,
+   "prazo5": 11206.0,
+   "prazo11": 12707.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2104",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X4",
+   "secao": "",
+   "preco": 12592.0,
+   "prazo5": 14103.0,
+   "prazo11": 15992.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2105",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X5",
+   "secao": "",
+   "preco": 14207.0,
+   "prazo5": 15912.0,
+   "prazo11": 18043.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2106",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X6",
+   "secao": "",
+   "preco": 16788.0,
+   "prazo5": 18803.0,
+   "prazo11": 21321.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2107",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X7",
+   "secao": "",
+   "preco": 18413.0,
+   "prazo5": 20622.0,
+   "prazo11": 23384.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2108",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X8",
+   "secao": "",
+   "preco": 20987.0,
+   "prazo5": 23505.0,
+   "prazo11": 26653.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2110",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X10",
+   "secao": "",
+   "preco": 25189.0,
+   "prazo5": 28212.0,
+   "prazo11": 31990.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2112",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X12",
+   "secao": "",
+   "preco": 29385.0,
+   "prazo5": 32912.0,
+   "prazo11": 37319.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2115",
+   "descricao": "CONTENÇÃO EXTRA FORTE MX C/CHAPA DE ENCOSTO – 2X15",
+   "secao": "",
+   "preco": 35208.0,
+   "prazo5": 39433.0,
+   "prazo11": 44715.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2437",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X2",
+   "secao": "",
+   "preco": 7358.0,
+   "prazo5": 8241.0,
+   "prazo11": 9345.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2003",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X3",
+   "secao": "",
+   "preco": 9170.0,
+   "prazo5": 10270.0,
+   "prazo11": 11646.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2421",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X4",
+   "secao": "",
+   "preco": 11683.0,
+   "prazo5": 13085.0,
+   "prazo11": 14838.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2438",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X5",
+   "secao": "",
+   "preco": 12885.0,
+   "prazo5": 14431.0,
+   "prazo11": 16364.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2415",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X6",
+   "secao": "",
+   "preco": 15134.0,
+   "prazo5": 16950.0,
+   "prazo11": 19220.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2439",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X7",
+   "secao": "",
+   "preco": 16601.0,
+   "prazo5": 18593.0,
+   "prazo11": 21083.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2419",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X8",
+   "secao": "",
+   "preco": 18849.0,
+   "prazo5": 21111.0,
+   "prazo11": 23938.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2430",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X10",
+   "secao": "",
+   "preco": 22565.0,
+   "prazo5": 25273.0,
+   "prazo11": 28658.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2441",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X12",
+   "secao": "",
+   "preco": 26280.0,
+   "prazo5": 29434.0,
+   "prazo11": 33376.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2442",
+   "descricao": "CONT. EXTRA FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X15",
+   "secao": "",
+   "preco": 31464.0,
+   "prazo5": 35240.0,
+   "prazo11": 39960.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2122",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X2",
+   "secao": "",
+   "preco": 6705.0,
+   "prazo5": 7509.0,
+   "prazo11": 8515.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2123",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X3",
+   "secao": "",
+   "preco": 8184.0,
+   "prazo5": 9167.0,
+   "prazo11": 10394.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2124",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X4",
+   "secao": "",
+   "preco": 9707.0,
+   "prazo5": 10872.0,
+   "prazo11": 12328.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2125",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X5",
+   "secao": "",
+   "preco": 11200.0,
+   "prazo5": 12544.0,
+   "prazo11": 14224.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2126",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X6",
+   "secao": "",
+   "preco": 12728.0,
+   "prazo5": 14255.0,
+   "prazo11": 16164.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2114",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X7",
+   "secao": "",
+   "preco": 14041.0,
+   "prazo5": 15725.0,
+   "prazo11": 17831.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2128",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X8",
+   "secao": "",
+   "preco": 15735.0,
+   "prazo5": 17624.0,
+   "prazo11": 19984.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2130",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X10",
+   "secao": "",
+   "preco": 18744.0,
+   "prazo5": 20994.0,
+   "prazo11": 23805.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2132",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X12",
+   "secao": "",
+   "preco": 21752.0,
+   "prazo5": 24362.0,
+   "prazo11": 27625.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2113",
+   "descricao": "CONTENÇÃO FORTE MX C/CHAPA DE ENCOSTO – 2X15",
+   "secao": "",
+   "preco": 26256.0,
+   "prazo5": 29406.0,
+   "prazo11": 33345.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2443",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X2",
+   "secao": "",
+   "preco": 6447.0,
+   "prazo5": 7220.0,
+   "prazo11": 8187.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2097",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X3",
+   "secao": "",
+   "preco": 7816.0,
+   "prazo5": 8754.0,
+   "prazo11": 9927.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2423",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X4",
+   "secao": "",
+   "preco": 8842.0,
+   "prazo5": 9904.0,
+   "prazo11": 11230.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2432",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X5",
+   "secao": "",
+   "preco": 10797.0,
+   "prazo5": 12093.0,
+   "prazo11": 13713.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2444",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X6",
+   "secao": "",
+   "preco": 12204.0,
+   "prazo5": 13669.0,
+   "prazo11": 15500.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2445",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X7",
+   "secao": "",
+   "preco": 13683.0,
+   "prazo5": 15325.0,
+   "prazo11": 17378.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2446",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X8",
+   "secao": "",
+   "preco": 15092.0,
+   "prazo5": 16903.0,
+   "prazo11": 19167.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2447",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X10",
+   "secao": "",
+   "preco": 17970.0,
+   "prazo5": 20126.0,
+   "prazo11": 22821.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2448",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X12",
+   "secao": "",
+   "preco": 20848.0,
+   "prazo5": 23350.0,
+   "prazo11": 26477.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2449",
+   "descricao": "CONT. FORTE MX CHUMBADA C/CHAPA DE ENCOSTO – 2X15",
+   "secao": "",
+   "preco": 25206.0,
+   "prazo5": 28231.0,
+   "prazo11": 32012.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2179",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X3",
+   "secao": "",
+   "preco": 9308.0,
+   "prazo5": 10425.0,
+   "prazo11": 11821.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2180",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X4",
+   "secao": "",
+   "preco": 11551.0,
+   "prazo5": 12937.0,
+   "prazo11": 14669.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2178",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X5",
+   "secao": "",
+   "preco": 13903.0,
+   "prazo5": 15571.0,
+   "prazo11": 17656.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2181",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X6",
+   "secao": "",
+   "preco": 15008.0,
+   "prazo5": 16809.0,
+   "prazo11": 19060.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2188",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X7",
+   "secao": "",
+   "preco": 15741.0,
+   "prazo5": 17630.0,
+   "prazo11": 19991.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2182",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X8",
+   "secao": "",
+   "preco": 17016.0,
+   "prazo5": 19058.0,
+   "prazo11": 21611.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2183",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X10",
+   "secao": "",
+   "preco": 19669.0,
+   "prazo5": 22029.0,
+   "prazo11": 24979.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2184",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X12",
+   "secao": "",
+   "preco": 21925.0,
+   "prazo5": 24556.0,
+   "prazo11": 27845.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2185",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X14",
+   "secao": "",
+   "preco": 25386.0,
+   "prazo5": 28432.0,
+   "prazo11": 32240.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2186",
+   "descricao": "CONTENÇÃO EUROPA MX 800 - 2X16",
+   "secao": "",
+   "preco": 28365.0,
+   "prazo5": 31768.0,
+   "prazo11": 36023.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2420",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X3",
+   "secao": "",
+   "preco": 8951.0,
+   "prazo5": 10025.0,
+   "prazo11": 11367.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2425",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X4",
+   "secao": "",
+   "preco": 11005.0,
+   "prazo5": 12326.0,
+   "prazo11": 13976.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2452",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X5",
+   "secao": "",
+   "preco": 13198.0,
+   "prazo5": 14782.0,
+   "prazo11": 16762.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2139",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X6",
+   "secao": "",
+   "preco": 14322.0,
+   "prazo5": 16041.0,
+   "prazo11": 18189.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2453",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X7",
+   "secao": "",
+   "preco": 15037.0,
+   "prazo5": 16841.0,
+   "prazo11": 19097.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2454",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X8",
+   "secao": "",
+   "preco": 16252.0,
+   "prazo5": 18202.0,
+   "prazo11": 20640.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2456",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X10",
+   "secao": "",
+   "preco": 18800.0,
+   "prazo5": 21056.0,
+   "prazo11": 23876.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2457",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X12",
+   "secao": "",
+   "preco": 21032.0,
+   "prazo5": 23556.0,
+   "prazo11": 26711.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2458",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X14",
+   "secao": "",
+   "preco": 24328.0,
+   "prazo5": 27247.0,
+   "prazo11": 30896.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2459",
+   "descricao": "CONTENÇÃO EUROPA CHUMBADA MX 800 - 2X16",
+   "secao": "",
+   "preco": 27106.0,
+   "prazo5": 30359.0,
+   "prazo11": 34425.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2191",
+   "descricao": "CONTENÇÃO SUSPENSA MX 800 - 2X6",
+   "secao": "",
+   "preco": 34168.0,
+   "prazo5": 38269.0,
+   "prazo11": 43394.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2192",
+   "descricao": "CONTENÇÃO SUSPENSA MX 800 - 2X8",
+   "secao": "",
+   "preco": 42900.0,
+   "prazo5": 48047.0,
+   "prazo11": 54482.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2193",
+   "descricao": "CONTENÇÃO SUSPENSA MX 800 - 2X10",
+   "secao": "",
+   "preco": 47362.0,
+   "prazo5": 53046.0,
+   "prazo11": 60150.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2194",
+   "descricao": "CONTENÇÃO SUSPENSA MX 800 - 2X12",
+   "secao": "",
+   "preco": 57321.0,
+   "prazo5": 64199.0,
+   "prazo11": 72798.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2197",
+   "descricao": "CONTENÇÃO SUSPENSA MX 800 - 2X16",
+   "secao": "",
+   "preco": 71093.0,
+   "prazo5": 79624.0,
+   "prazo11": 90288.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2150",
+   "descricao": "CONT. FILA INDIANA MX - 2X2 - CHUM. C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 11812.0,
+   "prazo5": 13229.0,
+   "prazo11": 15001.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2151",
+   "descricao": "CONT. FILA INDIANA MX - 2X3 - CHUM. C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 16509.0,
+   "prazo5": 18490.0,
+   "prazo11": 20966.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2152",
+   "descricao": "CONT. FILA INDIANA MX - 2X4 - CHUM. C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 21205.0,
+   "prazo5": 23750.0,
+   "prazo11": 26931.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2155",
+   "descricao": "CONT. FILA INDIANA MX - 2X5 - CHUM. C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 25904.0,
+   "prazo5": 29012.0,
+   "prazo11": 32898.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2153",
+   "descricao": "CONT. FILA INDIANA MX - 2X6 - CHUM. C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 30597.0,
+   "prazo5": 34268.0,
+   "prazo11": 38858.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2154",
+   "descricao": "CONT. FILA INDIANA MX - 2X8 - CHUM. C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 39988.0,
+   "prazo5": 44787.0,
+   "prazo11": 50785.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2173",
+   "descricao": "CONT. FILA INDIANA MX - 2X2 - SAPATA C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 12109.0,
+   "prazo5": 13562.0,
+   "prazo11": 15379.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2156",
+   "descricao": "CONT. FILA INDIANA MX - 2X3 - SAPATA C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 16903.0,
+   "prazo5": 18931.0,
+   "prazo11": 21467.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2157",
+   "descricao": "CONT. FILA INDIANA MX - 2X4 - SAPATA C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 21696.0,
+   "prazo5": 24300.0,
+   "prazo11": 27554.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2158",
+   "descricao": "CONT. FILA INDIANA MX - 2X5 - SAPATA C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 26491.0,
+   "prazo5": 29670.0,
+   "prazo11": 33644.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2159",
+   "descricao": "CONT. FILA INDIANA MX - 2X6 - SAPATA C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 31288.0,
+   "prazo5": 35042.0,
+   "prazo11": 39736.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2160",
+   "descricao": "CONT. FILA INDIANA MX - 2X8 - SAPATA C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 40876.0,
+   "prazo5": 45781.0,
+   "prazo11": 51913.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2116",
+   "descricao": "CONT. FILA INDIANA MX - 2X10 - SAPATA C/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 50465.0,
+   "prazo5": 56521.0,
+   "prazo11": 64091.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2167",
+   "descricao": "CONT. FILA INDIANA MX - 2X2 - CHUM. S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 9136.0,
+   "prazo5": 10232.0,
+   "prazo11": 11602.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2168",
+   "descricao": "CONT. FILA INDIANA MX - 2X3 - CHUM. S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 12492.0,
+   "prazo5": 13991.0,
+   "prazo11": 15865.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2169",
+   "descricao": "CONT. FILA INDIANA MX - 2X4 - CHUM. S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 15850.0,
+   "prazo5": 17752.0,
+   "prazo11": 20129.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2170",
+   "descricao": "CONT. FILA INDIANA MX - 2X5 - CHUM. S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 19208.0,
+   "prazo5": 21512.0,
+   "prazo11": 24394.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2171",
+   "descricao": "CONT. FILA INDIANA MX - 2X6 - CHUM. S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 22565.0,
+   "prazo5": 25273.0,
+   "prazo11": 28658.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2172",
+   "descricao": "CONT. FILA INDIANA MX - 2X8 - CHUM. S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 29279.0,
+   "prazo5": 32793.0,
+   "prazo11": 37185.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2161",
+   "descricao": "CONT. FILA INDIANA MX - 2X2 - SAPATA S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 9431.0,
+   "prazo5": 10563.0,
+   "prazo11": 11977.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2162",
+   "descricao": "CONT. FILA INDIANA MX - 2X3 - SAPATA S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 12888.0,
+   "prazo5": 14435.0,
+   "prazo11": 16368.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2163",
+   "descricao": "CONT. FILA INDIANA MX - 2X4 - SAPATA S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 16345.0,
+   "prazo5": 18307.0,
+   "prazo11": 20759.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2164",
+   "descricao": "CONT. FILA INDIANA MX - 2X5 - SAPATA S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 19799.0,
+   "prazo5": 22175.0,
+   "prazo11": 25145.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2165",
+   "descricao": "CONT. FILA INDIANA MX - 2X6 - SAPATA S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 23256.0,
+   "prazo5": 26047.0,
+   "prazo11": 29536.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2166",
+   "descricao": "CONT. FILA INDIANA MX - 2X8 - SAPATA S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 30169.0,
+   "prazo5": 33789.0,
+   "prazo11": 38314.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2426",
+   "descricao": "CONT. FILA INDIANA MX - 2X12 - SAPATA S/ PORTA P/ BEZEIRO",
+   "secao": "",
+   "preco": 43994.0,
+   "prazo5": 49273.0,
+   "prazo11": 55873.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2141",
+   "descricao": "ESCADA DOIS DEGRAUS PARA FOSSO",
+   "secao": "",
+   "preco": 318.0,
+   "prazo5": 356.0,
+   "prazo11": 404.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2142",
+   "descricao": "ESCADA TRÊS DEGRAUS C/ CORRIMÃO",
+   "secao": "",
+   "preco": 943.0,
+   "prazo5": 1056.0,
+   "prazo11": 1197.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2409",
+   "descricao": "ESCADA TRÊS DEGRAUS S/ CORRIMÃO",
+   "secao": "",
+   "preco": 749.0,
+   "prazo5": 839.0,
+   "prazo11": 951.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2140",
+   "descricao": "PROT. DE FOSSO ESPINHA DE PEIXE - (FECHAMENTO EM V)",
+   "secao": "",
+   "preco": 437.0,
+   "prazo5": 489.0,
+   "prazo11": 555.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2118",
+   "descricao": "PROTETOR DE FOSSO CONTENÇÃO EUROPA (PRONTO)",
+   "secao": "",
+   "preco": 645.0,
+   "prazo5": 722.0,
+   "prazo11": 819.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4060",
+   "descricao": "SALEIRO MX DE PAREDE - 40 LITROS",
+   "secao": "",
+   "preco": 488.0,
+   "prazo5": 546.0,
+   "prazo11": 620.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4063",
+   "descricao": "SALEIRO MX P/ PONTALETE - 40 LITROS",
+   "secao": "",
+   "preco": 508.0,
+   "prazo5": 569.0,
+   "prazo11": 645.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4061",
+   "descricao": "COCHO P/ ALIMENTAÇÃO MX - 20 LITROS",
+   "secao": "",
+   "preco": 441.0,
+   "prazo5": 494.0,
+   "prazo11": 560.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2281",
+   "descricao": "CANZIL MX 75X4 C/ TRAV. INDIVIDUAL - (R$/ANIMAL)",
+   "secao": "",
+   "preco": 390.0,
+   "prazo5": 437.0,
+   "prazo11": 495.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2282",
+   "descricao": "CANZIL MX 80X4 C/ TRAV. INDIVIDUAL - (R$/ANIMAL)",
+   "secao": "",
+   "preco": 424.0,
+   "prazo5": 475.0,
+   "prazo11": 538.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3125",
+   "descricao": "CANZIL MX MODULAR 4 LUGARES",
+   "secao": "",
+   "preco": 470.0,
+   "prazo5": 526.0,
+   "prazo11": 597.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2227",
+   "descricao": "BARRA TRANSVERSAL CANZIL FIXO MX (R$/M)",
+   "secao": "",
+   "preco": 64.0,
+   "prazo5": 72.0,
+   "prazo11": 81.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2226",
+   "descricao": "BRAÇO SUPORTE CANZIL FIXO MX (UN)",
+   "secao": "",
+   "preco": 59.0,
+   "prazo5": 66.0,
+   "prazo11": 75.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2208",
+   "descricao": "PONTALETE GALVANIZADO 1500MM (CANZIL)",
+   "secao": "",
+   "preco": 140.0,
+   "prazo5": 157.0,
+   "prazo11": 178.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2209",
+   "descricao": "PONTALETE GALVANIZADO 2000MM (LINHA DE ALIMENTAÇÃO)",
+   "secao": "",
+   "preco": 180.0,
+   "prazo5": 202.0,
+   "prazo11": 229.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2726",
+   "descricao": "PONTALETE GALVANIZADO 60,3 X 3,75 X 2000 MM",
+   "secao": "",
+   "preco": 258.0,
+   "prazo5": 289.0,
+   "prazo11": 328.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2725",
+   "descricao": "PONTALETE GALVANIZADO 60,3 X 3,75 X 1500 MM PRONTO",
+   "secao": "",
+   "preco": 195.0,
+   "prazo5": 218.0,
+   "prazo11": 248.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4100",
+   "descricao": "FENIL PARA BEZERREIRO MX",
+   "secao": "",
+   "preco": 230.0,
+   "prazo5": 258.0,
+   "prazo11": 292.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4221",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X1)",
+   "secao": "",
+   "preco": 2437.0,
+   "prazo5": 2730.0,
+   "prazo11": 3096.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4222",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X2)",
+   "secao": "",
+   "preco": 4254.0,
+   "prazo5": 4765.0,
+   "prazo11": 5403.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4243",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X3)",
+   "secao": "",
+   "preco": 6266.0,
+   "prazo5": 7018.0,
+   "prazo11": 7958.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4244",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X4)",
+   "secao": "",
+   "preco": 8083.0,
+   "prazo5": 9053.0,
+   "prazo11": 10265.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4245",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X5)",
+   "secao": "",
+   "preco": 10092.0,
+   "prazo5": 11303.0,
+   "prazo11": 12817.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4246",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X6)",
+   "secao": "",
+   "preco": 11909.0,
+   "prazo5": 13338.0,
+   "prazo11": 15125.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4247",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X7)",
+   "secao": "",
+   "preco": 13921.0,
+   "prazo5": 15591.0,
+   "prazo11": 17679.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4248",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X8)",
+   "secao": "",
+   "preco": 15738.0,
+   "prazo5": 17626.0,
+   "prazo11": 19987.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4249",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X9)",
+   "secao": "",
+   "preco": 17750.0,
+   "prazo5": 19880.0,
+   "prazo11": 22543.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4250",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X10)",
+   "secao": "",
+   "preco": 19566.0,
+   "prazo5": 21914.0,
+   "prazo11": 24849.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4251",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X11)",
+   "secao": "",
+   "preco": 21575.0,
+   "prazo5": 24165.0,
+   "prazo11": 27401.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4252",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X12)",
+   "secao": "",
+   "preco": 23392.0,
+   "prazo5": 26199.0,
+   "prazo11": 29708.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4253",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X13)",
+   "secao": "",
+   "preco": 25404.0,
+   "prazo5": 28452.0,
+   "prazo11": 32263.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4254",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X14)",
+   "secao": "",
+   "preco": 27221.0,
+   "prazo5": 30487.0,
+   "prazo11": 34570.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4255",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X15)",
+   "secao": "",
+   "preco": 29230.0,
+   "prazo5": 32738.0,
+   "prazo11": 37122.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4256",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X16)",
+   "secao": "",
+   "preco": 31047.0,
+   "prazo5": 34773.0,
+   "prazo11": 39430.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4257",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X17)",
+   "secao": "",
+   "preco": 33059.0,
+   "prazo5": 37026.0,
+   "prazo11": 41985.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4258",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X18)",
+   "secao": "",
+   "preco": 34876.0,
+   "prazo5": 39061.0,
+   "prazo11": 44292.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4259",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X19)",
+   "secao": "",
+   "preco": 36887.0,
+   "prazo5": 41314.0,
+   "prazo11": 46847.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4260",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM GRADES (1X20)",
+   "secao": "",
+   "preco": 38704.0,
+   "prazo5": 43349.0,
+   "prazo11": 49154.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4219",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X1)",
+   "secao": "",
+   "preco": 2577.0,
+   "prazo5": 2886.0,
+   "prazo11": 3272.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4220",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X2)",
+   "secao": "",
+   "preco": 4463.0,
+   "prazo5": 4999.0,
+   "prazo11": 5668.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4223",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X3)",
+   "secao": "",
+   "preco": 6542.0,
+   "prazo5": 7327.0,
+   "prazo11": 8308.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4224",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X4)",
+   "secao": "",
+   "preco": 8432.0,
+   "prazo5": 9443.0,
+   "prazo11": 10708.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4225",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X5)",
+   "secao": "",
+   "preco": 10511.0,
+   "prazo5": 11772.0,
+   "prazo11": 13348.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4226",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X6)",
+   "secao": "",
+   "preco": 12397.0,
+   "prazo5": 13885.0,
+   "prazo11": 15744.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4227",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X7)",
+   "secao": "",
+   "preco": 14479.0,
+   "prazo5": 16217.0,
+   "prazo11": 18389.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4228",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X8)",
+   "secao": "",
+   "preco": 16365.0,
+   "prazo5": 18328.0,
+   "prazo11": 20783.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4229",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X9)",
+   "secao": "",
+   "preco": 18444.0,
+   "prazo5": 20657.0,
+   "prazo11": 23423.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4230",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X10)",
+   "secao": "",
+   "preco": 20330.0,
+   "prazo5": 22770.0,
+   "prazo11": 25819.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4231",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X11)",
+   "secao": "",
+   "preco": 22412.0,
+   "prazo5": 25102.0,
+   "prazo11": 28464.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4232",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X12)",
+   "secao": "",
+   "preco": 24300.0,
+   "prazo5": 27216.0,
+   "prazo11": 30861.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4233",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X13)",
+   "secao": "",
+   "preco": 26379.0,
+   "prazo5": 29544.0,
+   "prazo11": 33501.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4234",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X14)",
+   "secao": "",
+   "preco": 28264.0,
+   "prazo5": 31656.0,
+   "prazo11": 35895.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4235",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X15)",
+   "secao": "",
+   "preco": 30346.0,
+   "prazo5": 33988.0,
+   "prazo11": 38540.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4236",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X16)",
+   "secao": "",
+   "preco": 32082.0,
+   "prazo5": 35932.0,
+   "prazo11": 40744.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4237",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X17)",
+   "secao": "",
+   "preco": 34312.0,
+   "prazo5": 38429.0,
+   "prazo11": 43576.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4238",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X18)",
+   "secao": "",
+   "preco": 36198.0,
+   "prazo5": 40542.0,
+   "prazo11": 45972.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4239",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X19)",
+   "secao": "",
+   "preco": 38279.0,
+   "prazo5": 42873.0,
+   "prazo11": 48615.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4240",
+   "descricao": "BEZERREIRO MX 1,0 X 1,20M COM CHAPA (1X20)",
+   "secao": "",
+   "preco": 40167.0,
+   "prazo5": 44987.0,
+   "prazo11": 51012.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1720",
+   "descricao": "QUADRO DE COMANDO P/ VENTILADOR MX TODOS OS MODELOS PARTIDA EM DUPLA - REDE MONOFÁSICA",
+   "secao": "",
+   "preco": 630.0,
+   "prazo5": 706.0,
+   "prazo11": 800.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1721",
+   "descricao": "QUADRO DE COMANDO P/ VENTILADOR MX TODOS OS MODELOS PARTIDA EM DUPLA - REDE TRIFÁSICA",
+   "secao": "",
+   "preco": 607.0,
+   "prazo5": 680.0,
+   "prazo11": 771.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "61431",
+   "descricao": "SENSOR DE TEMPERATURA (OPCIONAL)",
+   "secao": "",
+   "preco": 540.0,
+   "prazo5": 605.0,
+   "prazo11": 686.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "25750",
+   "descricao": "PROGRAMADOR DE HORÁRIO (OPCIONAL)",
+   "secao": "",
+   "preco": 540.0,
+   "prazo5": 605.0,
+   "prazo11": 686.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3024",
+   "descricao": "NEW VENTILADOR ECO FAN MX 160 - 1CV TRIFÁSICO",
+   "secao": "",
+   "preco": 3942.0,
+   "prazo5": 4415.0,
+   "prazo11": 5006.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3025",
+   "descricao": "NEW VENTILADOR ECO FAN MX 160 - 1CV MONOFÁSICO",
+   "secao": "",
+   "preco": 4274.0,
+   "prazo5": 4786.0,
+   "prazo11": 5427.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3027",
+   "descricao": "NEW VENTILADOR ECO FAN MX 160 - 1,5CV TRIFÁSICO",
+   "secao": "",
+   "preco": 4684.0,
+   "prazo5": 5247.0,
+   "prazo11": 5949.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3026",
+   "descricao": "NEW VENTILADOR ECO FAN MX 160 - 1,5CV MONOFÁSICO",
+   "secao": "",
+   "preco": 4957.0,
+   "prazo5": 5552.0,
+   "prazo11": 6296.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3028",
+   "descricao": "NEW VENTILADOR TURBO FAN MX 160 - 2CV TRIFÁSICO",
+   "secao": "",
+   "preco": 4713.0,
+   "prazo5": 5279.0,
+   "prazo11": 5986.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3029",
+   "descricao": "NEW VENTILADOR TURBO FAN MX 160 - 2CV MONOFÁSICO",
+   "secao": "",
+   "preco": 5871.0,
+   "prazo5": 6576.0,
+   "prazo11": 7456.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2363",
+   "descricao": "VENTILADOR ECO FAN MX 70 - 0,5CV MONOFÁSICO",
+   "secao": "",
+   "preco": 2757.0,
+   "prazo5": 3088.0,
+   "prazo11": 3502.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3117",
+   "descricao": "VENTILADOR MX 1400",
+   "secao": "",
+   "preco": 5992.0,
+   "prazo5": 6711.0,
+   "prazo11": 7610.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3119",
+   "descricao": "VENTILADOR MX 1400 - SUPORTE PARA TUBO 50MM",
+   "secao": "",
+   "preco": 5992.0,
+   "prazo5": 6711.0,
+   "prazo11": 7610.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3114",
+   "descricao": "VENTILADOR MX 1700",
+   "secao": "",
+   "preco": 7597.0,
+   "prazo5": 8509.0,
+   "prazo11": 9648.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3118",
+   "descricao": "VENTILADOR MX 1700 - SUPORTE PARA TUBO 50MM",
+   "secao": "",
+   "preco": 7597.0,
+   "prazo5": 8509.0,
+   "prazo11": 9648.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3056",
+   "descricao": "VENTILADOR ECO FAN MX 140 -TRIF. 1 CV C/GRADES",
+   "secao": "",
+   "preco": 2996.0,
+   "prazo5": 3356.0,
+   "prazo11": 3805.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "3057",
+   "descricao": "VENTILADOR ECO FAN MX 140 - MONO 1 CV C/GRADES",
+   "secao": "",
+   "preco": 3478.0,
+   "prazo5": 3895.0,
+   "prazo11": 4416.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "5000",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 01 CV MONO 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5001",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 01 CV TRIF 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5002",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 01 CV TRIF 380V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5003",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 01 CV BIF 440V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5004",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 1,5 CV MONO 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5005",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 1,5 CV TRIF 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5006",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 1,5 CV TRIF 380V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5007",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 1,5 CV BIF 440V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5008",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 02 CV MONO 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5009",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 02 CV TRIF 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "5010",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 02 CV TRIF 380V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5011",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 02 CV BIF 440V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5012",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 03 CV MONO 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5013",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 03 CV TRIF 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5014",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 03 CV TRIF 380V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5015",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 03 CV BIF 440V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5016",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 04 CV MONO 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5017",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 04 CV TRIF 220V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5018",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 04 CV TRIF 380V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "5019",
+   "descricao": "COMP. QUADRO DE COMANDO RESF. BOMBA 04 CV BIF 440V",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1150.0,
+   "prazo5": 1288.0,
+   "prazo11": 1460.0,
+   "unidade": "un",
+   "_emprestado": "5009"
+  },
+  {
+   "codigo": "2301",
+   "descricao": "SEPARADOR DE CAMA FREE-STALL MX INDIVIDUAL (COM NECK RAIL)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 653.0,
+   "prazo5": 731.0,
+   "prazo11": 829.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2302",
+   "descricao": "LIMITADOR DE CAMA PARA FREE-STALL",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 245.0,
+   "prazo5": 274.0,
+   "prazo11": 311.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2460",
+   "descricao": "KIT PASSADOR DE CINTA FREE-STALL",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 16.0,
+   "prazo5": 18.0,
+   "prazo11": 20.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2461",
+   "descricao": "CINTA DE BLOQUEIO FRONTAL P/ FREE-STALL - (VALOR P/ METRO)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 11.0,
+   "prazo5": 12.0,
+   "prazo11": 14.0,
+   "unidade": "m"
+  },
+  {
+   "codigo": "2462",
+   "descricao": "KIT CATRACA PARA CINTA SEPARADOR DE FREE-STALL",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 140.0,
+   "prazo5": 157.0,
+   "prazo11": 178.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2463",
+   "descricao": "KIT ABRAÇADEIRA P/ BLOQUEIO FRONTAL SEPARADOR",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 31.0,
+   "prazo5": 35.0,
+   "prazo11": 39.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2464",
+   "descricao": "TUBO PARA BLOQUEIO FRONTAL SEPARADOR - 38,10MM GALV. (R$/M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 57.0,
+   "prazo5": 64.0,
+   "prazo11": 72.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2328",
+   "descricao": "PISO DE BORRACHA MX - 1,20M X 1,80M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 748.0,
+   "prazo5": 838.0,
+   "prazo11": 950.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2484",
+   "descricao": "TAPETE DE BORRACHA PARA BEZERREIRO 1,20M X 1,0M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 186.0,
+   "prazo5": 208.0,
+   "prazo11": 236.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2633",
+   "descricao": "NEW COMFORT BRUSH MX - COÇADOR PARA VACA",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 8014.0,
+   "prazo5": 8976.0,
+   "prazo11": 10178.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2679",
+   "descricao": "BEBEDOURO BASCULANTE INOX 0,5 X 2,5M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2186.0,
+   "prazo5": 2448.0,
+   "prazo11": 2776.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2497",
+   "descricao": "BEBEDOURO DE PAREDE BASCULANTE INOX 0,5 X 2,5M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2371.0,
+   "prazo5": 2656.0,
+   "prazo11": 3011.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2681",
+   "descricao": "BEBEDOURO BASC. INOX C/ CHAPA DE PROTEÇÃO TRASEIRA GALV.",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 3056.0,
+   "prazo5": 3423.0,
+   "prazo11": 3881.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2640",
+   "descricao": "BEBEDOURO MX 110 DE PAREDE",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2129.0,
+   "prazo5": 2385.0,
+   "prazo11": 2704.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2645",
+   "descricao": "BEBEDOURO MX 110 DE PISO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1937.0,
+   "prazo5": 2169.0,
+   "prazo11": 2460.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2643",
+   "descricao": "BEBEDOURO MX 80 DE PAREDE",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1815.0,
+   "prazo5": 2032.0,
+   "prazo11": 2305.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2646",
+   "descricao": "BEBEDOURO MX 80 DE PISO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1723.0,
+   "prazo5": 1929.0,
+   "prazo11": 2188.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2644",
+   "descricao": "BEBEDOURO MX 40 DE PAREDE",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 867.0,
+   "prazo5": 971.0,
+   "prazo11": 1101.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2653",
+   "descricao": "BEBEDOURO MX 40 DE PISO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 899.0,
+   "prazo5": 1007.0,
+   "prazo11": 1141.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1963",
+   "descricao": "BRETE DE MANEJO 1 X 4 MX",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 3852.0,
+   "prazo5": 4314.0,
+   "prazo11": 4892.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1964",
+   "descricao": "BRETE DE MANEJO 1 X 6 MX",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 4815.0,
+   "prazo5": 5393.0,
+   "prazo11": 6115.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1966",
+   "descricao": "BRETE DE MANEJO 1 X 8 MX",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 5992.0,
+   "prazo5": 6711.0,
+   "prazo11": 7610.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1967",
+   "descricao": "BRETE DE MANEJO 1 X 10 MX",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 7169.0,
+   "prazo5": 8029.0,
+   "prazo11": 9105.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1965",
+   "descricao": "BRETE DE MANEJO 1 X 12 MX",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 7918.0,
+   "prazo5": 8868.0,
+   "prazo11": 10056.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1968",
+   "descricao": "BRETE DE MANEJO 1 X 15 MX",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 9737.0,
+   "prazo5": 10905.0,
+   "prazo11": 12366.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2303",
+   "descricao": "TUBO PARA FECHAMENTO (R$/M LINEAR)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 64.0,
+   "prazo5": 72.0,
+   "prazo11": 81.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2327",
+   "descricao": "ABRAÇADEIRA PARA FECHAMENTOS (R$/PÇ)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 25.0,
+   "prazo5": 28.0,
+   "prazo11": 32.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2228",
+   "descricao": "BICO DE ASPERSÃO PISTA DE ALIMENTAÇÃO - TUBO 50MM",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 180.0,
+   "prazo5": 202.0,
+   "prazo11": 229.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2239",
+   "descricao": "BICO DE ASPERSÃO TIPO BAILARINA PARA SALA DE ESPERA",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 64.0,
+   "prazo5": 72.0,
+   "prazo11": 81.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "22223",
+   "descricao": "KIT SUPORTE ASPERSÃO PVC 50 MM",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 78.0,
+   "prazo5": 87.0,
+   "prazo11": 99.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2049",
+   "descricao": "BOMBA P/ ASPERSÃO MX 01CV (MONO 220V)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2660.0,
+   "prazo5": 2979.0,
+   "prazo11": 3378.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2052",
+   "descricao": "BOMBA P/ ASPERSÃO MX 1,5CV (MONO 220V)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 3392.0,
+   "prazo5": 3799.0,
+   "prazo11": 4308.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2053",
+   "descricao": "BOMBA P/ ASPERSÃO MX 02CV (MONO 220V)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 3698.0,
+   "prazo5": 4142.0,
+   "prazo11": 4696.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2054",
+   "descricao": "BOMBA P/ ASPERSÃO MX 03CV (MONO 220V)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 4166.0,
+   "prazo5": 4665.0,
+   "prazo11": 5290.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2055",
+   "descricao": "BOMBA P/ ASPERSÃO MX 04CV (MONO 220V)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 4391.0,
+   "prazo5": 4918.0,
+   "prazo11": 5577.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2062",
+   "descricao": "BOMBA P/ ASPERSÃO MX 01CV TRIFÁSICO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2530.0,
+   "prazo5": 2834.0,
+   "prazo11": 3213.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2056",
+   "descricao": "BOMBA P/ ASPERSÃO MX 1,5CV TRIFÁSICO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2750.0,
+   "prazo5": 3080.0,
+   "prazo11": 3493.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2057",
+   "descricao": "BOMBA P/ ASPERSÃO MX 02CV TRIFÁSICO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 3177.0,
+   "prazo5": 3558.0,
+   "prazo11": 4035.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2058",
+   "descricao": "BOMBA P/ ASPERSÃO MX 03CV TRIFÁSICO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 3570.0,
+   "prazo5": 3998.0,
+   "prazo11": 4534.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2059",
+   "descricao": "BOMBA P/ ASPERSÃO MX 04CV TRIFÁSICO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 4650.0,
+   "prazo5": 5208.0,
+   "prazo11": 5906.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2741",
+   "descricao": "FILTRO DE TELA SAIDA 2 POL P/ LINHA DE ASPERSAO 50MM",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 225.0,
+   "prazo5": 252.0,
+   "prazo11": 285.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2740",
+   "descricao": "VÁLVULA SOLENOIDE 1.1/2 P/ LINHA DE ASPERSAO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 910.0,
+   "prazo5": 1019.0,
+   "prazo11": 1156.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2739",
+   "descricao": "MANOMETRO VERTICAL P/ LINHA DE ASPERSAO 50MM",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 423.0,
+   "prazo5": 473.0,
+   "prazo11": 537.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "4999",
+   "descricao": "KIT COMPLETO VÁLVULA SOLENOIDE PARA RESFRIAMENTO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 928.0,
+   "prazo5": 1039.0,
+   "prazo11": 1179.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1480",
+   "descricao": "QUADRO DE COMANDO CÍCLICO PARA SISTEMAS DE ASPERSÃO",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1090.0,
+   "prazo5": 1221.0,
+   "prazo11": 1384.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2791",
+   "descricao": "CARRINHO RASPADOR MX",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1006.0,
+   "prazo5": 1126.0,
+   "prazo11": 1277.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2789",
+   "descricao": "RASPADOR MANUAL MX 55",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 96.0,
+   "prazo5": 108.0,
+   "prazo11": 122.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2790",
+   "descricao": "RASPADOR MANUAL MX 80",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 112.0,
+   "prazo5": 126.0,
+   "prazo11": 143.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1314",
+   "descricao": "PORTÕES DE MANEJO MX MODULARES (R$/M LINEAR)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 526.0,
+   "prazo5": 590.0,
+   "prazo11": 669.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1606",
+   "descricao": "PORTÃO PASSAGEM 300 (1,9 A 2,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 982.0,
+   "prazo5": 1100.0,
+   "prazo11": 1247.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1607",
+   "descricao": "PORTÃO PASSAGEM 300 (2,5 A 3,0M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1158.0,
+   "prazo5": 1297.0,
+   "prazo11": 1470.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1608",
+   "descricao": "PORTÃO PASSAGEM 300 (3,0 A 3,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1293.0,
+   "prazo5": 1448.0,
+   "prazo11": 1642.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1609",
+   "descricao": "PORTÃO PASSAGEM 300 (3,5 A 4,0M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1466.0,
+   "prazo5": 1642.0,
+   "prazo11": 1862.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1610",
+   "descricao": "PORTÃO PASSAGEM 300 (4,0 A 4,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1570.0,
+   "prazo5": 1758.0,
+   "prazo11": 1994.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1611",
+   "descricao": "PORTÃO PASSAGEM 300 (4,5 A 5,0M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1743.0,
+   "prazo5": 1952.0,
+   "prazo11": 2214.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1612",
+   "descricao": "PORTÃO PASSAGEM 300 (5,0 A 5,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1830.0,
+   "prazo5": 2049.0,
+   "prazo11": 2324.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1613",
+   "descricao": "PORTÃO PASSAGEM 300 (5,5 A 6,0M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2003.0,
+   "prazo5": 2243.0,
+   "prazo11": 2544.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1605",
+   "descricao": "PORTÃO DE PASSAGEM 400 C/ PORTINHOLA (1,9 A 2,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1173.0,
+   "prazo5": 1313.0,
+   "prazo11": 1489.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1614",
+   "descricao": "PORTÃO DE PASSAGEM 400 C/ PORTINHOLA (2,5 A 3,0M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1346.0,
+   "prazo5": 1508.0,
+   "prazo11": 1709.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1615",
+   "descricao": "PORTÃO DE PASSAGEM 400 C/ PORTINHOLA (3,0 A 3,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1462.0,
+   "prazo5": 1637.0,
+   "prazo11": 1856.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1616",
+   "descricao": "PORTÃO DE PASSAGEM 400 C/ PORTINHOLA (3,5 A 4,0M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1636.0,
+   "prazo5": 1832.0,
+   "prazo11": 2078.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1617",
+   "descricao": "PORTÃO DE PASSAGEM 400 C/ PORTINHOLA (4,0 A 4,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1766.0,
+   "prazo5": 1977.0,
+   "prazo11": 2242.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1618",
+   "descricao": "PORTÃO DE PASSAGEM 400 C/ PORTINHOLA (4,5 A 5,0M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1939.0,
+   "prazo5": 2172.0,
+   "prazo11": 2462.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1619",
+   "descricao": "PORTÃO DE PASSAGEM 400 C/ PORTINHOLA (5,0 A 5,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2020.0,
+   "prazo5": 2263.0,
+   "prazo11": 2566.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1620",
+   "descricao": "PORTÃO DE PASSAGEM 400 C/ PORTINHOLA (5,5 A 6,0M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2196.0,
+   "prazo5": 2459.0,
+   "prazo11": 2788.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1622",
+   "descricao": "PORTÃO DE VIA ÚNICA FINGERS 1,0M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 2968.0,
+   "prazo5": 3324.0,
+   "prazo11": 3770.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1623",
+   "descricao": "PORTÃO DE VIA ÚNICA FINGERS 2,0M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 4369.0,
+   "prazo5": 4893.0,
+   "prazo11": 5548.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1624",
+   "descricao": "PORTÃO DE VIA ÚNICA FINGERS 3,0M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 5517.0,
+   "prazo5": 6179.0,
+   "prazo11": 7006.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1625",
+   "descricao": "PORTÃO DE VIA ÚNICA FINGERS 4,0M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 6666.0,
+   "prazo5": 7466.0,
+   "prazo11": 8466.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1621",
+   "descricao": "PORTÃO DE ELEVAÇÃO (3,0M - 4,5M)",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 5720.0,
+   "prazo5": 6407.0,
+   "prazo11": 7265.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2793",
+   "descricao": "PORTÃO DE ELEVAÇÃO AUTOMÁTICO 3M A 4,5M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 7597.0,
+   "prazo5": 8509.0,
+   "prazo11": 9648.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2794",
+   "descricao": "PORTÃO DE ELEVAÇÃO AUTOMÁTICO 4M",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 7597.0,
+   "prazo5": 8509.0,
+   "prazo11": 9648.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1604",
+   "descricao": "PORTÃO DE UMA VIA TELESCÓPICO MODELO TEXAS",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 1087.0,
+   "prazo5": 1218.0,
+   "prazo11": 1381.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1601",
+   "descricao": "FENIL PEQUENO PARA EQUINOS",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 128.0,
+   "prazo5": 144.0,
+   "prazo11": 163.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1602",
+   "descricao": "FENIL GRANDE PARA EQUINOS",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 259.0,
+   "prazo5": 290.0,
+   "prazo11": 329.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "1603",
+   "descricao": "FENIL DE CANTO PARA EQUINOS",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 134.0,
+   "prazo5": 150.0,
+   "prazo11": 170.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2662",
+   "descricao": "DRINKER EM INOX 600",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 734.0,
+   "prazo5": 822.0,
+   "prazo11": 932.0,
+   "unidade": "un"
+  },
+  {
+   "codigo": "2663",
+   "descricao": "DRINKER EM INOX 400",
+   "secao": "COMPLEMENTO QUADROS DE COMANDO SMARTFAN",
+   "preco": 440.0,
+   "prazo5": 493.0,
+   "prazo11": 559.0,
+   "unidade": "un"
+  }
+ ]
+}

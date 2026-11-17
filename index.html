@@ -3121,7 +3121,7 @@
 
       <details class="card adm-dobra">
         <summary><span class="adm-tit">Catálogo de peças</span><span class="adm-resumo">Aparecem para escolher na OS</span></summary>
-        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-pecas-conforto">Tabela Conforto</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
+        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-pecas-conforto">Tabela Conforto</button><button type="button" class="bloco-editar" id="adm-pecas-mx">Tabela MX</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
         <input type="file" id="adm-pecas-ordemax-arq" accept=".xml,text/xml,application/xml" hidden>
         <div class="field" style="margin:8px 0 6px"><input type="text" id="adm-pecas-busca" placeholder="Buscar peça" autocomplete="off" aria-label="Buscar peça no catálogo"></div>
         <div id="adm-pecas"></div>
@@ -5164,8 +5164,10 @@
 <div class="modal-backdrop" id="modal-conforto" hidden>
   <div class="modal-sheet modal-grande om-form">
     <h2>Configurador Conforto Animal</h2>
-    <div class="om-sub">Tabela de preços Ordemax de 02/06/2025</div>
+    <div class="om-sub" id="cc-fonte"></div>
     <div class="os-sec">
+      <div class="os-sec-tit">Fornecedor</div>
+      <div class="field"><div class="toggle" id="cc-forn"><button type="button" data-f="ordemax">Ordemax</button><button type="button" data-f="mx">MX do Brasil</button></div></div>
       <div class="os-sec-tit">Tipo do galpão</div>
       <div class="field"><div class="toggle" id="cc-tipo"><button type="button" data-t="freestall">Free Stall</button><button type="button" data-t="compost">Compost Barn</button></div></div>
     </div>
@@ -5173,7 +5175,7 @@
       <div class="os-sec-tit">Itens</div>
       <div class="campo-dica">Toque num grupo para abrir e ajuste a quantidade de cada item.</div>
       <div id="cc-grupos"></div>
-      <div class="os-totais"><div class="tot"><span>Total (custo Ordemax)</span><span id="cc-total">R$ 0,00</span></div></div>
+      <div class="os-totais"><div class="tot"><span>Total (custo do fornecedor)</span><span id="cc-total">R$ 0,00</span></div></div>
     </div>
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="cc-fechar">Fechar</button>
@@ -6167,7 +6169,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.6';
+  const APP_VERSAO = '2026.11.17.7';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -15464,24 +15466,26 @@
   // Tabela de Preço Conforto Animal da Ordemax (02/06/2025), já limpa em tabelas/: cadastra os itens novos
   // com preço e atualiza o preço dos que já estão no catálogo (pelo código; sem código, pela descrição)
   const TABELA_CONFORTO = 'tabelas/conforto-animal-2025-06-02.json';
-  $('adm-pecas-conforto').addEventListener('click', importarTabelaConforto);
-  async function importarTabelaConforto() {
+  const TABELA_MX = 'tabelas/mx-2025.json';
+  $('adm-pecas-conforto').addEventListener('click', () => importarTabelaConforto(TABELA_CONFORTO));
+  $('adm-pecas-mx').addEventListener('click', () => importarTabelaConforto(TABELA_MX));
+  async function importarTabelaConforto(url) {
     let tab;
-    try { const r = await fetch(TABELA_CONFORTO); if (!r.ok) throw new Error('HTTP ' + r.status); tab = await r.json(); }
-    catch (e) { avisar('Não consegui abrir a tabela de Conforto Animal: ' + (e && e.message ? e.message : e)); return; }
+    try { const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); tab = await r.json(); }
+    catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
     const chave = p => (p.codigo || '').trim().toLowerCase() || 'd:' + normalizarBusca(p.descricao || '');
     const porChave = new Map(pecasCatalogo.map(p => [chave(p), p]));
     const novas = [], muda = [];
     tab.itens.forEach(i => { const p = porChave.get(chave(i)); if (!p) novas.push(i); else if (Math.abs((Number(p.preco) || 0) - i.preco) > 0.004) muda.push([p, i]); });
-    if (!novas.length && !muda.length) { avisar('A tabela de Conforto Animal já está no catálogo, com os mesmos preços.'); return; }
+    if (!novas.length && !muda.length) { avisar('Esta tabela já está no catálogo, com os mesmos preços.'); return; }
     const resumo = [novas.length && plural(novas.length, 'item novo', 'itens novos'), muda.length && plural(muda.length, 'preço atualizado', 'preços atualizados')].filter(Boolean).join(' e ');
     if (!(await confirmar(tab.fonte + ': ' + resumo + '. Importar para o catálogo?', 'Importar'))) return;
     const agora = Date.now();
     novas.forEach(i => gravar('set', 'pecas/' + novoId(), { codigo: i.codigo, descricao: i.descricao, unidade: i.unidade, preco: i.preco, finame: i.finame, mda: i.mda,
-      origem: 'ordemax-conforto', tabela: tab.data, criadoPor: viewerId || null, criadoEm: agora }));
+      origem: tab.fornecedor || 'Ordemax', tabela: tab.data, criadoPor: viewerId || null, criadoEm: agora }));
     muda.forEach(([p, i]) => gravar('update', 'pecas/' + p.id, { preco: i.preco, tabela: tab.data, atualizadoPor: viewerId || null, atualizadoEm: agora }));
-    registrarAtividade('importou', 'peca', '', 'Tabela Conforto Animal: ' + resumo);
-    avisoRapido('Tabela de Conforto Animal importada');
+    registrarAtividade('importou', 'peca', '', tab.fonte + ': ' + resumo);
+    avisoRapido('Tabela importada');
   }
   async function importarCatalogoOrdemax(arquivo) {
     let lidos = [];
@@ -16906,7 +16910,7 @@
   // "8 CONJUNTOS", "COM PROGRAMADOR DE LIMPEZA" e os equipamentos principais (bomba, motor, boiler…)
   function resumoOrdemax(o) {
     if (o.tipo === 'conforto') return {
-      produto: maiusc(o.titulo.replace(/^Configura[cç][aã]o de\s*/i, '') + ' Ordemax'),
+      produto: maiusc(o.titulo.replace(/^Configura[cç][aã]o de\s*/i, '') + ' ' + (o.fornecedor || 'Ordemax')),
       linhas: o.grupos.flatMap(g => g.itens.map(i => i.qtd + ' ' + (i.un === 'M' ? 'M ' : '') + i.descricao.replace(/\s*\(.*?\)\s*/g, ' ').trim())).map(maiusc).slice(0, LINHAS_MODELO - 1)
     };
     const itens = o.grupos.flatMap(g => g.itens.map(i => ({ ...i, grupo: g.nome, n: parseMoney(i.qtd) || 0 })));
@@ -16963,7 +16967,8 @@
     const div = (80 - margemGeral()) / 100;
     $('om-conta').textContent = 'Mesma conta da Calculadora: (custo − ICMS ' + numTxt(aliquotaDaOrigem(omOrigem)) + '%) ÷ ' +
       div.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '. Margem padrão da Auriverde: ' + numTxt(config.margemPadrao) + '%.';
-    $('om-totais').innerHTML = '<div><span>Custo Ordemax</span><span></span></div><div><span>Diferença sobre o custo</span><span></span></div><div class="tot"><span>Total do orçamento</span><span></span></div>';
+    $('om-totais').innerHTML = '<div><span></span><span></span></div><div><span>Diferença sobre o custo</span><span></span></div><div class="tot"><span>Total do orçamento</span><span></span></div>';
+    $('om-totais').querySelector('span').textContent = 'Custo ' + (o.fornecedor || 'Ordemax');
     const v = $('om-totais').querySelectorAll('div span:last-child');
     v[0].textContent = fmt(custo);
     v[1].textContent = fmt(arredOm(total - custo)) + (custo ? ' (' + fmtPct((total / custo - 1) * 100) + ')' : '');
@@ -16988,7 +16993,7 @@
     $('om-validade').value = String(cfg.validade || 30);
     $('om-produto').value = produtoPadrao(o);
     $('om-descricao').value = descricaoPadrao(o);
-    omOrigem = cfg.origem === 'dentro' ? 'dentro' : 'fora';
+    omOrigem = o.origem || (cfg.origem === 'dentro' ? 'dentro' : 'fora');
     omItens = cfg.itens === 'grupos' ? 'grupos' : 'resumido';
     pintarOrigemOm();
     pintarItensOm();
@@ -17167,22 +17172,33 @@
   // Usa a tabela de preços de Conforto Animal da Ordemax (tabelas/): escolhe o tipo do galpão e a quantidade
   // de cada item; o orçamento segue o mesmo caminho do Orçamento Ordemax (margem da Calculadora, modelo SAC-029).
   const GRUPOS_CONFORTO = [
-    ['VENTILAÇÃO', /ventilador|quadro de comando/i],
-    ['CONTENÇÃO', /conten[cç][aã]o|canzil|barra frontal|p[eé] direito|fechamento|escada|cantoneira/i],
+    ['VENTILAÇÃO', /ventilador|quadro de comando|smartfan|turbo ?fan|eco ?fan|sensor de temperatura|programador de hor/i],
+    ['BEZERREIRO', /bezerr|fenil|milk ?bar/i],
+    ['FREE STALL', /separador|limitador|cinta|catraca|passador|bloqueio frontal/i],
     ['BAIAS', /\bbaia\b/i],
-    ['BEBEDOUROS', /bebedouro|cap[eé]la/i],
-    ['ASPERSÃO', /aspers|tubula[cç][aã]o/i],
-    ['MANEJO', /scraper|trilho|co[cç]ador/i],
+    ['CONTENÇÃO', /conten[cç][aã]o|\bcont\.|canzil|barra frontal|p[eé] direito|fechamento|escada|cantoneira|protetor|pontalete|abra[cç]adeira|luva|base fixa/i],
+    ['BEBEDOUROS', /bebedouro|drinker|cap[eé]la/i],
+    ['PISO', /piso de borracha|borracha/i],
+    ['AQUECIMENTO', /aquecedor|tanque inox|termostato|resist[eê]ncia|boia/i],
+    ['ASPERSÃO', /aspers|tubula[cç][aã]o|nebuliz|solenoide/i],
+    ['MANEJO', /scraper|trilho|co[cç]ador|comfort brush|brete|empurrador|rob[oô]|raspador|port[aã]o|port[oõ]es|saleiro|cocho/i],
     ['INSTALAÇÃO', /instala[cç][aã]o/i]
   ];
+  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' } };
+  let ccForn = 'ordemax', ccFonte = '';
+  const ccTabelas = {};
   let ccTabela = null, ccTipo = 'freestall', ccQtd = {};
-  async function abrirConfiguradorConforto() {
-    if (!ccTabela) {
-      try {
-        const r = await fetch(TABELA_CONFORTO); if (!r.ok) throw new Error('HTTP ' + r.status);
-        ccTabela = (await r.json()).itens.map((i, n) => ({ ...i, id: 'c' + n, grupo: (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0] }));
-      } catch (e) { avisar('Não consegui abrir a tabela de Conforto Animal: ' + (e && e.message ? e.message : e)); return; }
+  async function carregarFornecedor(f) {
+    if (!ccTabelas[f]) {
+      const r = await fetch(FORNECEDORES_CONFORTO[f].url); if (!r.ok) throw new Error('HTTP ' + r.status);
+      const tab = await r.json();
+      ccTabelas[f] = { fonte: tab.fonte, itens: tab.itens.map((i, n) => ({ ...i, id: f + n, grupo: (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0] })) };
     }
+    ccForn = f; ccTabela = ccTabelas[f].itens; ccFonte = ccTabelas[f].fonte;
+  }
+  async function abrirConfiguradorConforto() {
+    try { await carregarFornecedor(ccForn); }
+    catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
     renderConfigurador();
     $('modal-conforto').hidden = false;
     $('modal-conforto').querySelector('.modal-sheet').scrollTop = 0;
@@ -17190,9 +17206,11 @@
   function totalConforto() { return arredOm(ccTabela.reduce((s, i) => s + i.preco * (ccQtd[i.id] || 0), 0)); }
   function renderConfigurador() {
     $('cc-tipo').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.t === ccTipo));
+    $('cc-forn').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.f === ccForn));
+    $('cc-fonte').textContent = ccFonte;
     const box = $('cc-grupos');
     box.innerHTML = '';
-    [...GRUPOS_CONFORTO.map(g => g[0]), 'OUTROS'].filter(g => !(ccTipo === 'compost' && g === 'BAIAS')).forEach(g => {
+    [...GRUPOS_CONFORTO.map(g => g[0]), 'OUTROS'].filter(g => !(ccTipo === 'compost' && (g === 'BAIAS' || g === 'FREE STALL'))).forEach(g => {
       const itens = ccTabela.filter(i => i.grupo === g);
       if (!itens.length) return;
       const det = document.createElement('details');
@@ -17226,7 +17244,14 @@
   $('nav-conforto').addEventListener('click', abrirConfiguradorConforto);
   $('cc-tipo').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     ccTipo = b.dataset.t;
-    if (ccTipo === 'compost') ccTabela.filter(i => i.grupo === 'BAIAS').forEach(i => { delete ccQtd[i.id]; });
+    if (ccTipo === 'compost') ccTabela.filter(i => i.grupo === 'BAIAS' || i.grupo === 'FREE STALL').forEach(i => { delete ccQtd[i.id]; });
+    renderConfigurador();
+  }));
+  $('cc-forn').querySelectorAll('button').forEach(b => b.addEventListener('click', async () => {
+    if (b.dataset.f === ccForn) return;
+    if (ccTabela && ccTabela.some(i => ccQtd[i.id] > 0) && !(await confirmar('Trocar de fornecedor limpa os itens escolhidos. Trocar?', 'Trocar'))) return;
+    ccQtd = {};
+    try { await carregarFornecedor(b.dataset.f); } catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
     renderConfigurador();
   }));
   $('cc-fechar').addEventListener('click', () => { $('modal-conforto').hidden = true; });
@@ -17242,9 +17267,10 @@
       g.itens.push({ codigo: i.codigo, descricao: i.descricao, qtd: String(q).replace('.', ','), un: i.unidade === 'm' ? 'M' : 'UN' });
     });
     const o = { tipo: 'conforto', titulo: 'Configuração de Conforto Animal ' + (ccTipo === 'compost' ? 'Compost Barn' : 'Free Stall'),
+      fornecedor: FORNECEDORES_CONFORTO[ccForn].nome, origem: FORNECEDORES_CONFORTO[ccForn].origem,
       cliente: '', endereco: '', pagamento: '', obs: '', grupos, total: arredOm(grupos.reduce((s, g) => s + g.valor, 0)), validade: 0 };
     $('modal-conforto').hidden = true;
-    abrirOrdemax(o, 'Tabela Conforto Animal 02/06/2025');
+    abrirOrdemax(o, ccFonte);
   });
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
