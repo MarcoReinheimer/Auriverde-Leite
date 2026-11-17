@@ -1,0 +1,502 @@
+{
+ "fonte": "Ordemax - Tabela de Preço Conforto Animal 02/06/2025",
+ "data": "2025-06-02",
+ "itens": [
+  {
+   "codigo": "130296-5",
+   "descricao": "VENTILADOR TURBO MAX 2000 - 6 PÁS - SEM MOTOR (Ø 1950 MM, 108.000 M³/H, PRECISA MOTOR 3 CV)",
+   "preco": 5013.8,
+   "unidade": "un",
+   "finame": "3481667",
+   "mda": "M00A314"
+  },
+  {
+   "codigo": "130174-8",
+   "descricao": "VENTILADOR TURBO MAX 2000 -6 PAS 3 CV MONO ABERTO",
+   "preco": 7293.0,
+   "unidade": "un",
+   "finame": "3481667",
+   "mda": "M00A314"
+  },
+  {
+   "codigo": "130173-0",
+   "descricao": "VENTILADOR TURBO MAX 2000 -6 PAS 3 CV TRIFASICO BLINDADO",
+   "preco": 7293.0,
+   "unidade": "un",
+   "finame": "3481667",
+   "mda": "M00A314"
+  },
+  {
+   "codigo": "130338-4",
+   "descricao": "VENTILADOR TURBO MAX 1700 - 6 PÁS - SEM MOTOR (Ø 1520 MM, 70.000 M³/H, PRECISA MOTOR 1,5 CV TRIF. OU 2 CV MONO)",
+   "preco": 3731.2,
+   "unidade": "un",
+   "finame": "3481667",
+   "mda": "M00A314"
+  },
+  {
+   "codigo": "130336-8",
+   "descricao": "VENTILADOR TURBO MAX 1700 - 6 PAS- 1,5 CV TRIFASICO BLINDADO",
+   "preco": 5726.6,
+   "unidade": "un",
+   "finame": "3481667",
+   "mda": "M00A314"
+  },
+  {
+   "codigo": "130337-6",
+   "descricao": "VENTILADOR TURBO MAX 1700 - 6 PAS - 2,0 CV MONO ABERTO",
+   "preco": 6004.0,
+   "unidade": "un",
+   "finame": "3481667",
+   "mda": "M00A314"
+  },
+  {
+   "codigo": "130339-2",
+   "descricao": "VENTILADOR TURBO MAX 1300 - 5 PÁS - SEM MOTOR (Ø 1300 MM, 40.000 M³/H, PRECISA MOTOR 1 CV)",
+   "preco": 3049.2,
+   "unidade": "un",
+   "finame": "3481667",
+   "mda": "M00A314"
+  },
+  {
+   "codigo": "130340-6",
+   "descricao": "VENTILADOR TURBO MAX 1300 - 5 PÁS - 1,0 CV TRIFÁSICO OU MONO (Ø 1300 MM, 40.000 M³/H) - CÓD. 130340-6 OU 130341-4",
+   "preco": 4394.5,
+   "unidade": "un",
+   "finame": "3481667",
+   "mda": "M00A314"
+  },
+  {
+   "codigo": "",
+   "descricao": "QUADRO DE COMANDO PARA VENTILADORES, REDE MONOFÁSICA",
+   "preco": 900.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "",
+   "descricao": "QUADRO DE COMANDO PARA VENTILADORES, REDE TRIFÁSICA",
+   "preco": 800.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "128050-3",
+   "descricao": "CONTENÇÃO 2X2 NORMAL",
+   "preco": 8788.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M018A341"
+  },
+  {
+   "codigo": "131757-1",
+   "descricao": "CONTENÇÃO 2X3 NORMAL",
+   "preco": 11190.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M018A342"
+  },
+  {
+   "codigo": "131758-4",
+   "descricao": "CONTENÇÃO 2X4 NORMAL",
+   "preco": 11920.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M018A341"
+  },
+  {
+   "codigo": "131925-6",
+   "descricao": "CONTENÇÃO 2X5 NORMAL",
+   "preco": 14585.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M018A342"
+  },
+  {
+   "codigo": "131774-1",
+   "descricao": "CONTENÇÃO 2X6 NORMAL",
+   "preco": 15324.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A579"
+  },
+  {
+   "codigo": "132000-9",
+   "descricao": "CONTENÇÃO 2X7 NORMAL",
+   "preco": 18817.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A578"
+  },
+  {
+   "codigo": "132349-0",
+   "descricao": "CONTENÇÃO 2X8 NORMAL",
+   "preco": 19138.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A420"
+  },
+  {
+   "codigo": "132045-9",
+   "descricao": "CONTENÇÃO 2X10 NORMAL",
+   "preco": 22951.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A418"
+  },
+  {
+   "codigo": "130154-3",
+   "descricao": "CONTENÇÃO 2X12 NORMAL",
+   "preco": 26501.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A415"
+  },
+  {
+   "codigo": "001348-0",
+   "descricao": "CONTENÇÃO 2X2 ESPECIAL",
+   "preco": 9861.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "004511-0",
+   "descricao": "CONTENÇÃO 2X3 ESPECIAL",
+   "preco": 12093.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "131986-8",
+   "descricao": "CONTENÇÃO 2X4 ESPECIAL",
+   "preco": 13317.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M018A341"
+  },
+  {
+   "codigo": "004371-0",
+   "descricao": "CONTENÇÃO 2X5 ESPECIAL",
+   "preco": 16391.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M018A342"
+  },
+  {
+   "codigo": "131786-5",
+   "descricao": "CONTENÇÃO 2X6 ESPECIAL",
+   "preco": 18034.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A579"
+  },
+  {
+   "codigo": "130149-7",
+   "descricao": "CONTENÇÃO 2X7 ESPECIAL",
+   "preco": 20454.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A578"
+  },
+  {
+   "codigo": "131760-1",
+   "descricao": "CONTENÇÃO 2X8 ESPECIAL",
+   "preco": 22874.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A420"
+  },
+  {
+   "codigo": "003557-2",
+   "descricao": "CONTENÇÃO 2X10 ESPECIAL",
+   "preco": 25825.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A418"
+  },
+  {
+   "codigo": "130152-7",
+   "descricao": "CONTENÇÃO 2X12 ESPECIAL",
+   "preco": 30990.0,
+   "unidade": "un",
+   "finame": "3650260",
+   "mda": "M013A415"
+  },
+  {
+   "codigo": "131144-1",
+   "descricao": "CONTENÇÃO 2X4 AUTO-SUSTENTÁVEL",
+   "preco": 33200.0,
+   "unidade": "un",
+   "finame": "3650252",
+   "mda": "M013A581"
+  },
+  {
+   "codigo": "131078-0",
+   "descricao": "CONTENÇÃO 2X6 AUTO-SUSTENTÁVEL",
+   "preco": 49800.0,
+   "unidade": "un",
+   "finame": "3650252",
+   "mda": "M013A422"
+  },
+  {
+   "codigo": "131147-6",
+   "descricao": "CONTENÇÃO 2X8 AUTO-SUSTENTÁVEL",
+   "preco": 64100.0,
+   "unidade": "un",
+   "finame": "3650252",
+   "mda": "M013A419"
+  },
+  {
+   "codigo": "131077-1",
+   "descricao": "CONTENÇÃO 2X10 AUTO-SUSTENTÁVEL",
+   "preco": 69100.0,
+   "unidade": "un",
+   "finame": "3650252",
+   "mda": "M013A417"
+  },
+  {
+   "codigo": "131076-3",
+   "descricao": "CONTENÇÃO 2X12 AUTO-SUSTENTÁVEL",
+   "preco": 84830.0,
+   "unidade": "un",
+   "finame": "3650252",
+   "mda": "M013A425"
+  },
+  {
+   "codigo": "131149-2",
+   "descricao": "CONTENÇÃO 2X16 AUTO-SUSTENTÁVEL",
+   "preco": 105800.0,
+   "unidade": "un",
+   "finame": "3650252",
+   "mda": "M013A357"
+  },
+  {
+   "codigo": "128137-2",
+   "descricao": "CANZIL LEVE 1. 1/4 C/ ESPAÇAMETO DE 0,73 - 0,82",
+   "preco": 480.0,
+   "unidade": "un",
+   "finame": "3617761",
+   "mda": ""
+  },
+  {
+   "codigo": "130127-6",
+   "descricao": "CANZIL LEVE 1. 1/4 C/ ESPAÇAMETO DE 0,83 - 0,92",
+   "preco": 500.0,
+   "unidade": "un",
+   "finame": "3617761",
+   "mda": ""
+  },
+  {
+   "codigo": "002176-8",
+   "descricao": "CANZIL LEVE 1. 1/4 C/ ESPAÇAMETO DE 0,93 - 1,02",
+   "preco": 520.0,
+   "unidade": "un",
+   "finame": "3617761",
+   "mda": ""
+  },
+  {
+   "codigo": "",
+   "descricao": "BARRA FRONTAL - CANZIL FIXO (POR METRO TUBO 1-1/4)",
+   "preco": 128.0,
+   "unidade": "m",
+   "finame": "3617761",
+   "mda": ""
+  },
+  {
+   "codigo": "",
+   "descricao": "SUPORTE PARA BARRA FRONTAL - CANZIL FIXO (UNIDADE)",
+   "preco": 105.0,
+   "unidade": "un",
+   "finame": "3617761",
+   "mda": ""
+  },
+  {
+   "codigo": "133187-3",
+   "descricao": "PÉ DIREITO GALVANIZADO 2 MTS X 63,30MM",
+   "preco": 250.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "4282-0",
+   "descricao": "PÉ DIREITO GALVANIZADO 1,50MTS X 63,30MM",
+   "preco": 210.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "4090-8",
+   "descricao": "PÉ DIREITO GALVANIZADO 1,20MTS X 63,30MM",
+   "preco": 180.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "129727-9",
+   "descricao": "BAIA \"R\"(1 LADO) TUBO 60,30 X 3,35MM (A DIVISÓRIA)",
+   "preco": 856.0,
+   "unidade": "un",
+   "finame": "3617220",
+   "mda": ""
+  },
+  {
+   "codigo": "132080-7",
+   "descricao": "BAIA \"R\"(1 LADO) TUBO 50,80 X 2,65MM NOVO (A DIVISÓRIA)",
+   "preco": 776.0,
+   "unidade": "un",
+   "finame": "3617220",
+   "mda": ""
+  },
+  {
+   "codigo": "128764-8",
+   "descricao": "BAIA VOADORA DUPLA (POR VACA)",
+   "preco": 1400.0,
+   "unidade": "un",
+   "finame": "3617220",
+   "mda": ""
+  },
+  {
+   "codigo": "003397-9",
+   "descricao": "BAIA VOADORA SIMPLES (POR VACA)",
+   "preco": 1836.0,
+   "unidade": "un",
+   "finame": "3617220",
+   "mda": ""
+  },
+  {
+   "codigo": "003210-7",
+   "descricao": "ESCADA DE FOSSO GALVANIZADA COM 2 DEGRAUS",
+   "preco": 450.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "003218-2",
+   "descricao": "ESCADA DE FOSSO GALVANIZADA COM 3 DEGRAUS",
+   "preco": 980.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "131129-8",
+   "descricao": "CANTONEIRA DE FOSSO (METRO) - JÁ INCLUSO MATERIAL DE INSTALAÇÃO",
+   "preco": 220.0,
+   "unidade": "m",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "002943-2",
+   "descricao": "FECHAMENTO EM ''V''",
+   "preco": 890.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "132389-0",
+   "descricao": "FECHAMENTO EM V PARA CONTENÇÃO TUBO (2\") - AUTO SUSTENTAVEL",
+   "preco": 1157.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "800178-2",
+   "descricao": "BEBEDOURO INOX BASCULANTE 300LTS 0,50 X 2,5MT",
+   "preco": 2852.0,
+   "unidade": "un",
+   "finame": "3640233",
+   "mda": ""
+  },
+  {
+   "codigo": "132289-3",
+   "descricao": "BEBEDOURO GALVANIZADO BASCULANTE 300LTS 0,50 X 2,5MT NOVO",
+   "preco": 2110.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "",
+   "descricao": "PROTEÇÃO CAPÉLA PARA O BEBEDOURO GALVANIZADO NOVO",
+   "preco": 1242.3,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "",
+   "descricao": "ASPERSÃO - COW COLLING",
+   "preco": 10935.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "",
+   "descricao": "METRO DE TUBULAÇÃO 50MM (TUBO, SUPORTES, BICOS ASPERSORES...)",
+   "preco": 420.0,
+   "unidade": "m",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "",
+   "descricao": "METRO DE TUBULAÇÃO 32MM (TUBO, SUPORTES, BICOS ASPERSORES...)",
+   "preco": 370.0,
+   "unidade": "m",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "004333-8",
+   "descricao": "SCRAPER - RASPADOR HIDRÁULICO DE DEJETOS",
+   "preco": 56909.0,
+   "unidade": "un",
+   "finame": "3640404",
+   "mda": "M012A885"
+  },
+  {
+   "codigo": "133100-0",
+   "descricao": "TRILHO PARA COM CHAPA CASTIGO (METRO)",
+   "preco": 310.0,
+   "unidade": "m",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "800177-4",
+   "descricao": "COÇADOR ROTATIVO PARA VACAS",
+   "preco": 10070.0,
+   "unidade": "un",
+   "finame": "3613179",
+   "mda": "M012A124"
+  },
+  {
+   "codigo": "",
+   "descricao": "PAINEL COM CONTROLADOR DIGITAL, MANUAL E AUTOMÁTICO (SOMENTE PARA ASPERSÃO)",
+   "preco": 3200.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  },
+  {
+   "codigo": "",
+   "descricao": "TAXA DE INSTALAÇÃO POR VENTILADOR (RS, SC E PR; SEM DISJUNTOR, CORRENTES E CABOS)",
+   "preco": 500.0,
+   "unidade": "un",
+   "finame": "",
+   "mda": ""
+  }
+ ]
+}
