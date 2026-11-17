@@ -2381,6 +2381,7 @@
   }
   .vazio-acao { display: flex; justify-content: center; margin: 0 0 20px; }
   .empty-state[hidden] + .vazio-acao { display: none; }
+  .empty-state .vazio-tit { display: block; margin-bottom: 6px; font-size: 17px; font-weight: 700; color: var(--ink); }
   .vazio-acao .btn-secondary { min-height: 44px; padding: 0 18px; width: auto; }
   .leite-ficha-sub.vazio-com-icone::before { content: ''; display: block; width: 40px; height: 40px; margin: 6px auto 8px; background: var(--ic-vazio);
     -webkit-mask: var(--m-inbox) center / contain no-repeat; mask: var(--m-inbox) center / contain no-repeat; }
@@ -3933,7 +3934,7 @@
     <a class="btn-secondary rota-google-tudo" id="rota-google-tudo" target="_blank" rel="noopener" hidden>🗺️ Rota completa no Google Maps</a>
     <div class="campo-dica" id="rota-google-dica" hidden></div>
     <div id="rota-lista"></div>
-    <div class="empty-state" id="rota-vazia" hidden>Nenhum produtor na rota. Na lista de Visitas, toque em "📍 Rota" nos produtores que vai visitar hoje.</div>
+    <div class="empty-state" id="rota-vazia" hidden><b class="vazio-tit">Nenhum produtor na rota de hoje</b>Toque em Rota na lista de produtores ou no botão abaixo para escolher quem você vai visitar. O app monta a ordem e abre no mapa.</div>
     <div class="rota-acoes">
       <button type="button" class="btn-secondary" id="rota-add">+ Marcar mais produtores</button>
       <button type="button" class="delete-btn" id="rota-limpar" hidden>Limpar rota</button>
@@ -7598,7 +7599,7 @@
       const card = document.createElement('div');
       card.className = 'produtor-card';
       card.innerHTML = '<div class="produtor-name"></div><div class="produtor-local" hidden></div><div class="produtor-meta"></div><div class="proxima" hidden></div><div class="selos-produtor" hidden></div>';
-      pintarSelos(card.querySelector('.selos-produtor'), p);
+      pintarSelos(card.querySelector('.selos-produtor'), p, p.proximaRevisao ? ['selo-vencida'] : []);
       card.querySelector('.produtor-name').textContent = p.nome;
       if (localDoProdutor(p)) {
         card.querySelector('.produtor-local').textContent = localDoProdutor(p);
@@ -11502,7 +11503,7 @@
     $('rota-sub').textContent = lista.length
       ? lista.length + (lista.length === 1 ? ' parada' : ' paradas') + ' · ' + feitas + (feitas === 1 ? ' visitada' : ' visitadas') +
         (hoje ? '' : ' · montada em ' + fmtDate(rota.data))
-      : 'Nenhum produtor marcado.';
+      : '';
     $('rota-vazia').hidden = lista.length > 0;
     $('rota-limpar').hidden = !lista.length;
 
@@ -11625,9 +11626,10 @@
     else if ((p.matricula || '').trim()) s.push(['Associado Auriverde', 'selo-associado']);
     return s;
   }
-  function pintarSelos(el, p) {
+  // sem: classes de etiqueta que não entram (ex.: na lista, a linha "Revisão vencida desde…" já diz o mesmo)
+  function pintarSelos(el, p, sem = []) {
     el.innerHTML = '';
-    selosDoProdutor(p).forEach(([t, c]) => {
+    selosDoProdutor(p).filter(([, c]) => !sem.includes(c)).forEach(([t, c]) => {
       const s = document.createElement('span');
       s.className = 'selo ' + c;
       s.textContent = t;
