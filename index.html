@@ -3121,7 +3121,7 @@
 
       <details class="card adm-dobra">
         <summary><span class="adm-tit">Catálogo de peças</span><span class="adm-resumo">Aparecem para escolher na OS</span></summary>
-        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-pecas-conforto">Tabela Conforto</button><button type="button" class="bloco-editar" id="adm-pecas-mx">Tabela MX</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
+        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-pecas-conforto">Tabela Conforto</button><button type="button" class="bloco-editar" id="adm-pecas-mx">Tabela MX</button><button type="button" class="bloco-editar" id="adm-pecas-lero">Tabela Lero</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
         <input type="file" id="adm-pecas-ordemax-arq" accept=".xml,text/xml,application/xml" hidden>
         <div class="field" style="margin:8px 0 6px"><input type="text" id="adm-pecas-busca" placeholder="Buscar peça" autocomplete="off" aria-label="Buscar peça no catálogo"></div>
         <div id="adm-pecas"></div>
@@ -5167,7 +5167,7 @@
     <div class="om-sub" id="cc-fonte"></div>
     <div class="os-sec">
       <div class="os-sec-tit">Fornecedor</div>
-      <div class="field"><div class="toggle" id="cc-forn"><button type="button" data-f="ordemax">Ordemax</button><button type="button" data-f="mx">MX do Brasil</button></div></div>
+      <div class="field"><div class="toggle" id="cc-forn"><button type="button" data-f="ordemax">Ordemax</button><button type="button" data-f="mx">MX do Brasil</button><button type="button" data-f="lero">Lero Solar</button></div></div>
       <div class="os-sec-tit">Tipo do galpão</div>
       <div class="field"><div class="toggle" id="cc-tipo"><button type="button" data-t="freestall">Free Stall</button><button type="button" data-t="compost">Compost Barn</button></div></div>
     </div>
@@ -6169,7 +6169,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.7';
+  const APP_VERSAO = '2026.11.17.8';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -15469,19 +15469,24 @@
   const TABELA_MX = 'tabelas/mx-2025.json';
   $('adm-pecas-conforto').addEventListener('click', () => importarTabelaConforto(TABELA_CONFORTO));
   $('adm-pecas-mx').addEventListener('click', () => importarTabelaConforto(TABELA_MX));
+  $('adm-pecas-lero').addEventListener('click', () => importarTabelaConforto('tabelas/lero-solar.json'));
   async function importarTabelaConforto(url) {
     let tab;
     try { const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); tab = await r.json(); }
     catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
-    const chave = p => (p.codigo || '').trim().toLowerCase() || 'd:' + normalizarBusca(p.descricao || '');
-    const porChave = new Map(pecasCatalogo.map(p => [chave(p), p]));
+    const forn = s => String(s || '').toLowerCase().replace(/-conforto$/, '');
+    const fornTab = forn(tab.fornecedor || 'Ordemax');
+    const cod = p => (p.codigo || '').trim().toLowerCase();
+    const porCod = new Map(), porDesc = new Map();
+    pecasCatalogo.filter(p => forn(p.origem) === fornTab).forEach(p => { if (cod(p)) porCod.set(cod(p), p); porDesc.set(normalizarBusca(p.descricao || ''), p); });
+    const vezes = {}; tab.itens.forEach(i => { if (cod(i)) vezes[cod(i)] = (vezes[cod(i)] || 0) + 1; });
     const novas = [], muda = [];
-    tab.itens.forEach(i => { const p = porChave.get(chave(i)); if (!p) novas.push(i); else if (Math.abs((Number(p.preco) || 0) - i.preco) > 0.004) muda.push([p, i]); });
+    tab.itens.forEach(i => { const p = cod(i) && vezes[cod(i)] === 1 ? porCod.get(cod(i)) : porDesc.get(normalizarBusca(i.descricao)); if (!p) novas.push(i); else if (Math.abs((Number(p.preco) || 0) - i.preco) > 0.004) muda.push([p, i]); });
     if (!novas.length && !muda.length) { avisar('Esta tabela já está no catálogo, com os mesmos preços.'); return; }
     const resumo = [novas.length && plural(novas.length, 'item novo', 'itens novos'), muda.length && plural(muda.length, 'preço atualizado', 'preços atualizados')].filter(Boolean).join(' e ');
     if (!(await confirmar(tab.fonte + ': ' + resumo + '. Importar para o catálogo?', 'Importar'))) return;
     const agora = Date.now();
-    novas.forEach(i => gravar('set', 'pecas/' + novoId(), { codigo: i.codigo, descricao: i.descricao, unidade: i.unidade, preco: i.preco, finame: i.finame, mda: i.mda,
+    novas.forEach(i => gravar('set', 'pecas/' + novoId(), { codigo: i.codigo, descricao: i.descricao, unidade: i.unidade, preco: i.preco, finame: i.finame || null, mda: i.mda || null,
       origem: tab.fornecedor || 'Ordemax', tabela: tab.data, criadoPor: viewerId || null, criadoEm: agora }));
     muda.forEach(([p, i]) => gravar('update', 'pecas/' + p.id, { preco: i.preco, tabela: tab.data, atualizadoPor: viewerId || null, atualizadoEm: agora }));
     registrarAtividade('importou', 'peca', '', tab.fonte + ': ' + resumo);
@@ -16911,7 +16916,7 @@
   function resumoOrdemax(o) {
     if (o.tipo === 'conforto') return {
       produto: maiusc(o.titulo.replace(/^Configura[cç][aã]o de\s*/i, '') + ' ' + (o.fornecedor || 'Ordemax')),
-      linhas: o.grupos.flatMap(g => g.itens.map(i => i.qtd + ' ' + (i.un === 'M' ? 'M ' : '') + i.descricao.replace(/\s*\(.*?\)\s*/g, ' ').trim())).map(maiusc).slice(0, LINHAS_MODELO - 1)
+      linhas: o.grupos.flatMap(g => g.itens.map(i => i.qtd + ' ' + (i.un === 'M' || i.un === 'M²' ? i.un + ' ' : '') + i.descricao.replace(/\s*\(([^)]*)\)\s*/g, (x, d) => d.length > 22 || /^(unidade|un|metro|por |r\$|valor p|opcional|pronto)/i.test(d) ? ' ' : x).replace(/\s+/g, ' ').trim())).map(maiusc).slice(0, LINHAS_MODELO - 1)
     };
     const itens = o.grupos.flatMap(g => g.itens.map(i => ({ ...i, grupo: g.nome, n: parseMoney(i.qtd) || 0 })));
     const acha = re => itens.find(i => re.test(i.descricao));
@@ -17172,19 +17177,19 @@
   // Usa a tabela de preços de Conforto Animal da Ordemax (tabelas/): escolhe o tipo do galpão e a quantidade
   // de cada item; o orçamento segue o mesmo caminho do Orçamento Ordemax (margem da Calculadora, modelo SAC-029).
   const GRUPOS_CONFORTO = [
-    ['VENTILAÇÃO', /ventilador|quadro de comando|smartfan|turbo ?fan|eco ?fan|sensor de temperatura|programador de hor/i],
+    ['VENTILAÇÃO', /ventilador|quadro de comando|smartfan|turbo ?fan|eco ?fan|sensor de temperatura|programador de hor|climatizador/i],
     ['BEZERREIRO', /bezerr|fenil|milk ?bar/i],
     ['FREE STALL', /separador|limitador|cinta|catraca|passador|bloqueio frontal/i],
     ['BAIAS', /\bbaia\b/i],
     ['CONTENÇÃO', /conten[cç][aã]o|\bcont\.|canzil|barra frontal|p[eé] direito|fechamento|escada|cantoneira|protetor|pontalete|abra[cç]adeira|luva|base fixa/i],
     ['BEBEDOUROS', /bebedouro|drinker|cap[eé]la/i],
     ['PISO', /piso de borracha|borracha/i],
-    ['AQUECIMENTO', /aquecedor|tanque inox|termostato|resist[eê]ncia|boia/i],
+    ['AQUECIMENTO', /aquecedor|tanque inox|tanque fibra|termostato|termost[aá]tica|resist[eê]ncia|boia|tubos a v[aá]cuo|sensor|motobomba de circula|misturador de [aá]gua|v[aá]lvula (ventosa|de redu|ret)|rel[oó]gio|quadro comando tk/i],
     ['ASPERSÃO', /aspers|tubula[cç][aã]o|nebuliz|solenoide/i],
     ['MANEJO', /scraper|trilho|co[cç]ador|comfort brush|brete|empurrador|rob[oô]|raspador|port[aã]o|port[oõ]es|saleiro|cocho/i],
     ['INSTALAÇÃO', /instala[cç][aã]o/i]
   ];
-  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' } };
+  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' }, lero: { nome: 'Lero Solar', url: 'tabelas/lero-solar.json', origem: 'fora' } };
   let ccForn = 'ordemax', ccFonte = '';
   const ccTabelas = {};
   let ccTabela = null, ccTipo = 'freestall', ccQtd = {};
@@ -17225,7 +17230,7 @@
         d.className = 'cc-item';
         d.innerHTML = '<span class="cc-i-nome"></span><span class="cc-i-preco"></span><span class="cc-passo"><button type="button" aria-label="Menos">−</button><input type="text" inputmode="decimal" aria-label="Quantidade"><button type="button" aria-label="Mais">+</button></span>';
         d.querySelector('.cc-i-nome').textContent = i.descricao;
-        d.querySelector('.cc-i-preco').textContent = fmt(i.preco) + (i.unidade === 'm' ? ' por metro' : ' cada') + (i.codigo ? ' · ' + i.codigo : '');
+        d.querySelector('.cc-i-preco').textContent = fmt(i.preco) + (i.unidade === 'm' ? ' por metro' : i.unidade === 'm2' ? ' por m²' : ' cada') + (i.codigo ? ' · ' + i.codigo : '');
         const inp = d.querySelector('input');
         const mostrar = () => { const q = ccQtd[i.id] || 0; inp.value = q ? String(q).replace('.', ',') : ''; inp.placeholder = '0'; d.classList.toggle('on', q > 0); pintarSub(); };
         const por = (q) => { ccQtd[i.id] = Math.max(0, Math.round(q * 100) / 100); mostrar(); };
@@ -17264,7 +17269,7 @@
       if (!g) grupos.push(g = { nome: i.grupo, valor: 0, margem: null, itens: [] });
       const q = ccQtd[i.id];
       g.valor = arredOm(g.valor + i.preco * q);
-      g.itens.push({ codigo: i.codigo, descricao: i.descricao, qtd: String(q).replace('.', ','), un: i.unidade === 'm' ? 'M' : 'UN' });
+      g.itens.push({ codigo: i.codigo, descricao: i.descricao, qtd: String(q).replace('.', ','), un: i.unidade === 'm' ? 'M' : i.unidade === 'm2' ? 'M²' : 'UN' });
     });
     const o = { tipo: 'conforto', titulo: 'Configuração de Conforto Animal ' + (ccTipo === 'compost' ? 'Compost Barn' : 'Free Stall'),
       fornecedor: FORNECEDORES_CONFORTO[ccForn].nome, origem: FORNECEDORES_CONFORTO[ccForn].origem,

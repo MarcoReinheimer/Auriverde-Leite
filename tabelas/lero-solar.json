@@ -1,0 +1,463 @@
+{
+ "fonte": "Lero Solar - Bezerreiras (out/2025) e Atacado (jan/2023)",
+ "fornecedor": "Lero Solar",
+ "data": "out/2025",
+ "itens": [
+  {
+   "codigo": "2897",
+   "descricao": "DIVISORIA DE BEZERREIRA",
+   "preco": 277.0,
+   "unidade": "m2",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "4209",
+   "descricao": "PORTÃO 1,15 X1,00 COM 2 JANELAS (RAÇÃO E AGUA) E ESPAÇO MILKBAR",
+   "preco": 262.5,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA CHAO 1,20 X 1,20 MOVEL SEM FRENTE COM TELHADO",
+   "preco": 1690.91,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA SUSPENSA COM PISO INDIVIDUAL 1,20 X 1,20 - 3 LADOS FECHADOS E PORTÃO S/TELHADO",
+   "preco": 2015.0,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA SUSPENSA COM PISO COLETIVA (02 E 03) 1,20 X 1,20 - 3 LADOS FECHADOS E PORTÃO S/TELHADO",
+   "preco": 1890.0,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA SUSPENSA COM PISO COLETIVA (04 E 05) 1,20 X 1,20 - 3 LADOS FECHADOS E PORTÃO S/TELHADO",
+   "preco": 1762.0,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA SUSPENSA COM PISO COLETIVA (06 A 10) 1,20 X 1,20 - 3 LADOS FECHADOS E PORTÃO S/TELHADO",
+   "preco": 1645.0,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA SUSPENSA SEM PISO INDIVIDUAL 1,20 X 1,20 - 3 LADOS FECHADOS E PORTÃO S/TELHADO",
+   "preco": 1887.0,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA SUSPENSA SEM PISO COLETIVA (02 E 03) 1,20 X 1,20 - 3 LADOS FECHADOS E PORTÃO S/TELHADO",
+   "preco": 1762.0,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA SUSPENSA SEM PISO COLETIVA (04 E 05) 1,20 X 1,20 - 3 LADOS FECHADOS E PORTÃO S/TELHADO",
+   "preco": 1634.0,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "2910",
+   "descricao": "BAIA BEZERREIRA SUSPENSA SEM PISO COLETIVA (06 A 10) 1,20 X 1,20 - 3 LADOS FECHADOS E PORTÃO S/TELHADO",
+   "preco": 1517.0,
+   "unidade": "un",
+   "ncm": "84368000",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "698",
+   "descricao": "AQUECEDOR SOLAR A VACUO 200L ACOPLADO",
+   "preco": 3080.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "699",
+   "descricao": "AQUECEDOR SOLAR A VACUO 240L ACOPLADO",
+   "preco": 3700.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "700",
+   "descricao": "AQUECEDOR SOLAR A VACUO 300L ACOPLADO",
+   "preco": 4470.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "696",
+   "descricao": "AQUECEDOR SOLAR A VACUO 400L ACOPLADO",
+   "preco": 5400.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "680",
+   "descricao": "AQUECEDOR BOILER TERMICO 100L ELETRICO",
+   "preco": 1060.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "681",
+   "descricao": "AQUECEDOR BOILER TERMICO 200L ELETRICO",
+   "preco": 1280.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "693",
+   "descricao": "AQUECEDOR BOILER TERMICO 300L ELETRICO",
+   "preco": 2900.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "694",
+   "descricao": "AQUECEDOR BOILER TERMICO 400L ELETRICO",
+   "preco": 3065.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "692",
+   "descricao": "AQUECEDOR BOILER TERMICO 500L ELETRICO",
+   "preco": 3600.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "695",
+   "descricao": "AQUECEDOR BOILER TERMICO 600L ELETRICO",
+   "preco": 3920.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "740",
+   "descricao": "AQUECEDOR SOLAR ECONOMICO ABERTO 200L",
+   "preco": 1940.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "682",
+   "descricao": "AQUECEDOR SOLAR MODULO VERTICAL 20T BP",
+   "preco": 2100.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "683",
+   "descricao": "AQUECEDOR SOLAR MODULO VERTICAL 30T BP",
+   "preco": 2800.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1191",
+   "descricao": "AQUECEDOR SOLAR MODULO HORIZONTAL 30T BP",
+   "preco": 2670.0,
+   "unidade": "un",
+   "ncm": "84191200",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "719",
+   "descricao": "KIT QUADRO COMANDO TK-8",
+   "preco": 428.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "2182",
+   "descricao": "KIT QUADRO COMANDO TK-8 PRO (3 PROGRAMAÇÕES)",
+   "preco": 500.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1462",
+   "descricao": "VALVULA SOLENOIDE",
+   "preco": 70.0,
+   "unidade": "un",
+   "ncm": "90328100",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1060",
+   "descricao": "SENSOR COM CABO DE 20M",
+   "preco": 70.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1145",
+   "descricao": "SENSOR TIPO NTC 10K",
+   "preco": 60.0,
+   "unidade": "un",
+   "ncm": "90258000",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "702",
+   "descricao": "TUBOS A VACUO",
+   "preco": 51.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1559",
+   "descricao": "RELOGIO FOXLUX",
+   "preco": 116.0,
+   "unidade": "un",
+   "ncm": "91070090",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1059",
+   "descricao": "RESISTENCIA ELETRICA-3/4 PARA AQUECEDOR SOLAR",
+   "preco": 180.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1771",
+   "descricao": "RESISTENCIA COM TERMOSTATO EMBUTIDO-ITALY",
+   "preco": 225.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1278",
+   "descricao": "RESISTENCIA ELETRICA PARA BOILER",
+   "preco": 90.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1277",
+   "descricao": "TERMOSTATO PARA BOILER 30 A",
+   "preco": 70.0,
+   "unidade": "un",
+   "ncm": "90321090",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "888",
+   "descricao": "MOTOBOMBA DE CIRCULACAO LRP15 90A/160 220V/60HZ",
+   "preco": 445.0,
+   "unidade": "un",
+   "ncm": "84137080",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1061",
+   "descricao": "MISTURADOR DE AGUA DIGITAL",
+   "preco": 660.0,
+   "unidade": "un",
+   "ncm": "84818011",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1643",
+   "descricao": "VALVULA TERMOSTATICA 1'' 50G",
+   "preco": 290.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1642",
+   "descricao": "VALVULA TERMOSTATICA 3/4'' 80G",
+   "preco": 420.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1644",
+   "descricao": "VALVULA VENTOSA 3/4",
+   "preco": 260.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1063",
+   "descricao": "VALVULA DE REDUCAO DE PRESSAO PR20 3/4",
+   "preco": 195.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "993",
+   "descricao": "VALVULA RET HORIZ C/PORT 3/4",
+   "preco": 32.0,
+   "unidade": "un",
+   "ncm": "84813000",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1058",
+   "descricao": "VALVULA TERMOSTATICA MECANICA C/REGULAGEM",
+   "preco": 260.0,
+   "unidade": "un",
+   "ncm": "84199010",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "503",
+   "descricao": "TANQUE FIBRA DUPLO",
+   "preco": 525.0,
+   "unidade": "un",
+   "ncm": "39221000",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "502",
+   "descricao": "TANQUE FIBRA DUPLO COM RESISTENCIA",
+   "preco": 790.0,
+   "unidade": "un",
+   "ncm": "39221000",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "3198",
+   "descricao": "CLIMATIZADOR PORTATIL EVAPORATIVO 5000M3",
+   "preco": 2740.0,
+   "unidade": "un",
+   "ncm": "76061210",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "2868",
+   "descricao": "CLIMATIZADOR PORTATIL EVAPORATIVO 9000M3",
+   "preco": 3490.0,
+   "unidade": "un",
+   "ncm": "76061210",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "2267",
+   "descricao": "CLIMATIZADOR EVAPORATIVO SAIDA SUPERIOR",
+   "preco": 4570.0,
+   "unidade": "un",
+   "ncm": "76061210",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "2268",
+   "descricao": "CLIMATIZADOR EVAPORATIVO SAIDA FRONTAL",
+   "preco": 4300.0,
+   "unidade": "un",
+   "ncm": "76061210",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "2269",
+   "descricao": "CLIMATIZADOR EVAPORATIVO SAIDA INFERIOR",
+   "preco": 4570.0,
+   "unidade": "un",
+   "ncm": "76061210",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "1602",
+   "descricao": "CLIMATIZADOR EVAPORATIVO LERO FIBRAS 55000M3",
+   "preco": 6900.0,
+   "unidade": "un",
+   "ncm": "76061210",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "2623",
+   "descricao": "VENTILADOR JFD - N1400FE (COM CORREIA S/MOTOR)",
+   "preco": 2920.0,
+   "unidade": "un",
+   "ncm": "84148090",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "2622",
+   "descricao": "VENTILADOR JFD - N1400FE (MOTOR MONO/BIFASICO)",
+   "preco": 3900.0,
+   "unidade": "un",
+   "ncm": "84148090",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "2624",
+   "descricao": "VENTILADOR JFD - N1400FE (MOTOR TRIFASICO)",
+   "preco": 3900.0,
+   "unidade": "un",
+   "ncm": "84148090",
+   "vigencia": "jan/2023"
+  },
+  {
+   "codigo": "",
+   "descricao": "GRADE PARA BEZERREIRA DE CHÃO COM 80 CM DE ALTURA",
+   "preco": 108.82,
+   "unidade": "m",
+   "ncm": "",
+   "vigencia": "out/2025"
+  },
+  {
+   "codigo": "",
+   "descricao": "TELHADO PARA BAIA BEZERREIRA EM ÁREA EXTERNA (TELHA 2,30 M)",
+   "preco": 222.0,
+   "unidade": "un",
+   "ncm": "",
+   "vigencia": "out/2025"
+  }
+ ]
+}
