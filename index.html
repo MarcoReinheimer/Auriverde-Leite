@@ -5611,9 +5611,15 @@
         <input type="text" id="produtor-cidade-input" list="lista-cidades" placeholder="Ex: Chapecó" autocomplete="off">
       </div>
     </div>
-    <div class="field">
-      <label for="produtor-estado-input">Estado</label>
-      <select id="produtor-estado-input"></select>
+    <div class="rate-row">
+      <div class="field">
+        <label for="produtor-estado-input">Estado</label>
+        <select id="produtor-estado-input"></select>
+      </div>
+      <div class="field">
+        <label for="produtor-altitude-input">Altitude (m)</label>
+        <input type="text" inputmode="numeric" id="produtor-altitude-input" class="mono-input" placeholder="Ex.: 650" autocomplete="off">
+      </div>
     </div>
     <div class="field">
       <label for="produtor-referencia-input">Ponto de referência</label>
@@ -5863,6 +5869,7 @@
             <div id="tt-puls"></div>
             <button type="button" class="os-add-linha" id="tt-add-puls">+ Pulsador</button>
             <div class="tt-conclusao" id="tt-conclusao"></div>
+            <div class="campo-dica" id="tt-manual" hidden></div>
             <div class="campo-dica" id="tt-comparado"></div>
             <button type="button" class="link-btn tt-limpar" id="tt-limpar">Apagar o teste desta OS</button>
           </div>
@@ -8064,6 +8071,7 @@
     $('produtor-cidade-input').value = p.cidade || '';
     $('produtor-estado-input').value = UFS.includes(p.estado) ? p.estado : 'SC';
     $('produtor-referencia-input').value = p.referencia || '';
+    $('produtor-altitude-input').value = temValor(p.altitude) ? String(Math.round(Number(p.altitude))) : '';
     $('produtor-local-input').value = p.localizacao || (p.lat != null ? p.lat + ', ' + p.lng : '');
     mostrarDicaLocal();
     preencherCamposNovos(p);
@@ -8087,7 +8095,11 @@
   function lerFormProdutor() {
     const localizacao = $('produtor-local-input').value.trim();
     const loc = lerLocalizacao(localizacao);
+    // altitude da propriedade (m): entra no fator de altitude da vazão da bomba pelo manual
+    const altTxt = $('produtor-altitude-input').value.trim();
+    const altN = altTxt ? Math.round(parseMoney(altTxt)) : null;
     return {
+      altitude: altN != null && altN >= 0 ? altN : null,
       nome: $('produtor-nome-input').value.trim(),
       propriedade: $('produtor-propriedade-input').value.trim(),
       telefone: $('produtor-telefone-input').value.trim(),
@@ -11831,7 +11843,7 @@
     const vacas = vacasDoProdutor(p);
     const blocos = [
       ['Dados pessoais', 'pf-pessoais', [['Nome', p.nome], ['Propriedade', p.propriedade], ['CPF / CNPJ', p.cpfCnpj], ['Telefone / WhatsApp', p.telefone], ['E-mail', p.email]]],
-      ['Endereço', 'pf-endereco', [['Linha / comunidade', p.linha], ['Cidade', p.cidade], ['Estado', p.estado], ['Ponto de referência', p.referencia], ['Localização no mapa', textoLocalizacao(p)]]],
+      ['Endereço', 'pf-endereco', [['Linha / comunidade', p.linha], ['Cidade', p.cidade], ['Estado', p.estado], ['Altitude', temValor(p.altitude) ? numBR(p.altitude, 0) + ' m' : ''], ['Ponto de referência', p.referencia], ['Localização no mapa', textoLocalizacao(p)]]],
       ['Cadastro Auriverde', 'pf-auriverde', [['Nº de matrícula', p.matricula], ['Cód. fornecedor de leite', p.codFornecedor], ['Inscrição estadual', p.inscricaoEstadual],
         ['Data de associação', p.dataAssociacao ? fmtDate(p.dataAssociacao) : ''], ['Situação', situacaoDe(p) === 'inativo' ? 'Inativo' : 'Ativo'],
         ['Unidade / filial', p.unidade], ['Linha de coleta do leite', p.linhaColeta], ['Técnico responsável', p.tecnico]]],
@@ -15847,6 +15859,7 @@
   const EQ_TIPOS = {
     ordenhadeira: { nome: 'Ordenhadeira', ico: '🐄', campos: [
       { k: 'sistema', t: 'Tipo de ordenhadeira', op: ['Balde ao pé', 'Canalizada', 'Espinha de peixe', 'Lado a lado', 'Carrossel', 'Robô'] },
+      { k: 'linha', t: 'Linha do leite (canalizada)', op: ['Linha média', 'Linha baixa'] },
       { k: 'conjuntos', t: 'Nº de conjuntos', num: 1 },
       { k: 'medidor', t: 'Medidores de leite', op: ['Sem medidor', 'Mecânico', 'Eletrônico'] }] },
     bomba: { nome: 'Bomba de vácuo', ico: '⚙️', campos: [
@@ -18955,6 +18968,17 @@
     if (ele) return 'ele';
     return tipos.has('Sem medidor') ? 'sem' : null;
   }
+  // sistema para a tabela de vazão do manual: balde ao pé pelo tipo; canalizada pela linha do leite
+  function sistemaManualDeEquip(lista) {
+    const ords = soInstalados((lista || []).filter(e => !e.arquivado && e.tipo === 'ordenhadeira' && e.situacao !== 'desativado'));
+    for (const e of ords) {
+      const x = e.extras || {};
+      if (x.sistema === 'Balde ao pé') return 'balde';
+      if (x.linha === 'Linha média') return 'media';
+      if (x.linha === 'Linha baixa') return 'baixa';
+    }
+    return null;
+  }
   function medidorDoProdutor(p) {
     if (!p) return null;
     if (medCache[p.id] !== undefined) return medCache[p.id];
@@ -19466,6 +19490,31 @@
     media: [[8, { vacuo: '2"', leite: '52 mm', limpeza: '32 mm', pulsador: '2" fundo cego' }, 4], [18, { vacuo: '2"', leite: '63 mm', limpeza: '38 ou 52 mm', pulsador: '2" ou 3" fundo cego' }, 10]],
     baixa: [[12, { vacuo: '3"', leite: '52 mm (anel)', limpeza: '38 mm', pulsador: '2" (anel)' }, 6], [20, { vacuo: '3"', leite: '63 mm (anel)', limpeza: '38 ou 52 mm', pulsador: '2" ou 3" (anel)' }, 14]]
   };
+  // vazão mínima da bomba pelo manual, com as mesmas tabelas desta tela (usada no teste da ordenhadeira).
+  // Sem altitude: fator 1,00. Vácuo arredondado para 40, 45 ou 50 kPa (sem vácuo medido: 50 kPa).
+  // Devolve null quando falta o sistema ou os conjuntos, ou quando passa da tabela.
+  function vazaoManual(sistema, conjuntos, altitude, kPa) {
+    const tab = CT_VAZAO[sistema], conj = Math.ceil(Number(conjuntos) || 0);
+    if (!tab || !(conj > 0)) return null;
+    const linha = tab.find(([c]) => c >= conj);
+    if (!linha) return null;
+    const vacMedido = Number(kPa) > 0;
+    const vac = vacMedido ? Math.min(50, Math.max(40, Math.round(Number(kPa) / 5) * 5)) : 50;
+    const alt = temValor(altitude) && Number(altitude) >= 0 ? Number(altitude) : null;
+    const faixa = alt == null ? null : (CT_ALTITUDE.find(([ate]) => alt <= ate) || CT_ALTITUDE[CT_ALTITUDE.length - 1]);
+    const fator = faixa ? faixa[1][[40, 45, 50].indexOf(vac)] : 1;
+    return { min: Math.round(linha[1] * fator), tabela: linha[1], sistema, conjuntos: conj, altitude: alt, kPa: vac, vacMedido, fator };
+  }
+  function vazaoManualBase(m) {
+    return CT_SIST_NOME[m.sistema] + ', ' + plural(m.conjuntos, 'conjunto', 'conjuntos') + ', ' + m.kPa + ' kPa' + (m.vacMedido ? '' : ' (vácuo não medido)') + ', ' +
+      (m.altitude == null ? 'altitude não informada' : 'altitude ' + fmtN(m.altitude, 0) + ' m, fator ' + m.fator.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+  }
+  // teste com a vazão medida abaixo da do manual: devolve o texto do alerta (ou '')
+  function alertaBombaManual(t) {
+    const m = t && t.vazaoManual;
+    if (!m || !(m.min > 0) || !temValor(t.vazao) || Number(t.vazao) >= m.min) return '';
+    return 'Bomba abaixo do recomendado pelo manual: mede ' + fmtN(t.vazao, 0) + ' L/min, precisa de ' + fmtN(m.min, 0) + ' L/min';
+  }
   function abrirCalcTec(voltar) {
     if (currentProdutorId) closeProdutorDetail();
     ctVoltar = voltar || 'setor';
@@ -19592,6 +19641,10 @@
       const av = avaliarTeste(ultTeste.teste, faixasDoTeste(ultTeste.teste));
       if (av.foraN) out.push({ txt: 'Último teste da ordenhadeira (' + fmtDate(ultTeste.data) + '): ' + plural(av.foraN, 'medida fora do padrão', 'medidas fora do padrão'), cls: 'atencao', ir: () => irParaOS(ultTeste.id) });
     }
+    // bomba abaixo da vazão mínima do manual, no teste mais novo que mediu a vazão
+    const ultVazao = lista.filter(o => osConcluida(o) && o.teste && temValor(o.teste.vazao)).sort((a, b) => chaveOS(b).localeCompare(chaveOS(a)))[0];
+    const alBomba = ultVazao ? alertaBombaManual(ultVazao.teste) : '';
+    if (alBomba) out.push({ txt: alBomba + ' (' + numOS(ultVazao.numero) + ', ' + fmtDate(ultVazao.data) + ')', cls: 'ruim', ir: () => irParaOS(ultVazao.id) });
     const lf = limpForaAtual(lista);
     if (lf.length) {
       const ultLimp = lf.slice().sort((a, b) => b.data.localeCompare(a.data))[0];
@@ -20134,7 +20187,34 @@
   function ctxTesteAtual() {
     const p = produtores.find(x => x.id === currentProdutorId);
     const conj = equipPid === currentProdutorId && equipamentosTodos.length ? conjuntosDeEquip(equipamentosTodos) || null : conjuntosDoProdutor(p);
-    return { conjuntos: conj, vazaoNominal: equipPid === currentProdutorId ? vazaoNominalDeEquip(equipamentosTodos) : null };
+    const eqAberto = equipPid === currentProdutorId;
+    return { conjuntos: conj, vazaoNominal: eqAberto ? vazaoNominalDeEquip(equipamentosTodos) : null,
+      sistema: eqAberto ? sistemaManualDeEquip(equipamentosTodos) : null, altitude: p ? p.altitude : null };
+  }
+  // linha do teste com a vazão mínima pelo manual (e o alerta, se a bomba ficar abaixo)
+  function pintarBombaManual(t, ctxT) {
+    const el = $('tt-manual');
+    const m = vazaoManual(ctxT.sistema, ctxT.conjuntos, ctxT.altitude, t.vacTrab);
+    const medida = temValor(t.vazao) ? Number(t.vazao) : null;
+    let txt = '', fora = false;
+    if (m) {
+      const al = alertaBombaManual({ vazao: medida, vazaoManual: m });
+      fora = !!al;
+      txt = al ? '⚠️ ' + al + ' (' + vazaoManualBase(m) + ').'
+        : 'Vazão mínima pelo manual: ' + fmtN(m.min, 0) + ' L/min (' + vazaoManualBase(m) + ')' + (medida != null ? '. A bomba atende.' : '.');
+    } else if (medida != null && ctxT.conjuntos && !ctxT.sistema) {
+      txt = 'Para comparar a bomba com o manual, informe no cadastro da ordenhadeira se ela é balde ao pé ou a linha do leite (média ou baixa).';
+    } else if (medida != null && ctxT.conjuntos && ctxT.sistema) {
+      const tab = CT_VAZAO[ctxT.sistema];
+      txt = 'A tabela do manual (' + CT_SIST_NOME[ctxT.sistema] + ') vai até ' + plural(tab[tab.length - 1][0], 'conjunto', 'conjuntos') + ': consulte o fabricante da bomba.';
+    }
+    el.textContent = txt;
+    el.className = fora ? 'tt-conclusao fora' : 'campo-dica';
+    el.hidden = !txt;
+    const campo = document.querySelector('#tt-principais .tt-campo[data-k="vazao"]');
+    if (!campo) return;
+    if (fora) { campo.classList.add('fora'); campo.querySelector('input').classList.add('fora'); }
+    if (m) { const ref = campo.querySelector('.tt-ref'); ref.textContent = (ref.textContent ? ref.textContent + ' · manual ' : 'manual: mín. ') + fmtN(m.min, 0) + ' L/min'; }
   }
   function pulsDoForm(p, i) {
     const o = { n: i + 1 };
@@ -20370,6 +20450,7 @@
       res.textContent = 'ok';
       res.className = 'cf-res ok';
     }
+    pintarBombaManual(t, ctxT);
     $('tt-comparado').textContent = ant ? 'Setas: comparação com o teste da ' + numOS(ant.numero) + ' de ' + fmtDate(ant.data) + '.' : 'Primeiro teste deste produtor: nas próximas OS aparece a comparação.';
   }
 
@@ -20541,6 +20622,8 @@
       t.faixas = faixasTeste(ctxT);
       t.conjuntos = ctxT.conjuntos || null;
       t.vazaoNominal = ctxT.vazaoNominal || null;
+      // a vazão mínima do manual fica guardada no teste, como as faixas
+      t.vazaoManual = vazaoManual(ctxT.sistema, ctxT.conjuntos, ctxT.altitude, t.vacTrab);
       const av = avaliarTeste(t, t.faixas);
       t.foraDoPadrao = av.foraN;
       t.limpForaN = av.limpFora.length;
@@ -20626,6 +20709,10 @@
       if (av.foraN) ctx.paragrafo('Resultado: ' + plural(av.foraN, 'medida fora', 'medidas fora') + ' dos valores de referência (' + av.foraTxt.join(', ') + '). Recomenda-se corrigir e testar de novo.', { tam: 9.8, estilo: 'bold', cor: VERMELHO });
       else ctx.paragrafo('Resultado: equipamento dentro dos valores de referência (' + plural(av.medidas, 'medida conferida', 'medidas conferidas') + ').', { tam: 9.8, estilo: 'bold', cor: VERDE_ESC });
       if (av.limpFora.length) ctx.paragrafo(msgLimpFora(av.limpFora), { tam: 9.3, cor: VERMELHO });
+      // bomba x vazão mínima do manual
+      const alB = alertaBombaManual(t);
+      if (alB) ctx.paragrafo(alB + ' (' + vazaoManualBase(t.vazaoManual) + ').', { tam: 9.3, estilo: 'bold', cor: VERMELHO });
+      else if (t.vazaoManual && temValor(t.vazao)) ctx.paragrafo('Vazão da bomba atende o manual: mede ' + fmtN(t.vazao, 0) + ' L/min, mínimo de ' + fmtN(t.vazaoManual.min, 0) + ' L/min (' + vazaoManualBase(t.vazaoManual) + ').', { tam: 8.8, cor: SUAVE });
     }
   });
 
