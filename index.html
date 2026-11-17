@@ -3017,6 +3017,12 @@
   .om-g-margem { display: inline-flex; align-items: center; justify-self: end; gap: 2px; font-size: 12.5px; color: var(--ink-soft); }
   .om-g-margem input { width: 64px; min-height: 32px !important; padding: 4px 6px !important; font-size: 14px !important; text-align: right; border-radius: 8px !important; }
   .om-g-margem input.proprio { border-color: var(--accent) !important; color: var(--accent-txt); font-weight: 600; }
+  @media (max-width: 520px) {
+    #cc-forn { display: grid; grid-template-columns: 1fr 1fr; }
+    #cc-forn button { border-right: 0; }
+    #cc-forn button:nth-child(odd) { border-right: 1px solid var(--line); }
+    #cc-forn button:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  }
   .cc-grupo { margin: 0 0 8px; border: 1px solid var(--line); border-radius: var(--raio-p); background: var(--surface); }
   .cc-grupo > summary { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; font-weight: 600; font-size: 14px; }
   .cc-grupo > summary .cc-g-nome { flex: 1; }
@@ -3121,7 +3127,7 @@
 
       <details class="card adm-dobra">
         <summary><span class="adm-tit">Catálogo de peças</span><span class="adm-resumo">Aparecem para escolher na OS</span></summary>
-        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-pecas-conforto">Tabela Conforto</button><button type="button" class="bloco-editar" id="adm-pecas-mx">Tabela MX</button><button type="button" class="bloco-editar" id="adm-pecas-lero">Tabela Lero</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
+        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-pecas-conforto">Tabela Conforto</button><button type="button" class="bloco-editar" id="adm-pecas-mx">Tabela MX</button><button type="button" class="bloco-editar" id="adm-pecas-lero">Tabela Lero</button><button type="button" class="bloco-editar" id="adm-pecas-feilfer">Tabela Feilfer</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
         <input type="file" id="adm-pecas-ordemax-arq" accept=".xml,text/xml,application/xml" hidden>
         <div class="field" style="margin:8px 0 6px"><input type="text" id="adm-pecas-busca" placeholder="Buscar peça" autocomplete="off" aria-label="Buscar peça no catálogo"></div>
         <div id="adm-pecas"></div>
@@ -5167,7 +5173,7 @@
     <div class="om-sub" id="cc-fonte"></div>
     <div class="os-sec">
       <div class="os-sec-tit">Fornecedor</div>
-      <div class="field"><div class="toggle" id="cc-forn"><button type="button" data-f="ordemax">Ordemax</button><button type="button" data-f="mx">MX do Brasil</button><button type="button" data-f="lero">Lero Solar</button></div></div>
+      <div class="field"><div class="toggle" id="cc-forn"><button type="button" data-f="ordemax">Ordemax</button><button type="button" data-f="mx">MX do Brasil</button><button type="button" data-f="lero">Lero Solar</button><button type="button" data-f="feilfer">Feilfer</button></div></div>
       <div class="os-sec-tit">Tipo do galpão</div>
       <div class="field"><div class="toggle" id="cc-tipo"><button type="button" data-t="freestall">Free Stall</button><button type="button" data-t="compost">Compost Barn</button></div></div>
     </div>
@@ -6169,7 +6175,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.8';
+  const APP_VERSAO = '2026.11.17.9';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -15470,6 +15476,7 @@
   $('adm-pecas-conforto').addEventListener('click', () => importarTabelaConforto(TABELA_CONFORTO));
   $('adm-pecas-mx').addEventListener('click', () => importarTabelaConforto(TABELA_MX));
   $('adm-pecas-lero').addEventListener('click', () => importarTabelaConforto('tabelas/lero-solar.json'));
+  $('adm-pecas-feilfer').addEventListener('click', () => importarTabelaConforto('tabelas/feilfer-2026-04.json'));
   async function importarTabelaConforto(url) {
     let tab;
     try { const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); tab = await r.json(); }
@@ -17177,19 +17184,20 @@
   // Usa a tabela de preços de Conforto Animal da Ordemax (tabelas/): escolhe o tipo do galpão e a quantidade
   // de cada item; o orçamento segue o mesmo caminho do Orçamento Ordemax (margem da Calculadora, modelo SAC-029).
   const GRUPOS_CONFORTO = [
+    ['ACESSÓRIOS', /^(suporte|sapat|abra[cç]ad|luva|terminal|placa|haste|tubo galvanizado|trava|cantoneira|escada de fosso)/i],
     ['VENTILAÇÃO', /ventilador|quadro de comando|smartfan|turbo ?fan|eco ?fan|sensor de temperatura|programador de hor|climatizador/i],
     ['BEZERREIRO', /bezerr|fenil|milk ?bar/i],
     ['FREE STALL', /separador|limitador|cinta|catraca|passador|bloqueio frontal/i],
     ['BAIAS', /\bbaia\b/i],
     ['CONTENÇÃO', /conten[cç][aã]o|\bcont\.|canzil|barra frontal|p[eé] direito|fechamento|escada|cantoneira|protetor|pontalete|abra[cç]adeira|luva|base fixa/i],
-    ['BEBEDOUROS', /bebedouro|drinker|cap[eé]la/i],
-    ['PISO', /piso de borracha|borracha/i],
+    ['BEBEDOUROS', /bebedouro|drinker|cap[eé]la|cocho de [aá]gua/i],
+    ['PISO', /piso de borracha|tapete de borracha|colch[aã]o/i],
     ['AQUECIMENTO', /aquecedor|tanque inox|tanque fibra|termostato|termost[aá]tica|resist[eê]ncia|boia|tubos a v[aá]cuo|sensor|motobomba de circula|misturador de [aá]gua|v[aá]lvula (ventosa|de redu|ret)|rel[oó]gio|quadro comando tk/i],
     ['ASPERSÃO', /aspers|tubula[cç][aã]o|nebuliz|solenoide/i],
-    ['MANEJO', /scraper|trilho|co[cç]ador|comfort brush|brete|empurrador|rob[oô]|raspador|port[aã]o|port[oõ]es|saleiro|cocho/i],
+    ['MANEJO', /scraper|trilho|co[cç]ador|comfort brush|brete|empurrador|rob[oô]|raspador|port[aã]o|port[oõ]es|saleiro|cocho|tronco|tracionador|escova|rodo de limpeza|feneiro|tanque para [aá]gua/i],
     ['INSTALAÇÃO', /instala[cç][aã]o/i]
   ];
-  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' }, lero: { nome: 'Lero Solar', url: 'tabelas/lero-solar.json', origem: 'fora' } };
+  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' }, lero: { nome: 'Lero Solar', url: 'tabelas/lero-solar.json', origem: 'fora' }, feilfer: { nome: 'Feilfer', url: 'tabelas/feilfer-2026-04.json', origem: 'dentro' } };
   let ccForn = 'ordemax', ccFonte = '';
   const ccTabelas = {};
   let ccTabela = null, ccTipo = 'freestall', ccQtd = {};
@@ -17215,7 +17223,7 @@
     $('cc-fonte').textContent = ccFonte;
     const box = $('cc-grupos');
     box.innerHTML = '';
-    [...GRUPOS_CONFORTO.map(g => g[0]), 'OUTROS'].filter(g => !(ccTipo === 'compost' && (g === 'BAIAS' || g === 'FREE STALL'))).forEach(g => {
+    [...GRUPOS_CONFORTO.map(g => g[0]).filter(g => g !== 'ACESSÓRIOS'), 'ACESSÓRIOS', 'OUTROS'].filter(g => !(ccTipo === 'compost' && (g === 'BAIAS' || g === 'FREE STALL'))).forEach(g => {
       const itens = ccTabela.filter(i => i.grupo === g);
       if (!itens.length) return;
       const det = document.createElement('details');

@@ -1,0 +1,1600 @@
+{
+ "fonte": "Feilfer - Tabela de preços 04/2026 (à vista)",
+ "fornecedor": "Feilfer",
+ "uf": "SC",
+ "data": "04/2026",
+ "itens": [
+  {
+   "codigo": "LCH2X2",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE LEVE 2X2",
+   "preco": 8190.0,
+   "prazo30": 8463.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "LCH2X3",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE LEVE 2X3",
+   "preco": 9796.5,
+   "prazo30": 9996.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "LCH2X4",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE LEVE 2X4",
+   "preco": 11319.0,
+   "prazo30": 11540.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "LCH2X5",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE LEVE 2X5",
+   "preco": 12389.0,
+   "prazo30": 12642.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "LCH2X6",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE LEVE 2X6",
+   "preco": 13240.0,
+   "prazo30": 13508.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "NCH2X2",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE NORMAL 2X2",
+   "preco": 9764.0,
+   "prazo30": 9965.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "NCH2X3",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE NORMAL 2X3",
+   "preco": 11530.0,
+   "prazo30": 11760.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "NCH2X4",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE NORMAL 2X4",
+   "preco": 13315.0,
+   "prazo30": 13590.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "NCH2X5",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE NORMAL 2X5",
+   "preco": 14595.0,
+   "prazo30": 14890.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "NCH2X6",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE NORMAL 2X6",
+   "preco": 16415.0,
+   "prazo30": 16750.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "NCH2X7",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE NORMAL 2X7",
+   "preco": 18760.0,
+   "prazo30": 19145.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "NCH2X8",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE NORMAL 2X8",
+   "preco": 20965.0,
+   "prazo30": 21390.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "NCH2X9",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE NORMAL 2X9",
+   "preco": 23170.0,
+   "prazo30": 23650.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X2",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X2",
+   "preco": 11540.0,
+   "prazo30": 11775.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X3",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X3",
+   "preco": 13367.0,
+   "prazo30": 13577.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X4",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X4",
+   "preco": 15089.0,
+   "prazo30": 15404.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X5",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X5",
+   "preco": 16370.0,
+   "prazo30": 16695.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X6",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X6",
+   "preco": 18186.0,
+   "prazo30": 18554.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X7",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X7",
+   "preco": 19950.0,
+   "prazo30": 20360.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X8",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X8",
+   "preco": 21699.0,
+   "prazo30": 22145.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X9",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X9",
+   "preco": 23457.0,
+   "prazo30": 23940.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X10",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X10",
+   "preco": 25200.0,
+   "prazo30": 25725.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X11",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X11",
+   "preco": 26964.0,
+   "prazo30": 27510.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X12",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE ESPECIAL 2X12",
+   "preco": 28718.0,
+   "prazo30": 29211.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X2",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X2",
+   "preco": 11540.0,
+   "prazo30": 11775.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X3",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X3",
+   "preco": 13367.0,
+   "prazo30": 13577.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X4",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X4",
+   "preco": 15089.0,
+   "prazo30": 15404.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X5",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X5",
+   "preco": 16370.0,
+   "prazo30": 16695.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X6",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X6",
+   "preco": 18186.0,
+   "prazo30": 18554.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X7",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X7",
+   "preco": 19950.0,
+   "prazo30": 20360.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X8",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X8",
+   "preco": 21699.0,
+   "prazo30": 22145.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X9",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X9",
+   "preco": 23457.0,
+   "prazo30": 23940.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X10",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X10",
+   "preco": 25200.0,
+   "prazo30": 25725.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X11",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X11",
+   "preco": 26964.0,
+   "prazo30": 27510.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X12",
+   "descricao": "CONTENÇÃO ESPINHA DE PEIXE 85º ESPECIAL 2X12",
+   "preco": 28718.0,
+   "prazo30": 29211.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X2",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X2",
+   "preco": 11540.0,
+   "prazo30": 11775.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X3",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X3",
+   "preco": 13367.0,
+   "prazo30": 13577.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X4",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X4",
+   "preco": 15089.0,
+   "prazo30": 15404.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X5",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X5",
+   "preco": 16370.0,
+   "prazo30": 16695.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X6",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X6",
+   "preco": 18186.0,
+   "prazo30": 18554.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X7",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X7",
+   "preco": 19950.0,
+   "prazo30": 20360.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X8",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X8",
+   "preco": 21699.0,
+   "prazo30": 22145.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X9",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X9",
+   "preco": 23457.0,
+   "prazo30": 23940.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X10",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X10",
+   "preco": 25200.0,
+   "prazo30": 25725.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X11",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X11",
+   "preco": 26964.0,
+   "prazo30": 27510.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ECH2X12",
+   "descricao": "CONTENÇÃO CHAPA RETA 85º 2X12",
+   "preco": 28718.0,
+   "prazo30": 29211.0,
+   "unidade": "un",
+   "finame": "3219555"
+  },
+  {
+   "codigo": "ASL2X4",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X4",
+   "preco": 25059.0,
+   "prazo30": 25568.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X5",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X5",
+   "preco": 26282.0,
+   "prazo30": 25765.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X6",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X6",
+   "preco": 27993.0,
+   "prazo30": 28560.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X7",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X7",
+   "preco": 29663.0,
+   "prazo30": 30261.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X8",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X8",
+   "preco": 33905.0,
+   "prazo30": 34598.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X9",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X9",
+   "preco": 36477.0,
+   "prazo30": 37223.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X10",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X10",
+   "preco": 39816.0,
+   "prazo30": 40635.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X11",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X11",
+   "preco": 42189.0,
+   "prazo30": 43050.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X12",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX 2X12",
+   "preco": 46190.0,
+   "prazo30": 47130.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X4",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X4",
+   "preco": 33180.0,
+   "prazo30": 33852.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X5",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X5",
+   "preco": 36666.0,
+   "prazo30": 37412.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X6",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X6",
+   "preco": 40142.0,
+   "prazo30": 40950.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X7",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X7",
+   "preco": 44153.0,
+   "prazo30": 45056.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X8",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X8",
+   "preco": 46893.0,
+   "prazo30": 47849.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X9",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X9",
+   "preco": 53057.0,
+   "prazo30": 54138.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X10",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X10",
+   "preco": 60113.0,
+   "prazo30": 61337.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X11",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X11",
+   "preco": 63693.0,
+   "prazo30": 64995.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "ASL2X12",
+   "descricao": "CONTENÇÃO AUTO SUSTENTÁVEL C/ PINIQUEIRA INOX E CHAPA INTERNA 2X12",
+   "preco": 69101.0,
+   "prazo30": 70518.0,
+   "unidade": "un",
+   "finame": "3781839"
+  },
+  {
+   "codigo": "SRE2X4",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X4",
+   "preco": 162309.0,
+   "prazo30": 165625.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X5",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X5",
+   "preco": 176064.0,
+   "prazo30": 179655.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X6",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X6",
+   "preco": 189819.0,
+   "prazo30": 193704.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X7",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X7",
+   "preco": 203577.0,
+   "prazo30": 207732.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X8",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X8",
+   "preco": 217329.0,
+   "prazo30": 221771.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X9",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X9",
+   "preco": 231084.0,
+   "prazo30": 235804.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X10",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X10",
+   "preco": 244845.0,
+   "prazo30": 249841.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X11",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X11",
+   "preco": 280608.0,
+   "prazo30": 286335.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X12",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X12",
+   "preco": 316365.0,
+   "prazo30": 322828.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X13",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X13",
+   "preco": 321872.0,
+   "prazo30": 328440.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "SRE2X14",
+   "descricao": "CONTENÇÃO SAÍDA RÁPIDA ELÉTRICA 2X14",
+   "preco": 327376.0,
+   "prazo30": 334056.0,
+   "unidade": "un",
+   "finame": "3219561"
+  },
+  {
+   "codigo": "",
+   "descricao": "EMENDA DE CONTENÇÃO LEVE - 01 ANIMAL DE CADA LADO",
+   "preco": 3500.0,
+   "prazo30": 3570.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "EMENDA DE CONTENÇÃO LEVE - 02 ANIMAIS DE CADA LADO",
+   "preco": 6015.0,
+   "prazo30": 6140.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "EMENDA DE CONTENÇÃO NORMAL - 01 ANIMAL DE CADA LADO",
+   "preco": 3775.0,
+   "prazo30": 3850.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "EMENDA DE CONTENÇÃO NORMAL - 02 ANIMAIS DE CADA LADO",
+   "preco": 7130.0,
+   "prazo30": 7280.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "EMENDA DE CONTENÇÃO ESPECIAL - 01 ANIMAL DE CADA LADO",
+   "preco": 4045.0,
+   "prazo30": 4130.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "EMENDA DE CONTENÇÃO ESPECIAL - 02 ANIMAIS DE CADA LADO",
+   "preco": 7790.0,
+   "prazo30": 7950.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "CA100",
+   "descricao": "CANZIL DE ALIMENTAÇÃO 1,00",
+   "preco": 523.0,
+   "prazo30": 536.0,
+   "unidade": "un",
+   "finame": "3219549"
+  },
+  {
+   "codigo": "CA90",
+   "descricao": "CANZIL DE ALIMENTAÇÃO 0,90",
+   "preco": 473.0,
+   "prazo30": 483.0,
+   "unidade": "un",
+   "finame": "3219549"
+  },
+  {
+   "codigo": "CA80",
+   "descricao": "CANZIL DE ALIMENTAÇÃO 0,80",
+   "preco": 445.0,
+   "prazo30": 455.0,
+   "unidade": "un",
+   "finame": "3219549"
+  },
+  {
+   "codigo": "CA75",
+   "descricao": "CANZIL DE ALIMENTAÇÃO 0,75",
+   "preco": 439.0,
+   "prazo30": 450.0,
+   "unidade": "un",
+   "finame": "3219549"
+  },
+  {
+   "codigo": "CA70",
+   "descricao": "CANZIL DE ALIMENTAÇÃO 0,70",
+   "preco": 439.0,
+   "prazo30": 450.0,
+   "unidade": "un",
+   "finame": "3219549"
+  },
+  {
+   "codigo": "CA65",
+   "descricao": "CANZIL DE ALIMENTAÇÃO 0,65",
+   "preco": 405.0,
+   "prazo30": 415.0,
+   "unidade": "un",
+   "finame": "3219549"
+  },
+  {
+   "codigo": "CA60",
+   "descricao": "CANZIL DE ALIMENTAÇÃO 0,60",
+   "preco": 405.0,
+   "prazo30": 415.0,
+   "unidade": "un",
+   "finame": "3219549"
+  },
+  {
+   "codigo": "PO120",
+   "descricao": "PONTALETE 2,5\" X 1200 MM",
+   "preco": 133.0,
+   "prazo30": 136.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "PO150",
+   "descricao": "PONTALETE 2,5\" X 1500 MM",
+   "preco": 165.0,
+   "prazo30": 168.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "PO200",
+   "descricao": "PONTALETE 2,5\" X 2000 MM",
+   "preco": 220.0,
+   "prazo30": 223.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "C100L ALTO",
+   "descricao": "COCHO DE ÁGUA 100 L INOX 430 ALTO",
+   "preco": 3058.0,
+   "prazo30": 3119.0,
+   "unidade": "un",
+   "finame": "03782179"
+  },
+  {
+   "codigo": "C200L ALTO",
+   "descricao": "COCHO DE ÁGUA 200 L INOX 430 ALTO",
+   "preco": 3969.0,
+   "prazo30": 4053.0,
+   "unidade": "un",
+   "finame": "03782179"
+  },
+  {
+   "codigo": "C100L ALTO",
+   "descricao": "COCHO DE ÁGUA 100 L INOX 304 ALTO",
+   "preco": 3360.0,
+   "prazo30": 3431.0,
+   "unidade": "un",
+   "finame": "03782179"
+  },
+  {
+   "codigo": "C200L ALTO",
+   "descricao": "COCHO DE ÁGUA 200 L INOX 304 ALTO",
+   "preco": 4988.0,
+   "prazo30": 5093.0,
+   "unidade": "un",
+   "finame": "03782179"
+  },
+  {
+   "codigo": "C100L BAIXO",
+   "descricao": "COCHO DE ÁGUA 100 L INOX 430 BAIXO",
+   "preco": 2373.0,
+   "prazo30": 2415.0,
+   "unidade": "un",
+   "finame": "03782179"
+  },
+  {
+   "codigo": "C200L BAIXO",
+   "descricao": "COCHO DE ÁGUA 200 L INOX 430 BAIXO",
+   "preco": 3087.0,
+   "prazo30": 3147.0,
+   "unidade": "un",
+   "finame": "03782179"
+  },
+  {
+   "codigo": "C100L BAIXO",
+   "descricao": "COCHO DE ÁGUA 100 L INOX 304 BAIXO",
+   "preco": 2835.0,
+   "prazo30": 2982.0,
+   "unidade": "un",
+   "finame": "03782179"
+  },
+  {
+   "codigo": "C200L BAIXO",
+   "descricao": "COCHO DE ÁGUA 200 L INOX 304 BAIXO",
+   "preco": 3885.0,
+   "prazo30": 3969.0,
+   "unidade": "un",
+   "finame": "03782179"
+  },
+  {
+   "codigo": "",
+   "descricao": "SALEIRO INOX 304 0,30 M",
+   "preco": 515.0,
+   "prazo30": 525.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "SALEIRO INOX 304 1,00 M",
+   "preco": 1564.0,
+   "prazo30": 1588.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "R2",
+   "descricao": "ARCO SEPARADOR PARA FREE STALL TUBO 50,8X3 MM MODELO R",
+   "preco": 725.0,
+   "prazo30": 735.0,
+   "unidade": "un",
+   "finame": "3219532"
+  },
+  {
+   "codigo": "R60",
+   "descricao": "ARCO SEPARADOR PARA FREE STALL TUBO 60,3X2,65 MM MODELO R",
+   "preco": 777.0,
+   "prazo30": 788.0,
+   "unidade": "un",
+   "finame": "3219532"
+  },
+  {
+   "codigo": "",
+   "descricao": "BEZERREIRO COM PISO ELEVADO 1,00X1,20 M - PONTA",
+   "preco": 2783.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "BEZERREIRO COM PISO ELEVADO 1,00X1,20 M - EMENDA",
+   "preco": 2415.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "BEZERREIRO COM PISO ELEVADO 1,00X1,60 M - PONTA",
+   "preco": 3213.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "BEZERREIRO COM PISO ELEVADO 1,00X1,60 M - EMENDA",
+   "preco": 2835.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "BEZERREIRO COM PISO ELEVADO 1,20X1,20 M - PONTA",
+   "preco": 3213.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "BEZERREIRO COM PISO ELEVADO 1,20X1,20 M - EMENDA",
+   "preco": 2835.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "BEZERREIRO COM PISO ELEVADO 1,20X1,60 M - PONTA",
+   "preco": 3591.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "BEZERREIRO COM PISO ELEVADO 1,20X1,60 M - EMENDA",
+   "preco": 3203.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "9567",
+   "descricao": "COCHO INOX 5 L PARA BEZERREIRO",
+   "preco": 157.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "COCHO INOX 4 L PARA BEZERREIRO",
+   "preco": 147.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "RHL",
+   "descricao": "RASPADOR HIDRÁULICO DE LIMPEZA (SCRAPER) - 01 CORREDOR",
+   "preco": 62737.0,
+   "prazo30": 60969.0,
+   "unidade": "un",
+   "finame": "3219609"
+  },
+  {
+   "codigo": "RHL",
+   "descricao": "RASPADOR HIDRÁULICO DE LIMPEZA (SCRAPER) - 02 CORREDORES",
+   "preco": 77319.0,
+   "prazo30": 78881.0,
+   "unidade": "un",
+   "finame": "3219609"
+  },
+  {
+   "codigo": "",
+   "descricao": "TRILHO DO RASPADOR",
+   "preco": 262.0,
+   "prazo30": 267.0,
+   "unidade": "m",
+   "finame": null
+  },
+  {
+   "codigo": "TCA",
+   "descricao": "TRONCO CASQUEADOR DE ANIMAIS",
+   "preco": 14033.0,
+   "prazo30": 14318.0,
+   "unidade": "un",
+   "finame": "3219621"
+  },
+  {
+   "codigo": "TASE",
+   "descricao": "TRACIONADOR DE ANIMAIS P/ SALA DE ESPERA 15 M",
+   "preco": 100590.0,
+   "prazo30": 102642.0,
+   "unidade": "un",
+   "finame": "3219615"
+  },
+  {
+   "codigo": "1841",
+   "descricao": "ESCOVA ROTATIVA PARA MASSAGEM DE GADO",
+   "preco": 10372.0,
+   "prazo30": 10584.0,
+   "unidade": "un",
+   "finame": "3219584"
+  },
+  {
+   "codigo": "6059",
+   "descricao": "ESCOVA FIXA PARA MASSAGEM DE GADO - SUPORTE DE PAREDE",
+   "preco": 1945.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "11832",
+   "descricao": "ESCOVA FIXA PARA MASSAGEM DE GADO - SUPORTE MÓVEL DE PAREDE",
+   "preco": 2312.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "11833",
+   "descricao": "ESCOVA FIXA PARA MASSAGEM DE GADO - SUPORTE PARA PISO",
+   "preco": 1945.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X1000",
+   "preco": 970.0,
+   "prazo30": 987.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X1500",
+   "preco": 1134.0,
+   "prazo30": 1160.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X2000",
+   "preco": 1300.0,
+   "prazo30": 1323.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X2500",
+   "preco": 1655.0,
+   "prazo30": 1687.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X3000",
+   "preco": 1820.0,
+   "prazo30": 1856.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X3500",
+   "preco": 1985.0,
+   "prazo30": 2027.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X4000",
+   "preco": 2150.0,
+   "prazo30": 2193.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X4500",
+   "preco": 2310.0,
+   "prazo30": 2357.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X5000",
+   "preco": 2481.0,
+   "prazo30": 2531.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X5500",
+   "preco": 2646.0,
+   "prazo30": 2699.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "PORTÃO GALVANIZADO 3 BARRAS 2\" 900X6000",
+   "preco": 2811.0,
+   "prazo30": 2867.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "TUBO GALVANIZADO A FOGO 1.1/2\" X 2 MM (38 MM)",
+   "preco": 48.0,
+   "prazo30": 51.0,
+   "unidade": "m",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "TUBO GALVANIZADO A FOGO 2\" X 2 MM (50,80 MM)",
+   "preco": 72.0,
+   "prazo30": 74.0,
+   "unidade": "m",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "TUBO GALVANIZADO A FOGO 2\" X 3 MM (50,80 MM)",
+   "preco": 105.0,
+   "prazo30": 108.0,
+   "unidade": "m",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "TUBO GALVANIZADO A FOGO 2.1/2\" X 2,65 MM (63,50 MM)",
+   "preco": 115.0,
+   "prazo30": 118.0,
+   "unidade": "m",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "TUBO GALVANIZADO A FOGO 2.1/2\" X 3 MM (63,50 MM)",
+   "preco": 132.0,
+   "prazo30": 135.0,
+   "unidade": "m",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "TUBO GALVANIZADO A FOGO 3\" X 2,65 MM (73,20 MM)",
+   "preco": 145.0,
+   "prazo30": 147.0,
+   "unidade": "m",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "TUBO GALVANIZADO A FOGO 3\" X 3 MM (73,20 MM)",
+   "preco": 162.0,
+   "prazo30": 166.0,
+   "unidade": "m",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "CANTONEIRA DE FOSSO GALVANIZADA",
+   "preco": 142.0,
+   "prazo30": 145.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "CANTONEIRA DE FOSSO INOX",
+   "preco": 262.0,
+   "prazo30": 266.0,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "ESCADA DE FOSSO GALVANIZADA 02 DEGRAUS SEM CORRIMÃO",
+   "preco": 724.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "ESCADA DE FOSSO GALVANIZADA 02 DEGRAUS COM CORRIMÃO",
+   "preco": 892.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "ESCADA DE FOSSO GALVANIZADA 03 DEGRAUS SEM CORRIMÃO",
+   "preco": 945.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "",
+   "descricao": "ESCADA DE FOSSO GALVANIZADA 03 DEGRAUS COM CORRIMÃO",
+   "preco": 1312.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8390",
+   "descricao": "TRAVA DE SEGURANÇA DO CANZIL",
+   "preco": 10.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "68",
+   "descricao": "SAPATA P/ TUBO 1,5\"",
+   "preco": 51.45,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "645",
+   "descricao": "SAPATA P/ TUBO 2\"",
+   "preco": 68.25,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "571",
+   "descricao": "SAPATA P/ TUBO 2,5\"",
+   "preco": 120.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8573",
+   "descricao": "SAPATA P/ TUBO 3\"",
+   "preco": 168.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "10917",
+   "descricao": "SAPATA P/ PONTALETE COM SUPORTE DE FIXAÇÃO NA VIGA",
+   "preco": 220.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "7357",
+   "descricao": "SAPATINHA P/ TUBO 2\"",
+   "preco": 36.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8758",
+   "descricao": "SAPATINHA P/ TUBO 2.1/2\"",
+   "preco": 51.45,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "2376",
+   "descricao": "LUVA 2\"",
+   "preco": 26.25,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "850",
+   "descricao": "SUPORTE DO PORTÃO P/ PONTALETE",
+   "preco": 75.6,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "6186",
+   "descricao": "SUPORTE DE ASPERSÃO P/ PAREDE DE CONCRETO",
+   "preco": 36.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "7915",
+   "descricao": "SUPORTE DE ASPERSÃO P/ PONTALETE",
+   "preco": 36.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "7716",
+   "descricao": "SUPORTE DE ASPERSÃO COMPLETO COM REGULAGEM",
+   "preco": 96.6,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8474",
+   "descricao": "SUPORTE DA PORTINHA DO PEITORAL",
+   "preco": 56.7,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "3925",
+   "descricao": "SUPORTE DA PORTINHA DA CONTENÇÃO LEVE",
+   "preco": 26.25,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "7135",
+   "descricao": "SUPORTE DE COCHO PARA CONCRETO/PAREDE",
+   "preco": 273.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "5603",
+   "descricao": "SUPORTE DE COCHO P/ PONTALETE",
+   "preco": 178.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "3167",
+   "descricao": "SUPORTE DE NECK RAIL P/ PONTALETE",
+   "preco": 96.6,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "3167",
+   "descricao": "SUPORTE DE NECK RAIL P/ POSTE DE CONCRETO/MADEIRA COM REGULAGEM",
+   "preco": 96.6,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "758",
+   "descricao": "SUPORTE DA PINIQUEIRA",
+   "preco": 84.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8577",
+   "descricao": "SUPORTE COM REGULAGEM DE ÂNGULO P/ PONTALETE",
+   "preco": 40.95,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "1090",
+   "descricao": "SUPORTE COM REGULAGEM DE ÂNGULO P/ POSTE DE CONCRETO",
+   "preco": 51.45,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "10899",
+   "descricao": "TERMINAL P/ TUBO 2\" COM REGULAGEM",
+   "preco": 31.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8068",
+   "descricao": "SUPORTE 90º DE TUBO 2\" PARA PONTALETE",
+   "preco": 72.45,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "10033",
+   "descricao": "SUPORTE RETO DE TUBO 2\" PARA PONTALETE",
+   "preco": 72.45,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "4906",
+   "descricao": "SUPORTE T 2.1/2X2\"",
+   "preco": 61.95,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "10269",
+   "descricao": "SUPORTE TIPO 8 2.1/2X2\"",
+   "preco": 40.95,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "341",
+   "descricao": "SUPORTE DE BASTÃO 2\"",
+   "preco": 58.8,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "1674",
+   "descricao": "SUPORTE ENGATE DO BASTÃO",
+   "preco": 81.9,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "7377",
+   "descricao": "SUPORTE DA DOBRADIÇA DA CONTENÇÃO 85º",
+   "preco": 105.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8562",
+   "descricao": "SUPORTE DE CILINDRO",
+   "preco": 84.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8837",
+   "descricao": "SUPORTE P/ CILINDRO DE EXTRAÇÃO INOX COM INCLINAÇÃO",
+   "preco": 31.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8347",
+   "descricao": "PLACA DE AÇO INOX 50X50 MM C/ GANCHO 60 MM",
+   "preco": 52.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8978",
+   "descricao": "CARRINHO RASPADOR MANUAL DE DEJETOS",
+   "preco": 1417.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "2932",
+   "descricao": "FENEIRO GALVANIZADO",
+   "preco": 136.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "5278",
+   "descricao": "HASTE DE INOX PARA COCHO COM PARAFUSO E PORCA",
+   "preco": 31.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "65",
+   "descricao": "ABRAÇADEIRA 5/16 TIPO GANCHO COMPLETA 2\"",
+   "preco": 36.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "66",
+   "descricao": "ABRAÇADEIRA 5/16 TIPO GANCHO COMPLETA 1.1/2\"",
+   "preco": 26.25,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8396",
+   "descricao": "ABRAÇADEIRA U DE CANZIL 5/16 COMPLETA",
+   "preco": 26.25,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "7514",
+   "descricao": "ABRAÇADEIRA DE CANZIL P/ CONCRETO OU MADEIRA",
+   "preco": 26.25,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8466",
+   "descricao": "ABRAÇADEIRA INOX P/ TUBO 2\"",
+   "preco": 26.25,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "7633",
+   "descricao": "ABRAÇADEIRA INOX P/ TUBO 2.1/2\"",
+   "preco": 42.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "8472",
+   "descricao": "ABRAÇADEIRA PARA CINTA DO BLOQUEIO FRONTAL",
+   "preco": 31.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "3940",
+   "descricao": "ABRAÇADEIRA EM T 1.1/2\"",
+   "preco": 31.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "630",
+   "descricao": "ABRAÇADEIRA EM T 2X2\"",
+   "preco": 36.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "7408",
+   "descricao": "ABRAÇADEIRA EM T 2.1/2X2\"",
+   "preco": 42.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "2626",
+   "descricao": "ABRAÇADEIRA CRUZETA 1.1/2X1.1/2\"",
+   "preco": 42.0,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "631",
+   "descricao": "ABRAÇADEIRA CRUZETA 2X2\"",
+   "preco": 57.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "6375",
+   "descricao": "ABRAÇADEIRA CRUZETA 2X2.1/2\"",
+   "preco": 57.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "1937",
+   "descricao": "RODO DE LIMPEZA INOX (SEM CABO) COM BORRACHA DE 4 LONAS",
+   "preco": 262.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "1332",
+   "descricao": "RODO DE LIMPEZA INOX (SEM CABO) COM BORRACHA DE 8 LONAS",
+   "preco": 304.5,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "10849",
+   "descricao": "TANQUE PARA ÁGUA INOX C/ PÉS REGULÁVEIS - 110 L (LAVAGEM DE ORDENHA)",
+   "preco": 721.88,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  },
+  {
+   "codigo": "11786",
+   "descricao": "TANQUE PARA ÁGUA INOX C/ PÉS REGULÁVEIS - 180 L (LAVAGEM DE ORDENHA)",
+   "preco": 1023.75,
+   "prazo30": null,
+   "unidade": "un",
+   "finame": null
+  }
+ ]
+}
