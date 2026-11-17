@@ -687,6 +687,18 @@
   .cat-tag .cdot { width: 6px; height: 6px; border-radius: 50%; }
 
   .check-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .check-grupo { flex-basis: 100%; margin-top: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); }
+  .check-grupo:first-child { margin-top: 0; }
+  /* calculadoras técnicas */
+  .ct-card .rate-row { align-items: flex-end; margin-bottom: 14px; }
+  .ct-card .rate-row > .field { margin-bottom: 0; }
+  .ct-tit { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 16px; font-weight: 700; }
+  .ct-n { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 999px; background: var(--accent-suave); color: var(--accent-txt); font-size: 13px; font-weight: 700; }
+  .ct-res { margin-top: 12px; padding: 4px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
+  .ct-res .dado { align-items: baseline; }
+  .ct-res .dado.ct-principal .dado-val { font-size: 26px; font-weight: 800; color: var(--accent-txt); font-variant-numeric: tabular-nums; }
+  .ct-res .dado.ct-principal .dado-rot { align-self: center; }
+  .ct-res .campo-dica { margin: 8px 0; }
   .check-chip {
     padding: 8px 12px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--bg);
     color: var(--ink); font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
@@ -2564,6 +2576,12 @@
   .pd-troca .ic { width: 20px; height: 20px; margin-top: 1px; }
   .pd-troca.pd-vencida { background: color-mix(in srgb, var(--tax) 12%, transparent); color: var(--tax); }
   .pd-troca.pd-breve { background: var(--soon-bg); color: var(--soon); }
+  .pd-troca.pd-ok { background: var(--accent-suave); color: var(--accent-txt); }
+  .pd-subtit { margin: 16px 0 6px; font-size: 15px; font-weight: 700; color: var(--accent-txt); }
+  .pd-card-tit + .pd-subtit { margin-top: 2px; }
+  .pd-ol { margin: 0; padding-left: 24px; font-size: 16px; line-height: 1.45; }
+  .pd-ol li { margin: 5px 0; padding-left: 2px; }
+  .pd-ol li::marker { font-weight: 700; color: var(--accent-txt); }
   .pd-duas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .pd-q { padding: 12px; border-radius: 12px; background: var(--surface-2); border-left: 5px solid var(--line); }
   .pd-q-bom { border-left-color: #1E9E57; }
@@ -2661,8 +2679,8 @@
   .pd-vazio-tit { font-size: 19px; font-weight: 700; color: var(--ink); }
   .pd-vazio-txt { font-size: 16px; margin-top: 4px; }
 
-  /* barra de baixo do produtor: 4 abas, rótulos grandes */
-  .pd-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+  /* barra de baixo do produtor: 5 abas (4 sem Qualidade), rótulos grandes */
+  .pd-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
     padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); background: var(--tab-bg); border-top: 1px solid var(--line);
     -webkit-backdrop-filter: saturate(1.6) blur(16px); backdrop-filter: saturate(1.6) blur(16px); }
   .pd-tabbar[hidden] { display: none !important; }
@@ -3046,6 +3064,7 @@
   .cz-forn-nome, .cz-tipos button b { font-size: 15px; font-weight: 700; line-height: 1.2; }
   .cz-forn-sub, .cz-tipos button span { font-size: 12px; color: var(--ink-soft); line-height: 1.25; }
   .cz-forn-nome + .cz-forn-sub { margin-top: 1px; }
+  .cz-forn:last-child:nth-child(odd) { grid-column: 1 / -1; min-height: 52px; }
   @media (max-width: 480px) {
     .cz-topo-ic { width: 38px; height: 38px; }
     .cz-topo h2 { font-size: 17.5px !important; }
@@ -3425,6 +3444,13 @@
         <div class="nav-card-sub">Componentes de todos os produtores, pela data da troca</div>
       </div>
     </div>
+    <div class="nav-card compacto" id="nav-calctec" role="button" tabindex="0" data-perm="visitas:1">
+      <span class="nav-art"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg></span>
+      <div class="nav-text">
+        <div class="nav-card-title">Calculadoras técnicas</div>
+        <div class="nav-card-sub">Conjuntos, vazão da bomba, tubulações e polia</div>
+      </div>
+    </div>
     <div class="nav-card compacto" id="nav-visitas" role="button" tabindex="0" data-perm="produtores:1">
       <span class="nav-art"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20.5c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.4 3.4 0 0 1 0 6.6"/><path d="M18.2 14.7c2 .8 3.3 2.9 3.3 5.8"/></svg></span>
       <div class="nav-text">
@@ -3616,6 +3642,59 @@
     <div class="empty-state" id="pv-vazio" hidden></div>
   </div>
 
+  <!-- CALCULADORAS TÉCNICAS: dimensionamento da ordenhadeira -->
+  <div id="view-calctec" hidden>
+    <button type="button" class="back-btn" id="back-calctec">‹ Voltar</button>
+    <div class="detail-header"><h1>Calculadoras técnicas</h1><div class="leite-ficha-sub">Dimensionamento da ordenhadeira. O resultado muda a cada número digitado.</div></div>
+
+    <div class="card ct-card">
+      <div class="ct-tit"><span class="ct-n">1</span>Quantos conjuntos</div>
+      <div class="rate-row">
+        <div class="field"><label for="ct-vacas">Vacas em lactação</label><input type="text" inputmode="numeric" id="ct-vacas" value="40" autocomplete="off"></div>
+        <div class="field"><label for="ct-horas">Horas de ordenha</label><input type="text" inputmode="decimal" id="ct-horas" value="2" autocomplete="off"></div>
+      </div>
+      <div class="rate-row">
+        <div class="field"><label for="ct-vch">Vacas/conjunto/hora</label><input type="text" inputmode="decimal" id="ct-vch" value="5" autocomplete="off"></div>
+        <div class="field"><label for="ct-cresc">Crescimento (%)</label><input type="text" inputmode="decimal" id="ct-cresc" value="0" autocomplete="off"></div>
+      </div>
+      <div class="campo-dica">Vacas por conjunto por hora: balde ao pé 5–6, espinha de peixe 5–7.</div>
+      <div class="ct-res" id="ct-res-conj"></div>
+    </div>
+
+    <div class="card ct-card">
+      <div class="ct-tit"><span class="ct-n">2</span>Vazão da bomba de vácuo</div>
+      <div class="field"><label>Sistema</label>
+        <div class="toggle" id="ct-sist"><button type="button" data-s="balde" class="active">Balde ao pé</button><button type="button" data-s="media">Linha média</button><button type="button" data-s="baixa">Linha baixa</button></div>
+      </div>
+      <div class="rate-row">
+        <div class="field"><label for="ct-conj">Conjuntos</label><input type="text" inputmode="numeric" id="ct-conj" value="8" autocomplete="off"></div>
+        <div class="field"><label for="ct-alt">Altitude (m)</label><input type="text" inputmode="numeric" id="ct-alt" value="0" autocomplete="off"></div>
+      </div>
+      <div class="field"><label>Vácuo de trabalho</label>
+        <div class="toggle" id="ct-vac"><button type="button" data-v="40">40 kPa</button><button type="button" data-v="45">45 kPa</button><button type="button" data-v="50" class="active">50 kPa</button></div>
+      </div>
+      <div class="ct-res" id="ct-res-bomba"></div>
+    </div>
+
+    <div class="card ct-card">
+      <div class="ct-tit"><span class="ct-n">3</span>Tubulações</div>
+      <div class="campo-dica" style="margin-top:0">Usa o sistema e os conjuntos da vazão da bomba.</div>
+      <div class="ct-res" id="ct-res-tubo"></div>
+      <div class="campo-dica">Inclinação de 1 a 2%; o leite ocupa no máximo 1/3 do cano.</div>
+    </div>
+
+    <div class="card ct-card">
+      <div class="ct-tit"><span class="ct-n">4</span>Polia da bomba</div>
+      <div class="rate-row">
+        <div class="field"><label for="ct-rpm-motor">RPM do motor</label><input type="text" inputmode="numeric" id="ct-rpm-motor" value="1750" autocomplete="off"></div>
+        <div class="field"><label for="ct-pol-motor">Ø polia do motor (mm)</label><input type="text" inputmode="decimal" id="ct-pol-motor" value="100" autocomplete="off"></div>
+      </div>
+      <div class="field"><label for="ct-rpm-bomba">RPM da bomba</label><input type="text" inputmode="numeric" id="ct-rpm-bomba" value="1450" autocomplete="off"></div>
+      <div class="campo-dica">Ø polia da bomba = RPM do motor × Ø polia do motor ÷ RPM da bomba.</div>
+      <div class="ct-res" id="ct-res-polia"></div>
+    </div>
+  </div>
+
   <div id="view-ordens" hidden>
     <div class="detail-header"><h1>Ordens de serviço</h1><div class="leite-ficha-sub" id="os-sub"></div></div>
     <!-- escondidos: Nova OS e chamado ficam no "+ Novo"; o botão continua para a tela vazia ("Nova OS") -->
@@ -3682,6 +3761,7 @@
       <button type="button" class="mais-item" id="mais-tarefas">✓ Tarefas <span class="mais-n" id="mais-tarefas-n" hidden></span></button>
       <button type="button" class="mais-item" id="mais-ordens" data-perm="visitas:1" hidden>🛠 Ordens de serviço</button>
       <button type="button" class="mais-item" id="mais-preventivas" data-perm="visitas:1">🗓️ Plano preventivo</button>
+      <button type="button" class="mais-item" id="mais-calctec" data-perm="visitas:1">📐 Calculadoras técnicas</button>
       <button type="button" class="mais-item" id="mais-chamado" hidden>📞 Abrir chamado de manutenção</button>
       <button type="button" class="mais-item" id="mais-rota" data-perm="produtores:1">🗺️ Rota do dia</button>
       <button type="button" class="mais-item" id="mais-medias" data-perm="leite:1">🥛 Médias de todos os produtores</button>
@@ -4489,6 +4569,12 @@
     <div id="pd-qual-conteudo"></div>
   </div>
 
+  <!-- ÁREA DO PRODUTOR: Boas práticas -->
+  <div id="view-p-prat" class="pd" hidden>
+    <h1 class="pd-titulo">Boas práticas</h1>
+    <div id="pd-prat-conteudo"></div>
+  </div>
+
   <!-- ÁREA DO PRODUTOR: Chamados -->
   <div id="view-p-cham" class="pd" hidden>
     <h1 class="pd-titulo">Chamados</h1>
@@ -4530,6 +4616,7 @@
   <button type="button" class="pd-tab" data-ptab="inicio"><svg class="ic" aria-hidden="true"><use href="#i-house"/></svg><span>Início</span></button>
   <button type="button" class="pd-tab" data-ptab="prop"><svg class="ic" aria-hidden="true"><use href="#i-warehouse"/></svg><span>Minha propriedade</span></button>
   <button type="button" class="pd-tab" data-ptab="qual"><svg class="ic" aria-hidden="true"><use href="#i-chart-line"/></svg><span>Qualidade</span></button>
+  <button type="button" class="pd-tab" data-ptab="prat"><svg class="ic" aria-hidden="true"><use href="#i-list-checks"/></svg><span>Boas práticas</span></button>
   <button type="button" class="pd-tab" data-ptab="cham"><svg class="ic" aria-hidden="true"><use href="#i-headset"/></svg><span>Chamados</span><span class="pd-tab-n" id="pd-tab-n" hidden></span></button>
 </nav>
 
@@ -5338,8 +5425,8 @@
       <aside class="cz-resumo" id="cz-resumo" aria-label="Resumo">
         <div class="cz-etapa"><b>4</b>Resumo<button type="button" class="cz-limpar" id="cz-limpar" hidden>Limpar</button></div>
         <div class="cz-sel" id="cz-sel"></div>
-        <div class="cz-tot"><span>Total (custo do fornecedor)</span><strong id="cc-total">R$ 0,00</strong></div>
-        <div class="cz-tot-dica">A margem e o ICMS entram no próximo passo.</div>
+        <div class="cz-tot"><span id="cz-tot-rot">Total (custo do fornecedor)</span><strong id="cc-total">R$ 0,00</strong></div>
+        <div class="cz-tot-dica" id="cz-tot-dica">A margem e o ICMS entram no próximo passo.</div>
         <button type="button" class="btn-primary cz-continuar" id="cc-continuar">Continuar para o orçamento</button>
       </aside>
     </div>
@@ -6335,7 +6422,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.10';
+  const APP_VERSAO = '2026.11.17.11';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -6372,12 +6459,12 @@
   }
 
   // ================= router =================
-  const VIEWS = ['entrada', 'p-login', 'p-inicio', 'p-prop', 'p-qual', 'p-cham', 'admin', 'home', 'setor', 'mais', 'encaminhamentos', 'ordens', 'preventivas', 'calc', 'historico', 'produtores', 'produtor', 'leite', 'medias', 'pmls', 'rota', 'vendas', 'venda-form', 'venda'];
+  const VIEWS = ['entrada', 'p-login', 'p-inicio', 'p-prop', 'p-qual', 'p-prat', 'p-cham', 'admin', 'home', 'setor', 'mais', 'encaminhamentos', 'ordens', 'preventivas', 'calctec', 'calc', 'historico', 'produtores', 'produtor', 'leite', 'medias', 'pmls', 'rota', 'vendas', 'venda-form', 'venda'];
   // qual aba da barra de baixo fica acesa em cada tela
   const TAB_DA_VIEW = {
     entrada: 'home', admin: 'mais', home: 'home', calc: 'mais', historico: 'mais', produtores: 'visitas', produtor: 'visitas', rota: 'visitas',
     leite: 'home', medias: 'home', pmls: 'home', vendas: 'mais', 'venda-form': 'mais', venda: 'mais',
-    encaminhamentos: 'mais', mais: 'mais', ordens: 'ordens', preventivas: 'ordens'
+    encaminhamentos: 'mais', mais: 'mais', ordens: 'ordens', preventivas: 'ordens', calctec: 'home'
   };
   function showView(name) {
     // sem acesso liberado, a única tela é a de entrada
@@ -6385,7 +6472,7 @@
     VIEWS.forEach(v => { $('view-' + v).hidden = (v !== name); });
     $('fab-add-produtor').hidden = (name !== 'produtores');
     document.body.dataset.view = name;
-    const abaDaBarra = name === 'setor' ? (setorAberto === 'comercial' ? 'mais' : 'home') : TAB_DA_VIEW[name];
+    const abaDaBarra = name === 'setor' ? (setorAberto === 'comercial' ? 'mais' : 'home') : name === 'calctec' && ctVoltar === 'mais' ? 'mais' : TAB_DA_VIEW[name];
     document.querySelectorAll('.tab').forEach(t => {
       const ativa = t.dataset.tab === abaDaBarra;
       t.classList.toggle('ativa', ativa);
@@ -8286,25 +8373,48 @@
   // contato, localização e botões de WhatsApp/mapa na página do produtor
 
   // ---------- checklist: revisão de ordenhadeira ----------
+  // três pilares da revisão. Ids e rótulos antigos não mudam: OS antigas são convertidas de volta pelo rótulo.
+  const REVISAO_GRUPOS = { vacuo: '1. Vácuo e força', pulsacao: '2. Pulsação e extração', higiene: '3. Higiene e condução', geral: 'Geral' };
   const REVISAO_ITENS = [
-    { id: 'teteiras', label: 'Teteiras' },
-    { id: 'pulsadores', label: 'Troca dos reparos de pulsadores' },
-    { id: 'mangueiraLeite', label: 'Mangueira do leite' },
-    { id: 'mangueiraVacuoPrincipal', label: 'Mangueira do vácuo principal' },
-    { id: 'mangueiraVacuoDupla', label: 'Mangueira do vácuo dupla' },
-    { id: 'coletor', label: 'Coletor' },
-    { id: 'reguladoraVacuo', label: 'Reguladora de vácuo' },
-    { id: 'oleoBomba', label: 'Óleo da bomba' },
-    { id: 'regulagemPulsadores', label: 'Regulagem dos pulsadores' },
-    { id: 'regulagemMaquina', label: 'Regulagem da máquina' },
-    { id: 'limpezaGeral', label: 'Limpeza geral' },
-    { id: 'funcionamentoGeral', label: 'Funcionamento geral' },
-    { id: 'outros', label: 'Outros' }
+    { id: 'oleoBomba', label: 'Óleo da bomba', grupo: 'vacuo' },
+    { id: 'correias', label: 'Correias', grupo: 'vacuo' },
+    { id: 'polias', label: 'Alinhamento das polias', grupo: 'vacuo' },
+    { id: 'lubrificador', label: 'Lubrificador de óleo', grupo: 'vacuo' },
+    { id: 'reguladoraVacuo', label: 'Reguladora de vácuo', grupo: 'vacuo' },
+    { id: 'kitReguladorServo', label: 'Kit do regulador servo assistido', grupo: 'vacuo' },
+    { id: 'mangueiraVacuoPrincipal', label: 'Mangueira do vácuo principal', grupo: 'vacuo' },
+    { id: 'mangueiraVacuoDupla', label: 'Mangueira do vácuo dupla', grupo: 'vacuo' },
+    { id: 'regulagemMaquina', label: 'Regulagem da máquina', grupo: 'vacuo' },
+    { id: 'teteiras', label: 'Teteiras', grupo: 'pulsacao' },
+    { id: 'pulsadores', label: 'Troca dos reparos de pulsadores', grupo: 'pulsacao' },
+    { id: 'regulagemPulsadores', label: 'Regulagem dos pulsadores', grupo: 'pulsacao' },
+    { id: 'mangueiraCurta', label: 'Mangueira curta de pulsação', grupo: 'pulsacao' },
+    { id: 'coletor', label: 'Coletor', grupo: 'pulsacao' },
+    { id: 'medidores', label: 'Kit dos medidores de leite', grupo: 'pulsacao' },
+    { id: 'membranaCorte', label: 'Membrana da válvula de corte', grupo: 'pulsacao' },
+    { id: 'extracao', label: 'Cilindros da extração automática', grupo: 'pulsacao' },
+    { id: 'mangueiraLeite', label: 'Mangueira do leite', grupo: 'higiene' },
+    { id: 'unidadeFinal', label: 'Vedação da unidade final', grupo: 'higiene' },
+    { id: 'limpezaTubulacao', label: 'Limpeza das tubulações (vácuo e leite)', grupo: 'higiene' },
+    { id: 'sistemaLimpeza', label: 'Sistema de limpeza (velas/jetter)', grupo: 'higiene' },
+    { id: 'dosadoras', label: 'Bombas dosadoras', grupo: 'higiene' },
+    { id: 'tempAgua', label: 'Temperatura da água de lavagem', grupo: 'higiene' },
+    { id: 'limpezaGeral', label: 'Limpeza geral', grupo: 'higiene' },
+    { id: 'funcionamentoGeral', label: 'Funcionamento geral', grupo: 'geral' },
+    { id: 'outros', label: 'Outros', grupo: 'geral' }
   ];
   function renderRevisaoItens(checked) {
     const container = $('revisao-itens');
     container.innerHTML = '';
+    let grupo = null;
     REVISAO_ITENS.forEach(item => {
+      if (item.grupo !== grupo) {
+        grupo = item.grupo;
+        const t = document.createElement('div');
+        t.className = 'check-grupo';
+        t.textContent = REVISAO_GRUPOS[grupo] || '';
+        container.appendChild(t);
+      }
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'check-chip';
@@ -17068,7 +17178,8 @@
   const maiusc = s => String(s || '').trim().toLocaleUpperCase('pt-BR');
   function margemGeral() { const m = pctLido($('om-margem').value); return margemValida(m) ? m : Number(config.margemPadrao); }
   function margemDoGrupo(g) { return margemValida(g.margem) ? g.margem : margemGeral(); }
-  function valorComMargem(g) { return arredOm(precoPelaFormula(g.valor, omOrigem, margemDoGrupo(g))); }
+  // grupo com preço final (kit da Auriverde): o valor já é o de venda, sem margem nem ICMS
+  function valorComMargem(g) { return g.precoFinal ? arredOm(g.valor) : arredOm(precoPelaFormula(g.valor, omOrigem, margemDoGrupo(g))); }
   function totalOm() { return arredOm(ordemaxAtual.grupos.reduce((s, g) => s + valorComMargem(g), 0)); }
   function pintarOrigemOm() { $('om-origem').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.o === omOrigem)); }
   function pintarItensOm() {
@@ -17081,10 +17192,16 @@
   // descrição certeira, tirada das peças do PDF: "ORDENHA CANALIZADA ORDEMAX 2X4", "COM MEDIÇÃO E EXTRAÇÃO",
   // "8 CONJUNTOS", "COM PROGRAMADOR DE LIMPEZA" e os equipamentos principais (bomba, motor, boiler…)
   function resumoOrdemax(o) {
-    if (o.tipo === 'conforto') return {
-      produto: maiusc(o.titulo.replace(/^Configura[cç][aã]o de\s*/i, '') + ' ' + (o.fornecedor || 'Ordemax')),
-      linhas: o.grupos.flatMap(g => g.itens.map(i => i.qtd + ' ' + (i.un === 'M' || i.un === 'M²' ? i.un + ' ' : '') + i.descricao.replace(/\s*\(([^)]*)\)\s*/g, (x, d) => d.length > 22 || /^(unidade|un|metro|por |r\$|valor p|opcional|pronto)/i.test(d) ? ' ' : x).replace(/\s+/g, ' ').trim())).map(maiusc).slice(0, LINHAS_MODELO - 1)
-    };
+    if (o.tipo === 'conforto') {
+      const linhas = o.grupos.flatMap(g => g.itens.map(i => i.qtd + ' ' + (i.un === 'M' || i.un === 'M²' ? i.un + ' ' : '') + i.descricao.replace(/\s*\(([^)]*)\)\s*/g, (x, d) => d.length > 22 || /^(unidade|un|metro|por |r\$|valor p|opcional|pronto)/i.test(d) ? ' ' : x).replace(/\s+/g, ' ').trim())).map(maiusc);
+      // o modelo tem 15 linhas de descrição: em vez de perder itens do fim, junta as duas linhas vizinhas mais curtas
+      while (linhas.length > LINHAS_MODELO - 1) {
+        let k = 0;
+        for (let j = 1; j < linhas.length - 1; j++) if (linhas[j].length + linhas[j + 1].length < linhas[k].length + linhas[k + 1].length) k = j;
+        linhas.splice(k, 2, linhas[k] + ' + ' + linhas[k + 1]);
+      }
+      return { produto: maiusc(o.titulo.replace(/^Configura[cç][aã]o de\s*/i, '') + ' ' + (o.fornecedor || 'Ordemax')), linhas };
+    }
     const itens = o.grupos.flatMap(g => g.itens.map(i => ({ ...i, grupo: g.nome, n: parseMoney(i.qtd) || 0 })));
     const acha = re => itens.find(i => re.test(i.descricao));
     const tem = re => itens.some(i => re.test(i.descricao) && i.n > 0);
@@ -17127,6 +17244,13 @@
       d.querySelector('.om-g-nome').textContent = g.nome;
       d.querySelector('.om-g-final').textContent = fmt(valorComMargem(g));
       d.querySelector('.om-g-sub').textContent = (o.fornecedor || 'Ordemax') + ' ' + fmt(g.valor) + ' · ' + (o.tipo === 'conforto' ? plural(g.itens.length, 'item', 'itens') : plural(g.itens.length, 'peça', 'peças'));
+      if (g.precoFinal) {
+        const pecas = g.itens.every(i => i.un === 'UN') ? g.itens.reduce((s, i) => s + (parseMoney(i.qtd) || 0), 0) : g.itens.length;
+        d.querySelector('.om-g-sub').textContent = 'Preço de venda Auriverde · ' + plural(pecas, 'peça', 'peças');
+        d.querySelector('.om-g-margem').hidden = true;
+        box.appendChild(d);
+        return;
+      }
       const inp = d.querySelector('input');
       inp.value = g.margem != null ? String(g.margem).replace('.', ',') : '';
       inp.placeholder = numTxt(margemGeral());
@@ -17140,7 +17264,10 @@
     $('om-conta').textContent = 'Mesma conta da Calculadora: (custo − ICMS ' + numTxt(aliquotaDaOrigem(omOrigem)) + '%) ÷ ' +
       div.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '. Margem padrão da Auriverde: ' + numTxt(config.margemPadrao) + '%.';
     $('om-totais').innerHTML = '<div><span></span><span></span></div><div><span>Diferença sobre o custo</span><span></span></div><div class="tot"><span>Total do orçamento</span><span></span></div>';
-    $('om-totais').querySelector('span').textContent = 'Custo ' + (o.fornecedor || 'Ordemax');
+    const soFinal = o.grupos.length && o.grupos.every(g => g.precoFinal);
+    $('om-totais').querySelector('span').textContent = soFinal ? 'Preços de venda Auriverde' : 'Custo ' + (o.fornecedor || 'Ordemax');
+    $('om-totais').children[1].hidden = !!soFinal;
+    if (soFinal) $('om-conta').textContent = 'Preços de venda da Auriverde: a margem e o ICMS não entram na conta.';
     const v = $('om-totais').querySelectorAll('div span:last-child');
     v[0].textContent = fmt(custo);
     v[1].textContent = fmt(arredOm(total - custo)) + (custo ? ' (' + fmtPct((total / custo - 1) * 100) + ')' : '');
@@ -17358,7 +17485,9 @@
     ['MANEJO', /scraper|trilho|co[cç]ador|comfort brush|brete|empurrador|rob[oô]|raspador|port[aã]o|port[oõ]es|saleiro|cocho|tronco|tracionador|escova|rodo de limpeza|feneiro|tanque para [aá]gua/i],
     ['INSTALAÇÃO', /instala[cç][aã]o/i]
   ];
-  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' }, lero: { nome: 'Lero Solar', url: 'tabelas/lero-solar.json', origem: 'fora' }, feilfer: { nome: 'Feilfer', url: 'tabelas/feilfer-2026-04.json', origem: 'dentro' } };
+  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' }, lero: { nome: 'Lero Solar', url: 'tabelas/lero-solar.json', origem: 'fora' }, feilfer: { nome: 'Feilfer', url: 'tabelas/feilfer-2026-04.json', origem: 'dentro' },
+    // kit montado pela Auriverde: os preços já são de venda (sem margem nem ICMS) e o kit já vem com as quantidades
+    kit: { nome: 'Kit aspersão Auriverde', rotulo: 'Kit aspersão', url: 'tabelas/kit-aspersao-auriverde.json', origem: 'dentro', precoFinal: true } };
   let ccForn = 'ordemax', ccFonte = '';
   const ccTabelas = {};
   let ccTabela = null, ccTipo = 'freestall', ccQtd = {}, ccGrupoSel = '', ccBusca = '', ccTamAtivo = {};
@@ -17372,7 +17501,7 @@
       const r = await fetch(FORNECEDORES_CONFORTO[f].url); if (!r.ok) throw new Error('HTTP ' + r.status);
       const tab = await r.json();
       ccTabelas[f] = { fonte: tab.fonte, itens: tab.itens.map((i, n) => ({ ...i, id: f + n,
-        grupo: (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0],
+        grupo: i.grupo || (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0],
         busca: normalizarBusca(i.descricao + ' ' + (i.codigo || '')) })) };
       const chaves = {};
       ccTabelas[f].itens.forEach(i => {
@@ -17448,9 +17577,9 @@
       b.type = 'button'; b.className = 'cz-forn' + (k === ccForn ? ' active' : ''); b.dataset.f = k;
       b.setAttribute('aria-pressed', k === ccForn);
       b.innerHTML = '<span class="cz-forn-nome"></span><span class="cz-forn-sub"></span><span class="cz-forn-sub cz-forn-n"></span>' + iconeHtml('check', 'cz-forn-ok');
-      b.querySelector('.cz-forn-nome').textContent = f.nome;
+      b.querySelector('.cz-forn-nome').textContent = f.rotulo || f.nome;
       const t = ccTabelas[k];
-      b.querySelector('.cz-forn-sub').textContent = f.origem === 'dentro' ? 'Dentro de SC' : 'Fora de SC';
+      b.querySelector('.cz-forn-sub').textContent = f.precoFinal ? 'Preço de venda' : f.origem === 'dentro' ? 'Dentro de SC' : 'Fora de SC';
       b.querySelector('.cz-forn-n').textContent = t ? plural(t.itens.length, 'item', 'itens') : ' ';
       b.addEventListener('click', () => trocarFornConforto(k));
       box.appendChild(b);
@@ -17637,6 +17766,9 @@
       });
     }
     const total = fmt(totalConforto());
+    const final = !!FORNECEDORES_CONFORTO[ccForn].precoFinal;
+    $('cz-tot-rot').textContent = final ? 'Total (preço de venda Auriverde)' : 'Total (custo do fornecedor)';
+    $('cz-tot-dica').textContent = final ? 'Preços de venda da Auriverde: o orçamento não soma margem nem ICMS.' : 'A margem e o ICMS entram no próximo passo.';
     $('cc-total').textContent = total;
     $('cz-barra-total').textContent = total;
     $('cz-barra-qtd').textContent = sel.length ? plural(sel.length, 'item', 'itens') + ' · ver resumo' : 'Nenhum item escolhido';
@@ -17656,6 +17788,8 @@
     if (ccTabela && ccTabela.some(i => ccQtd[i.id] > 0) && !(await confirmar('Trocar de fornecedor limpa os itens escolhidos. Trocar?', 'Trocar'))) return;
     try { await carregarFornecedor(f); } catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
     ccQtd = {};
+    // o kit já vem montado: cada item com a quantidade padrão
+    ccTabela.forEach(i => { if (Number(i.qtdPadrao) > 0 && !(ccTipo === 'compost' && (i.grupo === 'BAIAS' || i.grupo === 'FREE STALL'))) ccQtd[i.id] = Number(i.qtdPadrao); });
     renderConfigurador();
   }
   $('nav-conforto').addEventListener('click', abrirConfiguradorConforto);
@@ -17687,6 +17821,7 @@
     sel.forEach(i => {
       let g = grupos.find(x => x.nome === i.grupo);
       if (!g) grupos.push(g = { nome: i.grupo, valor: 0, margem: null, itens: [] });
+      if (FORNECEDORES_CONFORTO[ccForn].precoFinal) g.precoFinal = true;
       const q = ccQtd[i.id];
       g.valor = arredOm(g.valor + i.preco * q);
       g.itens.push({ codigo: i.codigo, descricao: i.descricao, qtd: String(q).replace('.', ','), un: i.unidade === 'm' ? 'M' : i.unidade === 'm2' ? 'M²' : 'UN' });
@@ -18655,16 +18790,52 @@
 
   // ---------- configuração (config/preventiva; só o Administrador altera) ----------
   const PREV_UNIDADES = { ordenhas: 'Nº de ordenhas', meses: 'Meses', horas: 'Horas de uso' };
+  // prazos do Relatório Técnico de Revisões
   const PREV_COMP_PADRAO = [
     { id: 'teteira-borracha', nome: 'Teteiras de borracha', unidade: 'ordenhas', vida: 2500, limiteMeses: 6, checklist: ['teteiras'] },
-    { id: 'teteira-silicone', nome: 'Teteiras de silicone', unidade: 'ordenhas', vida: 10000, limiteMeses: null, checklist: ['teteiras'] },
-    { id: 'reparo-pulsador', nome: 'Reparos de pulsador', unidade: 'meses', vida: 12, checklist: ['pulsadores'] },
-    { id: 'mangueira-curta', nome: 'Mangueiras curtas', unidade: 'meses', vida: 6, checklist: [] },
-    { id: 'mangueira-longa', nome: 'Mangueiras longas', unidade: 'meses', vida: 12, checklist: ['mangueiraLeite', 'mangueiraVacuoPrincipal', 'mangueiraVacuoDupla'] },
+    { id: 'teteira-silicone', nome: 'Teteiras de silicone', unidade: 'ordenhas', vida: 5000, limiteMeses: 12, checklist: ['teteiras'] },
+    { id: 'reparo-pulsador', nome: 'Reparos de pulsador e válvulas de extração', unidade: 'meses', vida: 30, checklist: ['pulsadores'] },
+    { id: 'mangueira-curta', nome: 'Mangueiras curtas de pulsação', unidade: 'meses', vida: 12, checklist: ['mangueiraCurta'] },
+    { id: 'mangueira-longa', nome: 'Mangueiras longas (leite e vácuo)', unidade: 'meses', vida: 12, checklist: ['mangueiraLeite', 'mangueiraVacuoPrincipal', 'mangueiraVacuoDupla'] },
+    { id: 'mangueira-pvc', nome: 'Mangueira de transferência de leite (PVC atóxica)', unidade: 'meses', vida: 12, checklist: [] },
     { id: 'oleo-bomba', nome: 'Óleo da bomba de vácuo', unidade: 'horas', vida: 500, checklist: ['oleoBomba'] },
-    { id: 'correia-bomba', nome: 'Correia da bomba', unidade: 'meses', vida: 12, checklist: [] },
-    { id: 'filtro-reguladora', nome: 'Filtro da reguladora', unidade: 'meses', vida: 6, checklist: ['reguladoraVacuo'] }
+    { id: 'correia-bomba', nome: 'Correia da bomba', unidade: 'meses', vida: 12, checklist: ['correias'] },
+    { id: 'filtro-reguladora', nome: 'Filtro da reguladora', unidade: 'meses', vida: 6, checklist: ['reguladoraVacuo'] },
+    { id: 'kit-regulador-servo', nome: 'Kit do regulador servo assistido', unidade: 'meses', vida: 30, checklist: ['kitReguladorServo'] },
+    { id: 'membrana-corte', nome: 'Membrana da válvula de corte', unidade: 'meses', vida: 30, checklist: ['membranaCorte'] },
+    { id: 'kit-medidor-mec', nome: 'Kit dos medidores de leite mecânicos', unidade: 'meses', vida: 30, checklist: ['medidores'] },
+    { id: 'kit-medidor-ele', nome: 'Kit dos medidores de leite eletrônicos', unidade: 'meses', vida: 24, checklist: ['medidores'] },
+    { id: 'kit-unidade-final', nome: 'Kit de vedação da tampa da unidade final', unidade: 'meses', vida: 30, checklist: ['unidadeFinal'] },
+    { id: 'kit-coletor', nome: 'Kit dos coletores e válvulas tip top', unidade: 'meses', vida: 30, checklist: ['coletor'] },
+    { id: 'mangueira-dosadora', nome: 'Mangueiras de silicone das bombas dosadoras', unidade: 'meses', vida: 12, checklist: ['dosadoras'] }
   ];
+  // A configuração salva no banco substitui o padrão. Quando o padrão muda, a versão sobe e a lista salva é atualizada
+  // só onde ainda está no valor antigo: prazo que o Administrador mudou à mão fica como está.
+  const PREV_PADRAO_VER = 2;
+  const PREV_PADRAO_V1 = {
+    'teteira-silicone': { vida: 10000, semLimite: true, nome: 'Teteiras de silicone' },
+    'reparo-pulsador': { vida: 12, nome: 'Reparos de pulsador' },
+    'mangueira-curta': { vida: 6, nome: 'Mangueiras curtas' },
+    'mangueira-longa': { nome: 'Mangueiras longas' }
+  };
+  function migrarCompsPadrao(lista, ver) {
+    if ((Number(ver) || 1) >= PREV_PADRAO_VER) return lista;
+    const out = lista.map(c => {
+      const p = PREV_COMP_PADRAO.find(x => x.id === c.id);
+      if (!p) return c;
+      const v1 = PREV_PADRAO_V1[c.id] || {};
+      const n = { ...c };
+      if (v1.vida != null && n.unidade === p.unidade && n.vida === v1.vida && (!v1.semLimite || !n.limiteMeses)) {
+        n.vida = p.vida;
+        if (v1.semLimite) n.limiteMeses = p.limiteMeses || null;
+      }
+      if (v1.nome && n.nome === v1.nome) n.nome = p.nome;
+      if (!n.checklist.length) n.checklist = normalizarComp(p).checklist;
+      return n;
+    });
+    PREV_COMP_PADRAO.forEach(p => { if (!out.some(c => c.id === p.id)) out.push(normalizarComp(p)); });
+    return out;
+  }
   const PREV_FAIXAS = ['vacTrab', 'vacColetor', 'taxa', 'relacao', 'faseA', 'faseB', 'faseC', 'faseD'];
   const PREV_REF_PADRAO = {
     vacTrab: { min: 40, max: 50 }, vacColetor: { min: 32, max: 42 },
@@ -18693,7 +18864,7 @@
   function aplicarConfigPrev(doc) {
     const c = prevPadrao();
     if (doc) {
-      if (Array.isArray(doc.componentes)) c.componentes = doc.componentes.filter(x => x && x.id).map(normalizarComp);
+      if (Array.isArray(doc.componentes)) c.componentes = migrarCompsPadrao(doc.componentes.filter(x => x && x.id).map(normalizarComp), doc.padraoVer);
       if (Number(doc.horasPorOrdenha) > 0) c.horasPorOrdenha = Number(doc.horasPorOrdenha);
       if (Number(doc.resfriamentoMax) > 0) c.resfriamentoMax = Number(doc.resfriamentoMax);
       const r = doc.ref || {};
@@ -19219,6 +19390,113 @@
   $('hm-plano-ver').addEventListener('click', () => { pvFiltro = 'proximas'; abrirPreventivas('home'); });
   $('nav-preventivas').addEventListener('click', () => abrirPreventivas('setor'));
   $('mais-preventivas').addEventListener('click', () => abrirPreventivas('mais'));
+
+  // ---------- calculadoras técnicas: conjuntos, vazão da bomba, tubulações e polia ----------
+  var ctVoltar = 'setor', ctSist = 'balde', ctVac = 50;
+  // vazão da bomba de vácuo em L/min: [conjuntos, vazão]; vale a primeira linha com conjuntos ≥ ao pedido
+  const CT_VAZAO = {
+    balde: [[1, 200], [2, 260], [3, 320], [4, 390], [5, 460], [6, 530], [7, 600], [8, 670], [10, 800], [12, 900]],
+    media: [[4, 690], [5, 730], [6, 770], [7, 820], [8, 860], [10, 1220], [12, 1300], [14, 1380], [16, 1460], [18, 1560]],
+    baixa: [[6, 820], [8, 900], [10, 990], [12, 1090], [14, 1450], [16, 1530], [18, 1610], [20, 1690]]
+  };
+  // fator de altitude: [até m, [40 kPa, 45 kPa, 50 kPa]]
+  const CT_ALTITUDE = [[300, [0.80, 0.89, 1.00]], [700, [0.84, 0.94, 1.07]], [1200, [0.88, 1.00, 1.16]], [1700, [0.93, 1.08, 1.28]], [2200, [1.00, 1.19, 1.45]]];
+  const CT_SIST_NOME = { balde: 'balde ao pé', media: 'linha média', baixa: 'linha baixa' };
+  // tubulações: [até conjuntos, { vácuo, leite, limpeza, pulsador }]
+  const CT_TUBOS = {
+    balde: [[2, { vacuo: '1.1/4"' }], [6, { vacuo: '1.1/2"' }], [12, { vacuo: '2"' }]],
+    media: [[8, { vacuo: '2"', leite: '52 mm', limpeza: '32 mm', pulsador: '2" fundo cego' }, 4], [18, { vacuo: '2"', leite: '63 mm', limpeza: '38 ou 52 mm', pulsador: '2" ou 3" fundo cego' }, 10]],
+    baixa: [[12, { vacuo: '3"', leite: '52 mm (anel)', limpeza: '38 mm', pulsador: '2" (anel)' }, 6], [20, { vacuo: '3"', leite: '63 mm (anel)', limpeza: '38 ou 52 mm', pulsador: '2" ou 3" (anel)' }, 14]]
+  };
+  function abrirCalcTec(voltar) {
+    if (currentProdutorId) closeProdutorDetail();
+    ctVoltar = voltar || 'setor';
+    showView('calctec');
+    calcTec();
+  }
+  $('back-calctec').addEventListener('click', () => {
+    if (ctVoltar === 'mais') abrirMais();
+    else if (ctVoltar === 'setor') abrirSetor('manutencao');
+    else showView('home');
+  });
+  $('nav-calctec').addEventListener('click', () => abrirCalcTec('setor'));
+  $('mais-calctec').addEventListener('click', () => abrirCalcTec('mais'));
+  function ctMostrar(id, linhas, aviso) {
+    const box = $(id);
+    box.innerHTML = '';
+    linhas.forEach(([rot, val, principal]) => {
+      const d = document.createElement('div');
+      d.className = 'dado' + (principal ? ' ct-principal' : '');
+      d.innerHTML = '<span class="dado-rot"></span><span class="dado-val"></span>';
+      d.querySelector('.dado-rot').textContent = rot;
+      d.querySelector('.dado-val').textContent = val;
+      box.appendChild(d);
+    });
+    if (aviso) { const a = document.createElement('div'); a.className = 'campo-dica alerta'; a.textContent = aviso; box.appendChild(a); }
+  }
+  const ctNum = id => parseMoney($(id).value);
+  function calcTec() {
+    // a) conjuntos
+    const vacas = ctNum('ct-vacas'), horas = ctNum('ct-horas'), vch = ctNum('ct-vch'), cresc = ctNum('ct-cresc');
+    let conjCalc = 0;
+    if (vacas > 0 && horas > 0 && vch > 0) {
+      const naConta = vacas * (1 + cresc / 100);
+      conjCalc = Math.ceil(naConta / (horas * vch) - 1e-9);
+      ctMostrar('ct-res-conj', [
+        ['Conjuntos', plural(conjCalc, 'conjunto', 'conjuntos'), true],
+        ['Vacas na conta', fmtN(naConta, 0) + (cresc ? ' (com ' + fmtN(cresc) + '% de crescimento)' : '')],
+        ['Capacidade', fmtN(conjCalc * vch * horas, 0) + ' vacas em ' + fmtN(horas) + ' h']
+      ]);
+    } else ctMostrar('ct-res-conj', [], 'Preencha vacas, horas de ordenha e vacas por conjunto por hora.');
+    // o campo de conjuntos da bomba acompanha o resultado acima até a pessoa digitar nele
+    if (conjCalc && !$('ct-conj').dataset.mexeu) $('ct-conj').value = String(conjCalc);
+
+    // b) vazão da bomba
+    const conj = Math.ceil(ctNum('ct-conj')), alt = Math.max(0, ctNum('ct-alt'));
+    const tab = CT_VAZAO[ctSist], linha = tab.find(([c]) => c >= conj);
+    const faixaAlt = CT_ALTITUDE.find(([ate]) => alt <= ate) || CT_ALTITUDE[CT_ALTITUDE.length - 1];
+    const fator = faixaAlt[1][[40, 45, 50].indexOf(ctVac)];
+    if (!(conj > 0)) ctMostrar('ct-res-bomba', [], 'Preencha o número de conjuntos.');
+    else if (!linha) ctMostrar('ct-res-bomba', [], 'Passou da tabela: na ' + CT_SIST_NOME[ctSist] + ' ela vai até ' + plural(tab[tab.length - 1][0], 'conjunto', 'conjuntos') + '. Consulte o fabricante da bomba.');
+    else ctMostrar('ct-res-bomba', [
+      ['Vazão da bomba', fmtN(linha[1] * fator, 0) + ' L/min', true],
+      ['Vazão da tabela', fmtN(linha[1], 0) + ' L/min (' + plural(linha[0], 'conjunto', 'conjuntos') + ', ' + CT_SIST_NOME[ctSist] + ')'],
+      ['Fator de altitude', fator.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' (até ' + fmtN(faixaAlt[0], 0) + ' m, ' + ctVac + ' kPa)']
+    ], alt > 2200 ? 'Acima de 2.200 m a tabela acaba: usei o fator de 2.200 m.' : '');
+
+    // c) tubulações
+    const regras = CT_TUBOS[ctSist], regra = regras.find(([ate]) => conj <= ate);
+    if (!(conj > 0)) ctMostrar('ct-res-tubo', [], 'Preencha o número de conjuntos na vazão da bomba.');
+    else if (!regra) ctMostrar('ct-res-tubo', [], 'Passou da tabela: na ' + CT_SIST_NOME[ctSist] + ' ela vai até ' + plural(regras[regras.length - 1][0], 'conjunto', 'conjuntos') + '.');
+    else {
+      const t = regra[1], inicio = regras[0][2], de = regra[2];
+      const aviso = inicio && conj < inicio ? 'A tabela da ' + CT_SIST_NOME[ctSist] + ' começa em ' + plural(inicio, 'conjunto', 'conjuntos') + ': confira com o projeto.'
+        : de && conj < de ? plural(conj, 'conjunto fica', 'conjuntos ficam') + ' entre as faixas da tabela: usei a de ' + de + ' a ' + regra[0] + '.' : '';
+      ctMostrar('ct-res-tubo', [
+        ['Vácuo', t.vacuo, true],
+        ...(t.leite ? [['Leite', t.leite], ['Limpeza', t.limpeza], ['Pulsador', t.pulsador]] : [])
+      ], aviso);
+    }
+
+    // d) polia
+    const rpmM = ctNum('ct-rpm-motor'), polM = ctNum('ct-pol-motor'), rpmB = ctNum('ct-rpm-bomba');
+    if (rpmM > 0 && polM > 0 && rpmB > 0) ctMostrar('ct-res-polia', [
+      ['Ø polia da bomba', fmtN(rpmM * polM / rpmB, 1) + ' mm', true],
+      ['Relação de transmissão', fmtN(rpmM / rpmB, 2) + ' : 1']
+    ]);
+    else ctMostrar('ct-res-polia', [], 'Preencha as rotações e o diâmetro da polia do motor.');
+  }
+  $('view-calctec').querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
+    if (inp.id === 'ct-conj') inp.dataset.mexeu = inp.value.trim() ? '1' : '';
+    calcTec();
+  }));
+  [['ct-sist', 's', v => { ctSist = v; }], ['ct-vac', 'v', v => { ctVac = Number(v); }]].forEach(([id, chave, por]) => {
+    $(id).querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      $(id).querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      por(b.dataset[chave]);
+      calcTec();
+    }));
+  });
   (PENDENCIAS_EXTRA.manutencao = PENDENCIAS_EXTRA.manutencao || []).push(() => {
     if (!podeVer('visitas')) return [];
     let venc = 0, breve = 0;
@@ -20476,7 +20754,7 @@
     const doc = {
       componentes: novo.componentes.map(c => ({ id: c.id, nome: c.nome, unidade: c.unidade, vida: c.vida, limiteMeses: c.limiteMeses || null, checklist: c.checklist, ativo: c.ativo })),
       horasPorOrdenha: novo.horasPorOrdenha, resfriamentoMax: novo.resfriamentoMax, ref: novo.ref, conforto: novo.conforto,
-      atualizadoPor: viewerId || null, atualizadoEm: Date.now()
+      padraoVer: PREV_PADRAO_VER, atualizadoPor: viewerId || null, atualizadoEm: Date.now()
     };
     const r = await gravar('set', 'config/preventiva', doc);
     if (r && r.recusado) return false;
@@ -21144,7 +21422,7 @@
 
   // ---------- emojis usados como ícone viram ícones de linha ----------
   // O emoji continua no texto (dentro do <desc> do ícone): quem lê textContent vê o mesmo de antes.
-  const EMOJI_ICONE = {"✓": "check", "✔": "check", "✗": "x", "✎": "pencil", "↪": "forward", "🛠": "wrench", "🔧": "wrench", "📞": "phone", "📊": "file-spreadsheet", "🗓": "calendar-check", "📅": "calendar", "🗺": "map", "🥛": "milk", "🧮": "calculator", "⚙": "settings", "📤": "send", "📥": "file-up", "⬇": "download", "📄": "file-text", "📍": "map-pin", "🔍": "search", "🐄": "tag", "💉": "syringe", "🔬": "microscope", "🔒": "lock", "🧪": "flask-conical", "🌀": "fan", "💧": "droplets", "🌡": "thermometer", "🛏": "bed-double", "💬": "message-circle", "⏳": "hourglass", "🔗": "link", "🎉": "party-popper", "👤": "user", "🥩": "beef", "🍼": "baby", "⏸": "pause", "⏱": "timer", "❄": "snowflake", "🔁": "repeat", "🚫": "ban", "🏆": "trophy", "🏅": "award", "📲": "share-2", "💾": "save", "⚠": "triangle-alert", "▲": "arrow-up", "▼": "arrow-down", "↑": "arrow-up", "↓": "arrow-down", "▾": "chevron-down", "⌄": "chevron-down", "⟳": "refresh-cw", "↻": "refresh-cw", "🛒": "shopping-cart", "▶": "play", "📷": "camera", "🖼": "image", "📸": "camera", "►": "play", "✅": "circle-check", "❌": "x", "⭐": "star", "📈": "trending-up", "📉": "trending-down", "🔔": "bell", "📝": "file-pen", "🏠": "house", "🚜": "tractor", "💰": "banknote", "📦": "package", "🧾": "receipt", "🕐": "clock", "⏰": "alarm-clock", "✏": "pencil", "ℹ": "info"};
+  const EMOJI_ICONE = {"✓": "check", "✔": "check", "✗": "x", "✎": "pencil", "↪": "forward", "🛠": "wrench", "🔧": "wrench", "📞": "phone", "📊": "file-spreadsheet", "🗓": "calendar-check", "📅": "calendar", "🗺": "map", "🥛": "milk", "🧮": "calculator", "📐": "gauge", "⚙": "settings", "📤": "send", "📥": "file-up", "⬇": "download", "📄": "file-text", "📍": "map-pin", "🔍": "search", "🐄": "tag", "💉": "syringe", "🔬": "microscope", "🔒": "lock", "🧪": "flask-conical", "🌀": "fan", "💧": "droplets", "🌡": "thermometer", "🛏": "bed-double", "💬": "message-circle", "⏳": "hourglass", "🔗": "link", "🎉": "party-popper", "👤": "user", "🥩": "beef", "🍼": "baby", "⏸": "pause", "⏱": "timer", "❄": "snowflake", "🔁": "repeat", "🚫": "ban", "🏆": "trophy", "🏅": "award", "📲": "share-2", "💾": "save", "⚠": "triangle-alert", "▲": "arrow-up", "▼": "arrow-down", "↑": "arrow-up", "↓": "arrow-down", "▾": "chevron-down", "⌄": "chevron-down", "⟳": "refresh-cw", "↻": "refresh-cw", "🛒": "shopping-cart", "▶": "play", "📷": "camera", "🖼": "image", "📸": "camera", "►": "play", "✅": "circle-check", "❌": "x", "⭐": "star", "📈": "trending-up", "📉": "trending-down", "🔔": "bell", "📝": "file-pen", "🏠": "house", "🚜": "tractor", "💰": "banknote", "📦": "package", "🧾": "receipt", "🕐": "clock", "⏰": "alarm-clock", "✏": "pencil", "ℹ": "info"};
   const RE_EMOJI = new RegExp('(' + Object.keys(EMOJI_ICONE).map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')️?', 'gu');
   const SEM_ICONE = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'OPTION', 'SELECT', 'TITLE', 'INPUT', 'NOSCRIPT']);
   function iconizarTexto(no) {
@@ -21188,7 +21466,7 @@
 
   // ---------- barra fina no topo das telas internas ----------
   const TITULO_TELA = {
-    admin: 'Administração', setor: () => (SETOR[setorAberto] || {}).nome || 'Setor', preventivas: 'Plano preventivo', ordens: 'Ordens de serviço',
+    admin: 'Administração', setor: () => (SETOR[setorAberto] || {}).nome || 'Setor', preventivas: 'Plano preventivo', calctec: 'Calculadoras técnicas', ordens: 'Ordens de serviço',
     mais: 'Mais', encaminhamentos: 'Tarefas', calc: 'Calculadora de margem', historico: 'Histórico de cálculos', produtores: 'Produtores',
     rota: 'Rota do dia', produtor: 'Produtor', vendas: 'Vendas', 'venda-form': 'Registrar venda', venda: 'Venda', leite: 'Média de leite',
     medias: 'Médias de leite', pmls: 'Mais Leite Saudável'
@@ -22108,11 +22386,11 @@
     pdAba = aba;
     showView('p-' + aba);
   }
-  // sem Qualidade do leite, a área do produtor fica com três abas
+  // sem Qualidade do leite, a área do produtor fica com quatro abas
   if (SO_MANUTENCAO) {
     const t = document.querySelector('.pd-tab[data-ptab="qual"]');
     if (t) t.remove();
-    $('pd-tabbar').style.gridTemplateColumns = 'repeat(3, 1fr)';
+    $('pd-tabbar').style.gridTemplateColumns = 'repeat(4, 1fr)';
   }
   document.querySelectorAll('.pd-tab').forEach(t => t.addEventListener('click', () => pdIr(t.dataset.ptab)));
   $('pd-inicio-chamado').addEventListener('click', () => { pdIr('cham'); pdAbrirChamado(); });
@@ -22152,6 +22430,7 @@
         if (pdAba === 'inicio') pdRenderInicio(p);
         else if (pdAba === 'prop') pdRenderProp(p);
         else if (pdAba === 'qual') pdRenderQual(p);
+        else if (pdAba === 'prat') pdRenderPraticas();
         else if (pdAba === 'cham') pdRenderChamados(p);
       } catch (e) { console.error(e); }
       const abertos = pdChamados().filter(v => ['aberta', 'agendada', 'andamento'].includes(statusOS(v))).length;
@@ -22195,6 +22474,62 @@
       .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
   }
 
+  // ---------- Boas práticas (conteúdo fixo) ----------
+  const PD_PRATICAS = [
+    ['milk', 'Rotina de ordenha', [
+      ['Antes de colocar o conjunto', [
+        'Teste da caneca: tire os 3 primeiros jatos numa caneca de fundo preto.',
+        'Pré-dipping e esperar 30 segundos.',
+        'Secar com papel toalha, um papel por teto, limpando bem a ponta.']],
+      ['Durante e depois', [
+        'Colocar o conjunto sem deixar entrar ar.',
+        'Não sobreordenhar.',
+        'Pós-dipping logo após a ordenha, cobrindo 2/3 do teto, com aplicador sem retorno.',
+        'Deixar a vaca em pé por pelo menos 40 minutos.']]
+    ]],
+    ['droplets', 'Limpeza da ordenhadeira', [
+      ['Antes da ordenha', [
+        'Sanitização: 50 ml do produto para 10 litros de água.',
+        'Circular de 5 a 10 minutos.',
+        'Drenar e aguardar 20 minutos.']],
+      ['Depois da ordenha', [
+        'Pré-enxágue com água a 35–40 °C.',
+        'Alcalino clorado: 25–50 ml para 10 litros, água a 70–80 °C. Circular de 5 a 8 minutos, sem a água baixar de 50 °C.',
+        'Drenar.',
+        'Ácido: 25–50 ml para 10 litros, água a 40–45 °C. Circular 10 minutos, descartar e não enxaguar.',
+        'Por fora: lavar com detergente neutro.']],
+      ['Quando usar', [
+        'Alcalino: todos os dias, depois de todas as ordenhas.',
+        'Ácido: 3 vezes por semana.',
+        'Cuidado com a água fria em dias frios.']]
+    ]],
+    ['wrench', 'Cuidados com o equipamento', [
+      ['Diário e semanal', [
+        'Óleo da bomba e vacuômetro: conferir todo dia.',
+        'Correias e drenos: conferir toda semana.',
+        'Depósito de segurança: se entrar leite ou água, lavar na hora e avisar o técnico.']],
+      ['Trocas', [
+        'Teteira de borracha: a cada 6 meses ou 2.500 ordenhas.',
+        'Teteira de silicone: a cada 12 meses ou 5.000 ordenhas.',
+        'Mangueiras: 1 vez por ano.',
+        'Revisão completa: a cada 6 meses, com o técnico da Auriverde.']]
+    ]]
+  ];
+  function pdRenderPraticas() {
+    const box = $('pd-prat-conteudo');
+    if (box.childElementCount) return;
+    PD_PRATICAS.forEach(([ic, tit, partes]) => {
+      const c = pdCard(ic, tit);
+      partes.forEach(([sub, itens]) => {
+        c.appendChild(pdEl('div', 'pd-subtit', sub));
+        const ol = pdEl('ol', 'pd-ol');
+        itens.forEach(t => ol.appendChild(pdEl('li', null, t)));
+        c.appendChild(ol);
+      });
+      box.appendChild(c);
+    });
+  }
+
   // ---------- Início ----------
   function pdRenderInicio(p) {
     $('pd-ola').textContent = 'Olá, ' + ((p.nome || '').split(' ')[0] || 'produtor') + '!';
@@ -22227,6 +22562,15 @@
       t.querySelector('span').textContent = (troca.cls === 'vencida' ? 'Troca vencida: ' : 'Próxima troca prevista: ') + troca.comp.nome.toLowerCase() +
         (troca.cls === 'vencida' ? ' (desde ' + fmtDate(troca.proxima) + ')' : ' em ' + fmtDate(troca.proxima) + ' (' + statusPvTxt(troca) + ')');
       c1.appendChild(t);
+    }
+    // revisão da ordenhadeira: última OS concluída com revisão + MESES_ATE_REVISAO
+    const ultRev = ultimaRevisaoDe(pdVisitas);
+    if (ultRev && ultRev.data) {
+      const prox = addMonthsISO(ultRev.data, MESES_ATE_REVISAO), atrasada = prox < hoje;
+      const r = pdEl('div', 'pd-troca ' + (atrasada ? 'pd-vencida' : 'pd-ok'));
+      r.innerHTML = iconeHtml(atrasada ? 'triangle-alert' : 'wrench') + '<span></span>';
+      r.querySelector('span').textContent = (atrasada ? 'Revisão da ordenhadeira atrasada desde ' : 'Próxima revisão da ordenhadeira: ') + fmtDate(prox) + ' (última em ' + fmtDate(ultRev.data) + ')';
+      c1.appendChild(r);
     }
     box.appendChild(c1);
 
