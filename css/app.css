@@ -2348,6 +2348,12 @@
   .empty-state[hidden] + .vazio-acao { display: none; }
   .empty-state .vazio-tit { display: block; margin-bottom: 6px; font-size: 17px; font-weight: 700; color: var(--ink); }
   .painel-ver-todas { margin: 0 0 10px; }
+  /* campos lado a lado nas janelas: o último campo da linha ficava sem margem e descia 14px em relação aos outros.
+     A margem passa para a linha inteira (mesmo jeito do .os-sec e do .ct-card). */
+  #modal-equip .rate-row, #modal-peca .rate-row, #modal-pa-comp .rate-row, #modal-pa-ref .rate-row,
+  #modal-comissao .rate-row, #modal-qualidade .rate-row, #modal-vaca .rate-row { margin-bottom: 14px; }
+  #modal-equip .rate-row > .field, #modal-peca .rate-row > .field, #modal-pa-comp .rate-row > .field, #modal-pa-ref .rate-row > .field,
+  #modal-comissao .rate-row > .field, #modal-qualidade .rate-row > .field, #modal-vaca .rate-row > .field { margin-bottom: 0; }
   .vazio-acao .btn-secondary { min-height: 44px; padding: 0 18px; width: auto; }
   .leite-ficha-sub.vazio-com-icone::before { content: ''; display: block; width: 40px; height: 40px; margin: 6px auto 8px; background: var(--ic-vazio);
     -webkit-mask: var(--m-inbox) center / contain no-repeat; mask: var(--m-inbox) center / contain no-repeat; }
