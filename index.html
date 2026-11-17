@@ -2847,6 +2847,8 @@
   #ini-atalhos .ini-atalho-ico { flex-shrink: 0; width: 26px !important; height: 26px !important; border-radius: 7px !important; }
   #ini-atalhos .ini-atalho-ico .ic { width: 16px !important; height: 16px !important; }
   #ini-atalhos .ini-atalho-nome { min-width: 0; }
+  /* com 3 ou mais atalhos não cabe ícone ao lado do nome: ícone em cima, nome embaixo */
+  #ini-atalhos.empilhado .ini-atalho { flex-direction: column !important; justify-content: center !important; text-align: center !important; gap: 4px !important; padding: 8px 4px !important; }
 
   /* aviso (Limp fora): linha fina */
   #view-home .hm-aviso { padding: 10px 12px; border-radius: var(--raio-p); font-size: 14px; margin-bottom: var(--gap-bloco); }
@@ -3388,8 +3390,15 @@
     <div class="nav-card compacto" id="nav-calc" role="button" tabindex="0" data-perm="calc:1">
       <span class="nav-art"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><rect x="8" y="5.5" width="8" height="4" rx="1"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.8h.01M12 16.8h.01M15.5 16.8h.01" stroke-width="2.6"/></svg></span>
       <div class="nav-text">
-        <div class="nav-card-title">Calculadora de margem</div>
+        <div class="nav-card-title">Calculadora de lucro</div>
         <div class="nav-card-sub">Preço de venda, ICMS e margem por origem</div>
+      </div>
+    </div>
+    <div class="nav-card compacto" id="nav-ordemax" role="button" tabindex="0" data-perm="calc:1">
+      <span class="nav-art"><svg class="ic" aria-hidden="true"><use href="#i-file-up"/></svg></span>
+      <div class="nav-text">
+        <div class="nav-card-title">Orçamento Ordemax</div>
+        <div class="nav-card-sub">Transforma o PDF do Configmax em orçamento da Auriverde</div>
       </div>
     </div>
     <div class="nav-card compacto" id="nav-vendas" role="button" tabindex="0" data-perm="vendas:1">
@@ -5198,10 +5207,6 @@
       <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-forward"/></svg></span>
       <span class="novo-txt"><span class="novo-nome">Encaminhar</span><span class="novo-sub" id="novo-enc-sub">Tarefa para outro setor ou pessoa</span></span>
     </button>
-    <button type="button" class="novo-op" id="novo-ordemax" data-perm="visitas:2">
-      <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-file-up"/></svg></span>
-      <span class="novo-txt"><span class="novo-nome">Orçamento Ordemax</span><span class="novo-sub">Importa o PDF do Configmax e aplica a margem</span></span>
-    </button>
     <input type="file" id="ordemax-arq" accept="application/pdf,.pdf" hidden>
     <button type="button" class="novo-op" id="novo-produtor" data-perm="produtores:2">
       <span class="novo-ico"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span>
@@ -6105,7 +6110,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.10.2';
+  const APP_VERSAO = '2026.11.17.1';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -12133,7 +12138,7 @@
     { id: 'veterinaria', nome: 'Veterinária', sub: 'Atendimentos, sanidade e reprodução', modulos: ['veterinaria'] },
     { id: 'qualidade', nome: 'Qualidade do leite', sub: 'Captação, média de leite e Mais Leite Saudável', modulos: ['leite', 'pmls'] },
     { id: 'nutricao', nome: 'Nutrição', sub: 'Dieta, cocho, escore corporal e forragem', modulos: ['nutricao'] },
-    { id: 'comercial', nome: 'Comercial', sub: 'Calculadora de margem e vendas', modulos: ['calc', 'vendas', 'comissoes'] }
+    { id: 'comercial', nome: 'Vendas', sub: 'Calculadora de lucro, orçamentos e vendas', modulos: ['calc', 'vendas', 'comissoes'] }
   ];
   const SETOR = Object.fromEntries(SETORES.map(s => [s.id, s]));
   const TODOS_SETORES = SETORES.map(s => s.id);
@@ -15082,10 +15087,12 @@
     { id: 'veterinaria', nome: 'Veterinária', sub: 'Animais, atendimentos, carência, sanidade e reprodução' },
     { id: 'nutricao', nome: 'Nutrição', sub: 'Lotes, dietas, custos e avaliações' },
     { id: 'qualidade', nome: 'Qualidade do leite', sub: 'Coletas, análises, média de leite e Mais Leite Saudável' },
-    { id: 'comercial', nome: 'Comercial', sub: 'Calculadora de margem, vendas e comissões' }
+    { id: 'comercial', nome: 'Vendas', sub: 'Calculadora de lucro, orçamentos, vendas e comissões' }
   ];
   const TUDO_DESLIGADO = Object.fromEntries(MODULOS_OPCIONAIS.map(m => [m.id, false]));
-  var modulosAtivos = SO_MANUTENCAO ? { ...TUDO_DESLIGADO } : null; // null = ainda não chegou: tudo ligado
+  // junto da Manutenção fica ligado só o setor de Vendas (calculadora, orçamentos e vendas)
+  const LIGADOS_COM_MANUTENCAO = { comercial: true };
+  var modulosAtivos = SO_MANUTENCAO ? { ...TUDO_DESLIGADO, ...LIGADOS_COM_MANUTENCAO } : null; // null = ainda não chegou: tudo ligado
   function setorDesligado(id) { return !!(modulosAtivos && modulosAtivos[id] === false); }
   function moduloDesligado(m) {
     if (!modulosAtivos) return false;
@@ -15096,7 +15103,7 @@
   }
   function aplicarModulos(doc) {
     const novo = {};
-    MODULOS_OPCIONAIS.forEach(m => { novo[m.id] = !SO_MANUTENCAO && !(doc && doc[m.id] === false); });
+    MODULOS_OPCIONAIS.forEach(m => { novo[m.id] = SO_MANUTENCAO ? !!LIGADOS_COM_MANUTENCAO[m.id] : !(doc && doc[m.id] === false); });
     const antes = JSON.stringify(modulosAtivos);
     modulosAtivos = novo;
     if (JSON.stringify(novo) === antes) return;
@@ -15110,14 +15117,9 @@
     }
     if (!$('view-admin').hidden) renderModulosAdmin();
   }
-  // com o app só de Manutenção não há módulo para ligar ou desligar, nem papel de vendedor;
-  // as "Configurações gerais" são só do Comercial e do PMLS, então também saem
-  if (SO_MANUTENCAO) {
-    $('adm-modulos-card').hidden = true;
-    $('adm-sec-config').hidden = true;
-    const op = document.querySelector('#mu-papel option[value="vendedor"]');
-    if (op) op.remove();
-  }
+  // com o app de Manutenção + Vendas não há módulo para ligar ou desligar; as "Configurações gerais"
+  // (ICMS e margem padrão da calculadora) e o papel de vendedor continuam, por causa de Vendas
+  if (SO_MANUTENCAO) $('adm-modulos-card').hidden = true;
   function renderModulosAdmin() {
     const box = $('adm-modulos');
     if (!box || SO_MANUTENCAO) return;
@@ -16845,7 +16847,7 @@
     });
   });
   $('om-fechar').addEventListener('click', () => { $('modal-ordemax').hidden = true; });
-  $('novo-ordemax').addEventListener('click', () => { fecharNovo(); $('ordemax-arq').value = ''; $('ordemax-arq').click(); });
+  $('nav-ordemax').addEventListener('click', () => { $('ordemax-arq').value = ''; $('ordemax-arq').click(); });
   $('ordemax-arq').addEventListener('change', async () => {
     const f = $('ordemax-arq').files && $('ordemax-arq').files[0];
     if (!f) return;
@@ -20581,13 +20583,14 @@
     const cand = [
       { nome: 'Preventiva', ic: 'calendar-check', cor: 'var(--s-manutencao)', ok: podeVer('visitas'), fn: () => { pvFiltro = 'proximas'; abrirPreventivas('home'); } },
       { nome: 'Rota do dia', ic: 'route', cor: 'var(--accent-txt)', ok: podeVer('produtores'), fn: () => abrirRota() },
-      { nome: 'Comercial', ic: 'shopping-bag', cor: 'var(--s-comercial)', ok: !setoresNaTela && podeVerSetor('comercial'), fn: () => abrirSetor('comercial') },
+      { nome: 'Vendas', ic: 'shopping-bag', cor: 'var(--s-comercial)', ok: !setoresNaTela && podeVerSetor('comercial'), fn: () => abrirSetor('comercial') },
       { nome: 'Qualidade', ic: 'milk', cor: 'var(--s-qualidade)', ok: !setoresNaTela && podeVerSetor('qualidade'), fn: () => abrirSetor('qualidade') },
       { nome: 'Veterinária', ic: 'stethoscope', cor: 'var(--s-veterinaria)', ok: !setoresNaTela && podeVerSetor('veterinaria'), fn: () => abrirSetor('veterinaria') },
       { nome: 'Nutrição', ic: 'wheat', cor: 'var(--s-nutricao)', ok: !setoresNaTela && podeVerSetor('nutricao'), fn: () => abrirSetor('nutricao') }
     ].filter(c => c.ok).slice(0, 4);
     at.innerHTML = '';
     at.style.setProperty('--n', cand.length);
+    at.classList.toggle('empilhado', cand.length >= 3);
     cand.forEach(c => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -22502,7 +22505,7 @@
     { id: 'veterinaria', nome: 'Veterinária', ic: 'stethoscope', cor: 'var(--s-veterinaria)' },
     { id: 'qualidade', nome: 'Qualidade do leite', ic: 'milk', cor: 'var(--s-qualidade)' },
     { id: 'nutricao', nome: 'Nutrição', ic: 'wheat', cor: 'var(--s-nutricao)' },
-    { id: 'comercial', nome: 'Comercial', ic: 'shopping-bag', cor: 'var(--s-comercial)' },
+    { id: 'comercial', nome: 'Vendas', ic: 'shopping-bag', cor: 'var(--s-comercial)' },
     { id: 'produtor', nome: 'Produtor', sub: 'A área do produtor, simulando um da lista', ic: 'tractor', cor: 'var(--accent-txt)' }
   ];
   const demoComoInfo = id => DEMO_COMO.find(x => x.id === id) || null;
