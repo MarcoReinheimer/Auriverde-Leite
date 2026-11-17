@@ -6125,7 +6125,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.2';
+  const APP_VERSAO = '2026.11.17.3';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -16811,11 +16811,27 @@
       ? 'Uma linha com o valor total e, embaixo, as linhas de descrição sem valor (como no orçamento do Anselmo).'
       : 'Uma linha para cada grupo da Ordemax, com o preço do grupo já com a margem.';
   }
-  function produtoPadrao(o) {
-    const t = (o.titulo || '').replace(/^Configura[cç][aã]o de\s*/i, '').replace(/\s*n[ºo°].*$/i, '').trim();
-    return maiusc((t || 'Ordenha') + ' Ordemax');
+  // descrição certeira, tirada das peças do PDF: "ORDENHA CANALIZADA ORDEMAX 2X4", "COM MEDIÇÃO E EXTRAÇÃO",
+  // "8 CONJUNTOS", "COM PROGRAMADOR DE LIMPEZA" e os equipamentos principais (bomba, motor, boiler…)
+  function resumoOrdemax(o) {
+    const itens = o.grupos.flatMap(g => g.itens.map(i => ({ ...i, grupo: g.nome, n: parseMoney(i.qtd) || 0 })));
+    const acha = re => itens.find(i => re.test(i.descricao));
+    const tem = re => itens.some(i => re.test(i.descricao) && i.n > 0);
+    const tipo = (o.titulo || '').replace(/^Configura[cç][aã]o de\s*/i, '').replace(/\s*n[ºo°].*$/i, '').trim() || 'Ordenha';
+    // conjuntos = pulsadores/coletores; em número par vira o leiaute "2 X metade" (8 conjuntos = 2X4)
+    const conj = Math.max(0, ...itens.filter(i => /pulsador|coletor/i.test(i.descricao)).map(i => i.n));
+    const leiaute = conj >= 4 && conj % 2 === 0 ? ' 2X' + conj / 2 : '';
+    const com = [tem(/medi[cç][aã]o|medidor/i) && 'MEDIÇÃO', tem(/extra[cç][aã]o|extrator|retirador/i) && 'EXTRAÇÃO'].filter(Boolean);
+    const linhas = [];
+    if (com.length) linhas.push('COM ' + com.join(' E '));
+    if (conj) linhas.push(conj + (conj === 1 ? ' CONJUNTO' : ' CONJUNTOS'));
+    if (tem(/programador/i)) linhas.push('COM PROGRAMADOR DE LIMPEZA');
+    [/bomba de v[aá]cuo/i, /^motor\b/i, /boiler|aquecedor/i, /^unidade final/i].forEach(re => { const i = acha(re); if (i) linhas.push(i.descricao); });
+    if (tem(/injetor de ar/i)) linhas.push('INJETOR DE AR');
+    return { produto: maiusc(tipo + ' Ordemax' + leiaute), linhas: linhas.map(maiusc).slice(0, LINHAS_MODELO - 1) };
   }
-  function descricaoPadrao(o) { return o.grupos.filter(g => g.valor > 0).map(g => g.nome).slice(0, LINHAS_MODELO - 1).join('\n'); }
+  function produtoPadrao(o) { return resumoOrdemax(o).produto; }
+  function descricaoPadrao(o) { return resumoOrdemax(o).linhas.join('\n'); }
   function itensDoOrcamento() {
     const o = ordemaxAtual;
     if (omItens === 'grupos') return o.grupos.filter(g => g.valor > 0).map(g => ({ produto: g.nome, qtd: 1, preco: valorComMargem(g) }));
@@ -16993,7 +17009,13 @@
     for (let i = 0; i < LINHAS_MODELO; i++) {
       const it = itens[i] || {}, y1 = 91.9 + i * H, yt = y1 + 4.1;
       for (let c = 0; c < 5; c++) caixa(X[c], y1, X[c + 1], y1 + H);
-      if (it.produto) meio(maiusc(it.produto), X[1], X[2], yt, 9);
+      if (it.produto) {
+        // texto longo diminui até caber na coluna do produto
+        let tam = 9;
+        fonte(tam);
+        while (tam > 6 && doc.getTextWidth(pdfTxt(maiusc(it.produto))) > X[2] - X[1] - 3) fonte(tam -= 0.5);
+        meio(maiusc(it.produto), X[1], X[2], yt, tam);
+      }
       const tem = it.qtd != null && it.preco != null;
       if (tem) {
         meio(String(it.qtd).replace('.', ','), X[2], X[3], yt, 9);
