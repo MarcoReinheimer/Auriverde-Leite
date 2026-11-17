@@ -1,0 +1,119 @@
+{
+ "fonte": "Kit aspersão e ventilação de pista — preços de venda Auriverde (orçamento SAC-029, abr/2025)",
+ "fornecedor": "Auriverde",
+ "data": "abr/2025",
+ "itens": [
+  {
+   "descricao": "BICO DE ASPERSÃO",
+   "preco": 88.99,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 25
+  },
+  {
+   "descricao": "ANTI GOTEJO",
+   "preco": 85.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 25
+  },
+  {
+   "descricao": "ABRAÇADEIRA 50MM",
+   "preco": 34.99,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 26
+  },
+  {
+   "descricao": "CANO 50MM",
+   "preco": 17.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 52
+  },
+  {
+   "descricao": "CURVA 50MM",
+   "preco": 15.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 10
+  },
+  {
+   "descricao": "TÊ 50MM",
+   "preco": 14.99,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 5
+  },
+  {
+   "descricao": "REGISTRO",
+   "preco": 20.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 6
+  },
+  {
+   "descricao": "BOMBA DE ASPERSÃO ALTA VAZÃO 3CV",
+   "preco": 3000.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 1
+  },
+  {
+   "descricao": "FILTRO DE BRONZE",
+   "preco": 279.9,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 1
+  },
+  {
+   "descricao": "MANÔMETRO",
+   "preco": 329.9,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 1
+  },
+  {
+   "descricao": "CONSOLE DE FIXAÇÃO",
+   "preco": 90.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 15
+  },
+  {
+   "descricao": "ABRAÇADEIRA INJETADA 50MM",
+   "preco": 45.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 15
+  },
+  {
+   "descricao": "CANO GALVANIZADO 1/2\"",
+   "preco": 42.3,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 6
+  },
+  {
+   "descricao": "ADAPTADOR 50MM",
+   "preco": 15.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 6
+  },
+  {
+   "descricao": "VÁLVULA DE RETENÇÃO",
+   "preco": 249.0,
+   "unidade": "un",
+   "grupo": "ASPERSÃO",
+   "qtdPadrao": 1
+  },
+  {
+   "descricao": "VENTILADOR MX COM INVERSOR 1,5CV",
+   "preco": 7200.0,
+   "unidade": "un",
+   "grupo": "VENTILAÇÃO",
+   "qtdPadrao": 4
+  }
+ ]
+}
