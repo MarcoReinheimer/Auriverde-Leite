@@ -5811,6 +5811,7 @@
     <div class="os-sec" id="os-sec-prev" hidden>
       <div class="os-sec-tit" id="os-prev-tit">Componentes da preventiva</div>
       <div class="check-chips" id="os-prev-chips"></div>
+      <div class="campo-dica alerta" id="os-prev-medidor" hidden>Informe o tipo de medidor no cadastro da ordenhadeira.</div>
       <div class="campo-dica" id="os-prev-dica"></div>
     </div>
 
@@ -15846,7 +15847,8 @@
   const EQ_TIPOS = {
     ordenhadeira: { nome: 'Ordenhadeira', ico: '🐄', campos: [
       { k: 'sistema', t: 'Tipo de ordenhadeira', op: ['Balde ao pé', 'Canalizada', 'Espinha de peixe', 'Lado a lado', 'Carrossel', 'Robô'] },
-      { k: 'conjuntos', t: 'Nº de conjuntos', num: 1 }] },
+      { k: 'conjuntos', t: 'Nº de conjuntos', num: 1 },
+      { k: 'medidor', t: 'Medidores de leite', op: ['Sem medidor', 'Mecânico', 'Eletrônico'] }] },
     bomba: { nome: 'Bomba de vácuo', ico: '⚙️', campos: [
       { k: 'vazao', t: 'Vazão (L/min)', num: 1 }, { k: 'potencia', t: 'Potência (cv)', num: 1, dec: 1 }] },
     pulsadores: { nome: 'Pulsadores', ico: '⏱️', campos: [
@@ -18942,13 +18944,38 @@
     if (conjCache[p.id] !== undefined) return conjCache[p.id] || null;
     return Number(p.conjuntosOrdenha) > 0 ? Number(p.conjuntosOrdenha) : null;
   }
+  // medidores de leite das ordenhadeiras: 'mec', 'ele', 'ambos', 'sem' ou null (não informado)
+  var medCache = {};    // pid → tipo de medidor lido dos equipamentos nesta sessão
+  function medidorDeEquip(lista) {
+    const ords = soInstalados((lista || []).filter(e => !e.arquivado && e.tipo === 'ordenhadeira' && e.situacao !== 'desativado'));
+    const tipos = new Set(ords.map(e => (e.extras && e.extras.medidor) || '').filter(Boolean));
+    const mec = tipos.has('Mecânico'), ele = tipos.has('Eletrônico');
+    if (mec && ele) return 'ambos';
+    if (mec) return 'mec';
+    if (ele) return 'ele';
+    return tipos.has('Sem medidor') ? 'sem' : null;
+  }
+  function medidorDoProdutor(p) {
+    if (!p) return null;
+    if (medCache[p.id] !== undefined) return medCache[p.id];
+    return p.medidorOrdenha || null;
+  }
+  // kit de medidor que não existe na ordenhadeira: sai do plano preventivo do produtor
+  function prevIgnorarAuto(p) {
+    const med = medidorDoProdutor(p);
+    if (med === 'mec') return { 'kit-medidor-ele': 'medidor mecânico' };
+    if (med === 'ele') return { 'kit-medidor-mec': 'medidor eletrônico' };
+    if (med === 'sem') return { 'kit-medidor-mec': 'sem medidor', 'kit-medidor-ele': 'sem medidor' };
+    return {};
+  }
   // chamada sempre que os equipamentos da ficha aberta mudam: guarda o total no produtor
   // (é isso que deixa o painel geral calcular sem abrir a ficha de cada um)
   function sincronizarConjuntos(pid, lista, confiavel) {
-    const n = conjuntosDeEquip(lista);
-    const mudou = conjCache[pid] !== n;
+    const n = conjuntosDeEquip(lista), med = medidorDeEquip(lista);
+    const mudou = conjCache[pid] !== n || medCache[pid] !== med;
     conjCache[pid] = n;
-    if (confiavel && dbRef && podeLancar('visitas')) atualizarResumoProdutor(pid, { conjuntosOrdenha: n });
+    medCache[pid] = med;
+    if (confiavel && dbRef && podeLancar('visitas')) atualizarResumoProdutor(pid, { conjuntosOrdenha: n, medidorOrdenha: med });
     if (mudou && pid === currentProdutorId) renderPreventivaFicha();
   }
   function usoDoProdutor(p) {
@@ -19033,11 +19060,13 @@
   function planoDoProdutor(p, lista) {
     const uso = usoDoProdutor(p);
     const trocas = ultimasTrocas(lista), ativas = osAtivasPorComp(lista);
-    const manual = (p && p.prevManual) || {}, ignorar = (p && p.prevIgnorar) || {};
+    const manual = (p && p.prevManual) || {}, ignorar = (p && p.prevIgnorar) || {}, auto = prevIgnorarAuto(p);
     const todos = compsAtivos().map(c => {
       let ultima = trocas[c.id] || null;
       if (manual[c.id] && (!ultima || manual[c.id] > ultima.data)) ultima = integUltimaManual(p, c.id, manual[c.id]);
-      const it = { comp: c, ultima, ignorado: !!ignorar[c.id], osAtiva: ativas[c.id] || null, proxima: null, dias: null, cls: 'semregistro', calculo: '', aviso: '' };
+      // "Não se aplica" marcado à mão vale mais que o automático do medidor
+      const ignAuto = ignorar[c.id] == null && auto[c.id] ? auto[c.id] : '';
+      const it = { comp: c, ultima, ignorado: ignorar[c.id] != null ? !!ignorar[c.id] : !!ignAuto, ignoradoAuto: ignAuto, osAtiva: ativas[c.id] || null, proxima: null, dias: null, cls: 'semregistro', calculo: '', aviso: '' };
       if (!ultima) return it;
       const pr = proximaTrocaComp(c, ultima.data, uso);
       it.proxima = pr.data; it.calculo = pr.calculo; it.aviso = pr.aviso;
@@ -19217,7 +19246,7 @@
     $('pvc-prod').textContent = p.nome || '';
     const st = $('pvc-status');
     st.className = 'pvc-status ' + (it.ignorado ? 'ign' : it.cls);
-    st.textContent = it.ignorado ? 'Não se aplica a este produtor'
+    st.textContent = it.ignorado ? 'Não se aplica a este produtor' + (it.ignoradoAuto ? ' (' + it.ignoradoAuto + ' no cadastro da ordenhadeira)' : '')
       : it.proxima ? 'Próxima troca: ' + fmtDate(it.proxima) + ' · ' + statusPvTxt(it)
       : it.cls === 'semregistro' ? 'Nenhuma troca registrada ainda' : 'Falta dado para calcular';
     const dados = $('pvc-dados');
@@ -19264,7 +19293,8 @@
     const p = produtoresTodos.find(x => x.id === pvcPid);
     const c = compPorId(pvcCompId);
     if (!p || !c) return;
-    const ign = !!(p.prevIgnorar || {})[c.id];
+    const man = (p.prevIgnorar || {})[c.id];
+    const ign = man != null ? !!man : !!prevIgnorarAuto(p)[c.id];
     updateProdutor(p.id, { prevIgnorar: { ...(p.prevIgnorar || {}), [c.id]: !ign } });
     registrarAtividade('editou', 'preventiva', p.id, (p.nome || '') + ' · ' + c.nome, ign ? 'voltou a aplicar' : 'não se aplica');
     $('modal-pv-comp').hidden = true;
@@ -19292,7 +19322,8 @@
           try {
             const l = await lerColecaoEstrita('produtores/' + p.id + '/equipamentos');
             conjCache[p.id] = conjuntosDeEquip(l);
-            if (podeLancar('visitas')) atualizarResumoProdutor(p.id, { conjuntosOrdenha: conjCache[p.id] });
+            medCache[p.id] = medidorDeEquip(l);
+            if (podeLancar('visitas')) atualizarResumoProdutor(p.id, { conjuntosOrdenha: conjCache[p.id], medidorOrdenha: medCache[p.id] });
           } catch (e) { /* sem conexão: tenta outra vez depois */ }
         }));
       }
@@ -19686,11 +19717,15 @@
     const ign = (p && p.prevIgnorar) || {};
     const plano = p ? planoDoProdutor(p, osDoProdutorPrev(p.id).filter(o => !osBase || o.id !== osBase.id)) : null;
     const comHist = new Set(plano ? plano.itens.filter(i => i.ultima).map(i => i.comp.id) : []);
+    const med = medidorDoProdutor(p);
     const out = new Set();
     ids.forEach(item => {
       let cands = compsAtivos().filter(c => c.checklist.includes(item) && !ign[c.id]);
+      // "Kit dos medidores": com o tipo no cadastro da ordenhadeira, fica só com o kit dele
+      const certo = item === 'medidores' && (med === 'mec' || med === 'ele') ? cands.filter(c => c.id === 'kit-medidor-' + med) : [];
+      if (certo.length) cands = certo;
       // "Teteiras" serve para borracha e silicone: fica com a que o produtor já usa
-      if (cands.length > 1 && cands.some(c => comHist.has(c.id))) cands = cands.filter(c => comHist.has(c.id));
+      else if (cands.length > 1 && cands.some(c => comHist.has(c.id))) cands = cands.filter(c => comHist.has(c.id));
       cands.forEach(c => out.add(c.id));
     });
     return [...out].filter(id => !osCompsBloq.has(id));
@@ -19708,6 +19743,8 @@
     const box = $('os-prev-chips');
     box.innerHTML = '';
     const p = produtores.find(x => x.id === currentProdutorId);
+    const med = medidorDoProdutor(p);
+    $('os-prev-medidor').hidden = !(checklistLigado().includes('medidores') && (med === null || med === 'sem'));
     const ign = (p && p.prevIgnorar) || {};
     const lista = compsAtivos().filter(c => !ign[c.id] || osCompsSel.includes(c.id)).map(c => [c.id, c.nome]);
     const nomesBase = (osBase && osBase.componentesNomes) || {};
