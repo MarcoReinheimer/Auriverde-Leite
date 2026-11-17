@@ -16455,8 +16455,9 @@
     $('modal-visita-title').textContent = existing ? 'Ordem de serviço' : 'Nova ordem de serviço';
     $('os-numero').textContent = existing ? numOS(existing.numero) : 'OS ' + String(proximoNumeroOS()).padStart(4, '0');
     $('os-form-prod').textContent = (p && p.nome) || '';
-    osStatus = existing ? statusOS(existing) : (opts.status || 'concluida');
-    osTipo = existing ? tipoOS(existing) : (opts.tipo || (opts.status === 'aberta' ? 'corretiva' : 'preventiva'));
+    // OS nova começa agendada para hoje; quem já vem de um fluxo (chamado, preventiva) traz a situação e o tipo
+    osStatus = existing ? statusOS(existing) : (opts.status || 'agendada');
+    osTipo = existing ? tipoOS(existing) : (opts.tipo || (opts.status === 'aberta' ? 'corretiva' : 'visita'));
     novaVisitaCategoria = existing ? (existing.categoria || 'ordenha') : (opts.categoria || 'ordenha');
     osUrgencia = existing ? (existing.urgencia || 'normal') : (opts.urgencia || 'normal');
     $('os-motivo').value = existing ? (existing.motivo || '') : (opts.motivo || '');
@@ -16498,7 +16499,7 @@
     $('modal-visita').querySelector('.modal-sheet').scrollTop = 0;
     setTimeout(() => { if (!osAssinaturaAtual) window.limparAssinatura(); }, 60);
   }
-  $('add-visita-btn').addEventListener('click', () => openVisitaModal(null, { status: 'concluida' }));
+  $('add-visita-btn').addEventListener('click', () => openVisitaModal(null));
   $('visita-cancel').addEventListener('click', () => { editingVisitaId = null; osBase = null; $('modal-visita').hidden = true; });
   $('os-equip-problema').addEventListener('change', () => {
     osEquipProblema = $('os-equip-problema').value;
@@ -16537,6 +16538,11 @@
     if (st === 'concluida' && !descricao && !defeito && !marcouItens && temperaturaLeite == null && !fotosForm.length && !pecas.length && !extrasOS.temAlgo) {
       avisar(categoria === 'ordenha' ? 'Marque o que foi feito, descreva o serviço ou lance as peças.' : categoria === 'resfriador' ? 'Informe a temperatura do leite ou descreva o serviço feito.' : 'Descreva o serviço feito.');
       return;
+    }
+    // "✓ Concluir OS": a OS ainda não está concluída no banco, então confirma antes
+    if (st === 'concluida' && (!osBase || statusOS(osBase) !== 'concluida')) {
+      if (!(await confirmar('Concluir esta OS agora?', 'Concluir OS'))) return;
+      if (currentProdutorId !== pid || $('modal-visita').hidden) return;
     }
     // Limp fora do padrão: avisa e oferece abrir a OS corretiva (salvar acontece nos dois casos)
     let limpAviso = null, abrirCorretiva = false;
