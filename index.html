@@ -3017,6 +3017,17 @@
   .om-g-margem { display: inline-flex; align-items: center; justify-self: end; gap: 2px; font-size: 12.5px; color: var(--ink-soft); }
   .om-g-margem input { width: 64px; min-height: 32px !important; padding: 4px 6px !important; font-size: 14px !important; text-align: right; border-radius: 8px !important; }
   .om-g-margem input.proprio { border-color: var(--accent) !important; color: var(--accent-txt); font-weight: 600; }
+  .cc-grupo { margin: 0 0 8px; border: 1px solid var(--line); border-radius: var(--raio-p); background: var(--surface); }
+  .cc-grupo > summary { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; font-weight: 600; font-size: 14px; }
+  .cc-grupo > summary .cc-g-nome { flex: 1; }
+  .cc-grupo > summary .cc-g-sub { font-size: 12.5px; color: var(--accent-txt); font-weight: 600; }
+  .cc-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 9px 12px; border-top: 1px solid var(--line); }
+  .cc-i-nome { font-size: 13.5px; font-weight: 500; overflow-wrap: anywhere; }
+  .cc-i-preco { grid-column: 1; font-size: 12px; color: var(--ink-soft); }
+  .cc-passo { grid-row: 1 / span 2; grid-column: 2; display: inline-flex; align-items: center; gap: 4px; }
+  .cc-passo button { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--ink); font-size: 18px; font-weight: 600; cursor: pointer; }
+  .cc-passo input { width: 52px; min-height: 34px !important; padding: 4px !important; text-align: center; font-size: 15px !important; border-radius: 8px !important; }
+  .cc-item.on .cc-i-nome { color: var(--accent-txt); font-weight: 600; }
   .om-form .om-acoes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
   .om-form .om-acoes button { padding-left: 4px; padding-right: 4px; }
   .om-form .modal-actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
@@ -3403,6 +3414,13 @@
       <div class="nav-text">
         <div class="nav-card-title">Orçamento Ordemax</div>
         <div class="nav-card-sub">Transforma o PDF do Configmax em orçamento da Auriverde</div>
+      </div>
+    </div>
+    <div class="nav-card compacto" id="nav-conforto" role="button" tabindex="0" data-perm="calc:1">
+      <span class="nav-art"><svg class="ic" aria-hidden="true"><use href="#i-fan"/></svg></span>
+      <div class="nav-text">
+        <div class="nav-card-title">Configurador Conforto Animal</div>
+        <div class="nav-card-sub">Free stall ou compost barn: ventilação, contenção e o resto, direto em orçamento</div>
       </div>
     </div>
     <div class="nav-card compacto" id="nav-vendas" role="button" tabindex="0" data-perm="vendas:1">
@@ -5142,6 +5160,28 @@
   </div>
 </div>
 
+<!-- MODAL: configurador de Conforto Animal (itens da tabela da Ordemax) -->
+<div class="modal-backdrop" id="modal-conforto" hidden>
+  <div class="modal-sheet modal-grande om-form">
+    <h2>Configurador Conforto Animal</h2>
+    <div class="om-sub">Tabela de preços Ordemax de 02/06/2025</div>
+    <div class="os-sec">
+      <div class="os-sec-tit">Tipo do galpão</div>
+      <div class="field"><div class="toggle" id="cc-tipo"><button type="button" data-t="freestall">Free Stall</button><button type="button" data-t="compost">Compost Barn</button></div></div>
+    </div>
+    <div class="os-sec">
+      <div class="os-sec-tit">Itens</div>
+      <div class="campo-dica">Toque num grupo para abrir e ajuste a quantidade de cada item.</div>
+      <div id="cc-grupos"></div>
+      <div class="os-totais"><div class="tot"><span>Total (custo Ordemax)</span><span id="cc-total">R$ 0,00</span></div></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="cc-fechar">Fechar</button>
+      <button type="button" class="btn-primary" id="cc-continuar">Continuar para o orçamento</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="modal-escolher-produtor" hidden>
   <div class="modal-sheet">
     <h2 id="mep-titulo">Escolha o produtor</h2>
@@ -6127,7 +6167,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.5';
+  const APP_VERSAO = '2026.11.17.6';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -16865,6 +16905,10 @@
   // descrição certeira, tirada das peças do PDF: "ORDENHA CANALIZADA ORDEMAX 2X4", "COM MEDIÇÃO E EXTRAÇÃO",
   // "8 CONJUNTOS", "COM PROGRAMADOR DE LIMPEZA" e os equipamentos principais (bomba, motor, boiler…)
   function resumoOrdemax(o) {
+    if (o.tipo === 'conforto') return {
+      produto: maiusc(o.titulo.replace(/^Configura[cç][aã]o de\s*/i, '') + ' Ordemax'),
+      linhas: o.grupos.flatMap(g => g.itens.map(i => i.qtd + ' ' + (i.un === 'M' ? 'M ' : '') + i.descricao.replace(/\s*\(.*?\)\s*/g, ' ').trim())).map(maiusc).slice(0, LINHAS_MODELO - 1)
+    };
     const itens = o.grupos.flatMap(g => g.itens.map(i => ({ ...i, grupo: g.nome, n: parseMoney(i.qtd) || 0 })));
     const acha = re => itens.find(i => re.test(i.descricao));
     const tem = re => itens.some(i => re.test(i.descricao) && i.n > 0);
@@ -17118,6 +17162,90 @@
   $('om-baixar').addEventListener('click', () => saidaOrdemax('pdf'));
   $('om-excel').addEventListener('click', () => saidaOrdemax('excel'));
   $('om-enviar').addEventListener('click', () => saidaOrdemax('enviar'));
+
+  // ---------- Configurador de Conforto Animal (tipo Configmax) ----------
+  // Usa a tabela de preços de Conforto Animal da Ordemax (tabelas/): escolhe o tipo do galpão e a quantidade
+  // de cada item; o orçamento segue o mesmo caminho do Orçamento Ordemax (margem da Calculadora, modelo SAC-029).
+  const GRUPOS_CONFORTO = [
+    ['VENTILAÇÃO', /ventilador|quadro de comando/i],
+    ['CONTENÇÃO', /conten[cç][aã]o|canzil|barra frontal|p[eé] direito|fechamento|escada|cantoneira/i],
+    ['BAIAS', /\bbaia\b/i],
+    ['BEBEDOUROS', /bebedouro|cap[eé]la/i],
+    ['ASPERSÃO', /aspers|tubula[cç][aã]o/i],
+    ['MANEJO', /scraper|trilho|co[cç]ador/i],
+    ['INSTALAÇÃO', /instala[cç][aã]o/i]
+  ];
+  let ccTabela = null, ccTipo = 'freestall', ccQtd = {};
+  async function abrirConfiguradorConforto() {
+    if (!ccTabela) {
+      try {
+        const r = await fetch(TABELA_CONFORTO); if (!r.ok) throw new Error('HTTP ' + r.status);
+        ccTabela = (await r.json()).itens.map((i, n) => ({ ...i, id: 'c' + n, grupo: (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0] }));
+      } catch (e) { avisar('Não consegui abrir a tabela de Conforto Animal: ' + (e && e.message ? e.message : e)); return; }
+    }
+    renderConfigurador();
+    $('modal-conforto').hidden = false;
+    $('modal-conforto').querySelector('.modal-sheet').scrollTop = 0;
+  }
+  function totalConforto() { return arredOm(ccTabela.reduce((s, i) => s + i.preco * (ccQtd[i.id] || 0), 0)); }
+  function renderConfigurador() {
+    $('cc-tipo').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.t === ccTipo));
+    const box = $('cc-grupos');
+    box.innerHTML = '';
+    [...GRUPOS_CONFORTO.map(g => g[0]), 'OUTROS'].filter(g => !(ccTipo === 'compost' && g === 'BAIAS')).forEach(g => {
+      const itens = ccTabela.filter(i => i.grupo === g);
+      if (!itens.length) return;
+      const det = document.createElement('details');
+      det.className = 'cc-grupo';
+      det.open = itens.some(i => ccQtd[i.id] > 0);
+      det.innerHTML = '<summary><span class="cc-g-nome"></span><span class="cc-g-sub"></span></summary>';
+      det.querySelector('.cc-g-nome').textContent = g.charAt(0) + g.slice(1).toLocaleLowerCase('pt-BR');
+      const sub = det.querySelector('.cc-g-sub');
+      const pintarSub = () => { const v = itens.reduce((s, i) => s + i.preco * (ccQtd[i.id] || 0), 0); sub.textContent = v ? fmt(v) : ''; $('cc-total').textContent = fmt(totalConforto()); };
+      itens.forEach(i => {
+        const d = document.createElement('div');
+        d.className = 'cc-item';
+        d.innerHTML = '<span class="cc-i-nome"></span><span class="cc-i-preco"></span><span class="cc-passo"><button type="button" aria-label="Menos">−</button><input type="text" inputmode="decimal" aria-label="Quantidade"><button type="button" aria-label="Mais">+</button></span>';
+        d.querySelector('.cc-i-nome').textContent = i.descricao;
+        d.querySelector('.cc-i-preco').textContent = fmt(i.preco) + (i.unidade === 'm' ? ' por metro' : ' cada') + (i.codigo ? ' · ' + i.codigo : '');
+        const inp = d.querySelector('input');
+        const mostrar = () => { const q = ccQtd[i.id] || 0; inp.value = q ? String(q).replace('.', ',') : ''; inp.placeholder = '0'; d.classList.toggle('on', q > 0); pintarSub(); };
+        const por = (q) => { ccQtd[i.id] = Math.max(0, Math.round(q * 100) / 100); mostrar(); };
+        const [menos, mais] = d.querySelectorAll('button');
+        menos.addEventListener('click', () => por((ccQtd[i.id] || 0) - 1));
+        mais.addEventListener('click', () => por((ccQtd[i.id] || 0) + 1));
+        inp.addEventListener('change', () => por(parseMoney(inp.value) || 0));
+        mostrar();
+        det.appendChild(d);
+      });
+      pintarSub();
+      box.appendChild(det);
+    });
+    $('cc-total').textContent = fmt(totalConforto());
+  }
+  $('nav-conforto').addEventListener('click', abrirConfiguradorConforto);
+  $('cc-tipo').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    ccTipo = b.dataset.t;
+    if (ccTipo === 'compost') ccTabela.filter(i => i.grupo === 'BAIAS').forEach(i => { delete ccQtd[i.id]; });
+    renderConfigurador();
+  }));
+  $('cc-fechar').addEventListener('click', () => { $('modal-conforto').hidden = true; });
+  $('cc-continuar').addEventListener('click', () => {
+    const sel = ccTabela.filter(i => ccQtd[i.id] > 0);
+    if (!sel.length) { avisar('Escolha pelo menos um item.'); return; }
+    const grupos = [];
+    sel.forEach(i => {
+      let g = grupos.find(x => x.nome === i.grupo);
+      if (!g) grupos.push(g = { nome: i.grupo, valor: 0, margem: null, itens: [] });
+      const q = ccQtd[i.id];
+      g.valor = arredOm(g.valor + i.preco * q);
+      g.itens.push({ codigo: i.codigo, descricao: i.descricao, qtd: String(q).replace('.', ','), un: i.unidade === 'm' ? 'M' : 'UN' });
+    });
+    const o = { tipo: 'conforto', titulo: 'Configuração de Conforto Animal ' + (ccTipo === 'compost' ? 'Compost Barn' : 'Free Stall'),
+      cliente: '', endereco: '', pagamento: '', obs: '', grupos, total: arredOm(grupos.reduce((s, g) => s + g.valor, 0)), validade: 0 };
+    $('modal-conforto').hidden = true;
+    abrirOrdemax(o, 'Tabela Conforto Animal 02/06/2025');
+  });
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
   $('os-chamado').addEventListener('click', () => abrirChamado({}));
