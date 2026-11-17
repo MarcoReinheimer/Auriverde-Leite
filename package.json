@@ -1,0 +1,12 @@
+{
+  "name": "auriverde-leite",
+  "private": true,
+  "description": "Gera as versões compactadas do app (css/app.min.css e js/app.min.js). Ver README.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2"
+  }
+}

@@ -12,7 +12,10 @@ App instalável (PWA) hospedado no GitHub Pages, com banco compartilhado no Supa
 ## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` | o app |
+| `index.html` | o app (as telas); carrega o CSS e o JS abaixo |
+| `css/app.css`, `js/app.js` | o visual e a programação do app: **é aqui que se mexe no código** |
+| `css/app.min.css`, `js/app.min.js` | as mesmas coisas compactadas (mais leves no 3G): é o que o app usa; geradas pelo `npm run build` |
+| `package.json`, `build.mjs` | o comando `npm run build` (ver "Mudou o código?" abaixo) |
 | `config.js` | **endereço e chave do seu Supabase** (preencher) |
 | `supabase.sql` | cria o banco e as regras de acesso (rodar uma vez no Supabase) |
 | `claude-supabase.js` | liga o app ao Supabase (login, banco, tempo real) |
@@ -25,6 +28,16 @@ App instalável (PWA) hospedado no GitHub Pages, com banco compartilhado no Supa
 | `emails-supabase.md` | e-mails do login em português (confirmação de cadastro e troca de senha), para colar no Supabase |
 
 Ao trocar um arquivo de `img/` ou `fontes/`, aumente a `VERSAO` no `sw.js`: esses arquivos ficam guardados no celular e só são baixados de novo quando a versão muda.
+
+## Mudou o código? Gere as versões compactadas
+O app usa `css/app.min.css` e `js/app.min.js`. Depois de mexer em `css/app.css` ou `js/app.js`:
+1. **Só na primeira vez**, no computador: instale o [Node.js](https://nodejs.org) e, na pasta do app, rode `npm install` (baixa o esbuild, que compacta os arquivos).
+2. Troque a `APP_VERSAO` no começo do `js/app.js` (ex.: `2026.11.17.12` → `2026.11.17.13`).
+3. Rode `npm run build`. Ele gera as duas `.min` e coloca a versão nova no `?v=` dos links do `index.html`, para o celular não misturar arquivo novo com velho.
+4. Suba tudo no GitHub (inclusive as `.min` e o `index.html`).
+
+Se o `npm install` avisar de "install-scripts" do esbuild, pode ignorar: o build funciona assim mesmo.
+A pasta `node_modules/` que o `npm install` cria fica só no computador (não vai para o GitHub).
 
 ## Configuração (uma vez)
 1. Supabase → **SQL Editor** → **New query**: cole o `supabase.sql`, troque `SEU_EMAIL_AQUI` pelo e-mail do dono e clique **Run**.
