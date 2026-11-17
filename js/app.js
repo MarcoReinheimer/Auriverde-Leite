@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.14';
+  const APP_VERSAO = '2026.11.17.17';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -559,9 +559,14 @@
       chipRow.appendChild(chip);
     });
   }
-  function addBrand(name, origemVal) {
+  // grava a marca e devolve o id (o "+" das marcas e o catálogo, nas vendas, usam esta)
+  function criarMarca(name, origemVal) {
     const id = novoId();
     gravar('set', 'empresas/' + id, { name, origem: origemVal, createdAt: Date.now(), criadoPor: viewerId || null });
+    return id;
+  }
+  function addBrand(name, origemVal) {
+    const id = criarMarca(name, origemVal);
     selectedBrandId = id;
     setOrigem(origemVal);
     renderBrands();
@@ -2812,7 +2817,10 @@
       </div>
       <div class="field">
         <label for="${pre}produto">Produto</label>
-        <input type="text" id="${pre}produto" class="it-produto" list="lista-produtos-vendidos" placeholder="Ex: Teteira de silicone" autocomplete="off">
+        <div class="cat-campo">
+          <input type="text" id="${pre}produto" class="it-produto" list="lista-produtos-vendidos" placeholder="Ex: Teteira de silicone" autocomplete="off">
+          <button type="button" class="btn-secondary cat-btn it-catalogo"><svg class="ic" aria-hidden="true"><use href="#i-package"/></svg>Catálogo</button>
+        </div>
       </div>
       <div class="field">
         <label for="${pre}marca">Marca / fornecedor</label>
@@ -2900,6 +2908,40 @@
     });
     q('.it-preco').addEventListener('blur', e => { if (it.precoUnit) e.target.value = fmtMoedaCampo(it.precoUnit); });
     q('.it-recalc').addEventListener('click', () => { it.precoManual = false; atualizar(); });
+    // catálogo geral: produto, marca, origem e custo da tabela; o preço sai pela fórmula da margem
+    q('.it-catalogo').addEventListener('click', () => abrirCatalogo(c => {
+      it.produto = nomeItemCatalogo(c);
+      q('.it-produto').value = it.produto;
+      if (c.precoFinal) {
+        // kit Auriverde: o preço da tabela já é o de venda; o custo fica em branco
+        it.custoUnit = 0;
+        it.precoUnit = r2(c.preco);
+        it.precoManual = true;
+        it.marcaId = '';   // não fica a marca de um item escolhido antes
+        opcoesMarcas(q('.it-marca'), '');
+        q('.it-custo').value = '';
+        q('.it-preco').value = fmtMoedaCampo(it.precoUnit);
+        avisoRapido('Preço de venda da Auriverde: o custo fica em branco.');
+      } else {
+        let marca = marcaComNome(c.fornecedor), id = marca ? marca.id : '';
+        if (!marca && c.fornecedor && nivel('calc') >= 2) id = criarMarca(c.fornecedor, c.origem);
+        it.marcaId = id;
+        opcoesMarcas(q('.it-marca'), id);
+        // marca acabada de criar: ainda não chegou na lista, entra na hora
+        if (id && q('.it-marca').value !== id) {
+          const o = document.createElement('option');
+          o.value = id; o.textContent = c.fornecedor + (c.origem === 'fora' ? ' · fora de SC' : ' · dentro de SC');
+          q('.it-marca').appendChild(o); q('.it-marca').value = id;
+        }
+        it.origem = c.origem === 'fora' ? 'fora' : 'dentro';
+        pintarOrigem();
+        it.custoUnit = c.preco > 0 ? r2(c.preco) : 0;
+        q('.it-custo').value = it.custoUnit ? fmtMoedaCampo(it.custoUnit) : '';
+        it.precoManual = false;
+        if (!(c.preco > 0)) avisoRapido('Este item está sem preço na tabela: preencha o custo.');
+      }
+      atualizar();
+    }));
     q('.item-remover').addEventListener('click', () => {
       if (formItens.length === 1) { formItens = [novoItem()]; } else { formItens.splice(i, 1); }
       renderItensVenda();
@@ -11117,7 +11159,7 @@
     if (!ccTabelas[f]) {
       const r = await fetch(FORNECEDORES_CONFORTO[f].url); if (!r.ok) throw new Error('HTTP ' + r.status);
       const tab = await r.json();
-      ccTabelas[f] = { fonte: tab.fonte, itens: tab.itens.map((i, n) => ({ ...i, id: f + n,
+      ccTabelas[f] = { fonte: tab.fonte, fornecedor: tab.fornecedor || '', itens: tab.itens.map((i, n) => ({ ...i, id: f + n,
         grupo: i.grupo || (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0],
         busca: normalizarBusca(i.descricao + ' ' + (i.codigo || '')) })) };
       const chaves = {};
@@ -11527,6 +11569,133 @@
     $('modal-conforto').hidden = true;
     abrirOrdemax(o, ccFonte);
   });
+
+  // =====================================================
+  // CATÁLOGO GERAL: peças do banco + tabelas dos fornecedores em tabelas/
+  // Só lê: abrir o catálogo não grava nada no banco. As tabelas carregam na primeira vez e ficam na memória (ccTabelas).
+  // =====================================================
+  const CAT_FORN = ['ordemax', 'mx', 'lero', 'feilfer', 'kit'];   // chaves de FORNECEDORES_CONFORTO; o resto vai para "Outros"
+  const nomeFornCat = s => normalizarBusca(s).replace(/-conforto$/, '').replace(/\s+/g, ' ').trim();
+  // a peça do banco guarda no campo origem o fornecedor da tabela de onde veio (ex.: "MX do Brasil", "ordemax")
+  function fornDaPeca(origem) {
+    const n = nomeFornCat(origem);
+    if (!n) return null;
+    return CAT_FORN.find(k => n === nomeFornCat(FORNECEDORES_CONFORTO[k].nome) || (ccTabelas[k] && ccTabelas[k].fornecedor && n === nomeFornCat(ccTabelas[k].fornecedor))) || null;
+  }
+  async function catalogoGeral() {
+    const lidas = await Promise.allSettled(CAT_FORN.map(carregarTabelaConforto));
+    const falhou = CAT_FORN.filter((k, n) => lidas[n].status !== 'fulfilled').map(k => FORNECEDORES_CONFORTO[k].nome);
+    const out = [], vistos = new Set();
+    // repetido = mesmo fornecedor e mesmo código; sem código (ou código que se repete na mesma lista), a mesma descrição
+    const vezesCod = lista => { const v = {}; lista.forEach(([k, x]) => { const c = (x.codigo || '').trim().toLowerCase(); if (c) v[k + '|' + c] = (v[k + '|' + c] || 0) + 1; }); return v; };
+    const chave = (k, x, vezes) => { const c = (x.codigo || '').trim().toLowerCase(); return k + '|' + (c && vezes[k + '|' + c] === 1 ? 'c:' + c : 'd:' + normalizarBusca(x.descricao).replace(/\s+/g, ' ').trim()); };
+    const incluir = (k, x, vezes, extra) => {
+      const ch = chave(k, x, vezes);
+      if (vistos.has(ch)) return;
+      vistos.add(ch);
+      const f = FORNECEDORES_CONFORTO[k];
+      out.push({ descricao: x.descricao || '', codigo: (x.codigo || '').trim(), unidade: x.unidade || 'un', preco: Number(x.preco) || 0,
+        fornecedor: f ? f.nome : (extra || ''), grupo: f ? k : 'outros', origem: f ? f.origem : 'fora', precoFinal: !!(f && f.precoFinal) });
+    };
+    // 1º as peças do banco: num repetido, fica a do banco
+    const banco = pecasCatalogo.filter(p => (p.descricao || '').trim()).map(p => [fornDaPeca(p.origem) || 'outros', p]);
+    const vb = vezesCod(banco);
+    banco.forEach(([k, p]) => incluir(k, p, vb, (p.origem || '').trim()));
+    // depois as tabelas que ainda não estão no banco
+    CAT_FORN.forEach((k, n) => {
+      if (lidas[n].status !== 'fulfilled') return;
+      const lista = ccTabelas[k].itens.map(i => [k, i]), vt = vezesCod(lista);
+      lista.forEach(([, i]) => incluir(k, i, vt));
+    });
+    out.forEach(x => { x.busca = normalizarBusca(x.descricao + ' ' + x.codigo); });
+    out.sort((a, b) => a.descricao.localeCompare(b.descricao, 'pt-BR'));
+    return { itens: out, falhou };
+  }
+  // o que vai no campo Produto: a descrição, com o código entre parênteses
+  function nomeItemCatalogo(c) { return c.descricao + (c.codigo ? ' (' + c.codigo + ')' : ''); }
+  // marca com o mesmo nome do fornecedor (sem diferença de maiúsculas e acentos)
+  function marcaComNome(nome) {
+    const n = nomeFornCat(nome);
+    return n ? brands.find(b => nomeFornCat(b.name || '') === n) || null : null;
+  }
+  const CAT_MAX = 80;
+  let catItens = [], catFalhou = [], catGrupo = '', catAoEscolher = null, catToken = 0;
+  async function abrirCatalogo(aoEscolher) {
+    catAoEscolher = aoEscolher;
+    catGrupo = '';
+    $('cat-busca').value = '';
+    $('cat-chips').innerHTML = '';
+    $('cat-info').hidden = true;
+    $('cat-lista').innerHTML = '';
+    const c = document.createElement('div'); c.className = 'picker-vazio'; c.textContent = 'Abrindo as tabelas…';
+    $('cat-lista').appendChild(c);
+    $('modal-catalogo').hidden = false;
+    const t = ++catToken;
+    const r = await catalogoGeral();
+    if (t !== catToken || $('modal-catalogo').hidden) return;
+    catItens = r.itens; catFalhou = r.falhou;
+    renderCatalogo();
+  }
+  function renderCatalogo() {
+    const termos = normalizarBusca($('cat-busca').value.trim()).split(/\s+/).filter(Boolean);
+    const achados = termos.length ? catItens.filter(x => termos.every(t => x.busca.includes(t))) : catItens;
+    // chips por fornecedor, com quantos itens a busca acha em cada um
+    const chips = $('cat-chips');
+    chips.innerHTML = '';
+    [['', 'Todos'], ...CAT_FORN.map(k => [k, FORNECEDORES_CONFORTO[k].nome]), ['outros', 'Outros']].forEach(([k, nome]) => {
+      if (k && !catItens.some(x => x.grupo === k)) return;
+      const n = k ? achados.filter(x => x.grupo === k).length : achados.length;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flt-chip' + (catGrupo === k ? ' on' : '');
+      b.setAttribute('aria-pressed', catGrupo === k ? 'true' : 'false');
+      b.textContent = nome + ' (' + n + ')';
+      b.addEventListener('click', () => { catGrupo = k; renderCatalogo(); });
+      chips.appendChild(b);
+    });
+    const lista = catGrupo ? achados.filter(x => x.grupo === catGrupo) : achados;
+    const box = $('cat-lista');
+    box.innerHTML = '';
+    lista.slice(0, CAT_MAX).forEach(x => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pe-item';
+      b.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod"></span></span><span class="pe-item-preco"></span>';
+      b.querySelector('.pe-item-desc').textContent = x.descricao;
+      b.querySelector('.pe-item-cod').textContent = [x.codigo, x.unidade, x.fornecedor || 'Outros'].filter(Boolean).join(' · ');
+      const pr = b.querySelector('.pe-item-preco');
+      pr.textContent = x.preco > 0 ? fmt(x.preco) : 'sem preço';
+      if (x.precoFinal) { const s = document.createElement('small'); s.textContent = 'preço de venda'; pr.appendChild(s); }
+      b.addEventListener('click', () => { $('modal-catalogo').hidden = true; if (catAoEscolher) catAoEscolher(x); });
+      box.appendChild(b);
+    });
+    if (!lista.length) { const v = document.createElement('div'); v.className = 'picker-vazio'; v.textContent = 'Nenhum produto com essa busca.'; box.appendChild(v); }
+    const info = [];
+    if (lista.length > CAT_MAX) info.push('Mostrando ' + CAT_MAX + ' de ' + lista.length + '. Refine a busca.');
+    if (catFalhou.length) info.push('Não consegui abrir a tabela de ' + listaE(catFalhou) + ' (sem internet?).');
+    $('cat-info').textContent = info.join(' ');
+    $('cat-info').hidden = !info.length;
+  }
+  $('cat-busca').addEventListener('input', renderCatalogo);
+  $('cat-busca').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('cat-busca').blur(); });
+  $('cat-fechar').addEventListener('click', () => { $('modal-catalogo').hidden = true; });
+  // Calculadora de lucro: o item escolhido preenche produto, custo, marca e origem
+  $('calc-catalogo').addEventListener('click', () => abrirCatalogo(c => {
+    produtoEl.value = nomeItemCatalogo(c);
+    if (c.precoFinal) {
+      custoEl.value = '';
+      selectedBrandId = null;   // não fica a marca de um item escolhido antes
+      renderBrands();
+      calcular();
+      avisar('Este preço já é de venda da Auriverde (' + fmt(c.preco) + '). Ele não entra como custo: preencha o custo, se souber.');
+      return;
+    }
+    custoEl.value = c.preco > 0 ? fmtMoedaCampo(c.preco) : '';
+    const marca = marcaComNome(c.fornecedor);
+    if (marca) { selectedBrandId = marca.id; renderBrands(); setOrigem(c.origem); }
+    else if (c.fornecedor && nivel('calc') >= 2) addBrand(c.fornecedor, c.origem);   // a mesma função do "+" das marcas
+    else { selectedBrandId = null; renderBrands(); setOrigem(c.origem); }
+    if (!(c.preco > 0)) avisoRapido('Este item está sem preço na tabela: preencha o custo.');
+  }));
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
   $('os-chamado').addEventListener('click', () => abrirChamado({}));
