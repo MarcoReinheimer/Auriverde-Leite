@@ -1638,6 +1638,15 @@
   .pe-item-cod { font-size: 13px; color: var(--ink-soft); font-family: var(--fonte); }
   .pe-item-preco { font-family: var(--fonte); font-size: 15px; white-space: nowrap; }
   .pe-item.avulsa .pe-item-desc { color: var(--accent-txt); }
+  /* catálogo geral de produtos: campo Produto com o botão "Catálogo" ao lado, e os chips de fornecedor */
+  .cat-campo { display: flex; gap: 8px; align-items: stretch; }
+  .cat-campo input { flex: 1; min-width: 0; }
+  .cat-btn { flex: none !important; width: auto !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px !important; }
+  .cat-btn .ic { width: 18px; height: 18px; }
+  .cat-chips { gap: 6px; margin: -4px 0 10px; }
+  .cat-chips .flt-chip { min-height: 36px; padding: 6px 12px; }
+  #cat-info { margin: -4px 0 8px; }
+  .pe-item-preco small { display: block; font-size: 11.5px; color: var(--ink-soft); text-align: right; }
 
   /* equipamentos */
   .eq-card {
