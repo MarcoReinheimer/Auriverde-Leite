@@ -2337,6 +2337,7 @@
   .adm-dobra[open] > summary { margin-bottom: 12px; }
   .adm-dobra[open] > summary::after { transform: rotate(180deg); }
   .adm-acao { display: block; margin: 0 0 10px auto; }
+  .adm-acoes-pecas { display: flex; justify-content: flex-end; gap: 8px; margin: 0 0 10px; }
   .dados-completar { display: block; width: 100%; margin-top: 6px; padding: 10px 0 2px; border: none; border-top: 1px dashed var(--line);
     background: none; color: var(--accent-txt); font-family: inherit; font-size: var(--fs-legenda); font-weight: 600; text-align: left; cursor: pointer; }
   .bloco-linhas > .dados-completar:first-child { border-top: none; padding-top: 2px; }
@@ -3109,7 +3110,8 @@
 
       <details class="card adm-dobra">
         <summary><span class="adm-tit">Catálogo de peças</span><span class="adm-resumo">Aparecem para escolher na OS</span></summary>
-        <button type="button" class="bloco-editar adm-acao" id="adm-peca-nova">+ Peça</button>
+        <div class="adm-acoes-pecas"><button type="button" class="bloco-editar" id="adm-pecas-ordemax">Importar Ordemax</button><button type="button" class="bloco-editar" id="adm-peca-nova">+ Peça</button></div>
+        <input type="file" id="adm-pecas-ordemax-arq" accept=".xml,text/xml,application/xml" hidden>
         <div class="field" style="margin:8px 0 6px"><input type="text" id="adm-pecas-busca" placeholder="Buscar peça" autocomplete="off" aria-label="Buscar peça no catálogo"></div>
         <div id="adm-pecas"></div>
         <div class="leite-ficha-sub" id="adm-pecas-vazio">Nenhuma peça cadastrada.</div>
@@ -6125,7 +6127,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.3';
+  const APP_VERSAO = '2026.11.17.4';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -15415,6 +15417,33 @@
     setTimeout(() => (p ? $('pc-preco') : $('pc-codigo')).focus(), 60);
   }
   $('adm-peca-nova').addEventListener('click', () => abrirPeca(null));
+  // catálogo da Ordemax: o listaProdutos.xml da pasta do Configmax (código e descrição abertos; o preço vem
+  // protegido no arquivo, então entra em branco). Códigos que já estão no catálogo ficam como estão.
+  $('adm-pecas-ordemax').addEventListener('click', () => { $('adm-pecas-ordemax-arq').value = ''; $('adm-pecas-ordemax-arq').click(); });
+  $('adm-pecas-ordemax-arq').addEventListener('change', () => { const f = $('adm-pecas-ordemax-arq').files[0]; if (f) importarCatalogoOrdemax(f); });
+  async function importarCatalogoOrdemax(arquivo) {
+    let lidos = [];
+    try {
+      const xml = new DOMParser().parseFromString(await arquivo.text(), 'application/xml');
+      if (xml.querySelector('parsererror')) throw new Error('arquivo XML inválido');
+      lidos = [...xml.getElementsByTagName('produto')].map(p => ({
+        codigo: ((p.getElementsByTagName('codigo')[0] || {}).textContent || '').trim(),
+        descricao: ((p.getElementsByTagName('descricao')[0] || {}).textContent || '').trim()
+      })).filter(p => p.descricao);
+    } catch (e) { avisar('Não consegui ler o arquivo: ' + (e && e.message ? e.message : e)); return; }
+    if (!lidos.length) { avisar('Não achei peças neste arquivo. Escolha o listaProdutos.xml da pasta do Configmax.'); return; }
+    const ja = new Set(pecasCatalogo.map(p => (p.codigo || '').trim().toLowerCase()).filter(Boolean));
+    const vistos = new Set();
+    const novas = lidos.filter(p => { const k = p.codigo.toLowerCase(); if (!k) return true; if (ja.has(k) || vistos.has(k)) return false; vistos.add(k); return true; });
+    if (!novas.length) { avisar('As ' + lidos.length + ' peças deste arquivo já estão no catálogo.'); return; }
+    const pulou = lidos.length - novas.length;
+    if (!(await confirmar('Importar ' + plural(novas.length, 'peça', 'peças') + ' da Ordemax para o catálogo?' + (pulou ? ' (' + plural(pulou, 'já estava', 'já estavam') + ' no catálogo.)' : '') +
+      ' Os preços não vêm no arquivo: preencha na peça ou na OS.', 'Importar'))) return;
+    const agora = Date.now();
+    novas.forEach(p => gravar('set', 'pecas/' + novoId(), { codigo: p.codigo, descricao: p.descricao, unidade: 'un', preco: 0, origem: 'ordemax', criadoPor: viewerId || null, criadoEm: agora }));
+    registrarAtividade('importou', 'peca', '', plural(novas.length, 'peça', 'peças') + ' da Ordemax');
+    avisoRapido(plural(novas.length, 'peça importada', 'peças importadas'));
+  }
   $('pc-cancelar').addEventListener('click', () => { $('modal-peca').hidden = true; });
   $('pc-salvar').addEventListener('click', async () => {
     const descricao = $('pc-descricao').value.trim();
