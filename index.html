@@ -3016,6 +3016,8 @@
   .om-g-margem { display: inline-flex; align-items: center; justify-self: end; gap: 2px; font-size: 12.5px; color: var(--ink-soft); }
   .om-g-margem input { width: 64px; min-height: 32px !important; padding: 4px 6px !important; font-size: 14px !important; text-align: right; border-radius: 8px !important; }
   .om-g-margem input.proprio { border-color: var(--accent) !important; color: var(--accent-txt); font-weight: 600; }
+  .om-form .om-acoes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .om-form .om-acoes button { padding-left: 4px; padding-right: 4px; }
   .om-form .modal-actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
     background: var(--bg); border-top: 1px solid var(--line); }
 
@@ -5074,7 +5076,7 @@
 </div>
 
 <!-- MODAL: escolher produtor (registrar a partir da tela do setor) -->
-<!-- MODAL: orçamento a partir do PDF da Ordemax -->
+<!-- MODAL: orçamento a partir do PDF da Ordemax, no modelo da Auriverde (SAC-029) -->
 <div class="modal-backdrop" id="modal-ordemax" hidden>
   <div class="modal-sheet modal-grande om-form">
     <h2>Orçamento Ordemax</h2>
@@ -5082,11 +5084,15 @@
     <div class="om-aviso" id="om-aviso" hidden></div>
 
     <div class="os-sec">
-      <div class="os-sec-tit">Cliente</div>
+      <div class="os-sec-tit">Produtor</div>
       <button type="button" class="bloco-editar om-escolher" id="om-escolher">Escolher produtor cadastrado</button>
       <div class="field"><label for="om-cliente">Nome</label><input type="text" id="om-cliente" autocomplete="off"></div>
-      <div class="field"><label for="om-endereco">Endereço</label><input type="text" id="om-endereco" autocomplete="off"></div>
-      <div class="field"><label for="om-telefone">Telefone / WhatsApp</label><input type="tel" inputmode="tel" id="om-telefone" autocomplete="off"></div>
+      <div class="rate-row">
+        <div class="field"><label for="om-ie">I.E. ou matrícula</label><input type="text" id="om-ie" autocomplete="off"></div>
+        <div class="field"><label for="om-cpf">CPF</label><input type="text" inputmode="numeric" id="om-cpf" autocomplete="off"></div>
+      </div>
+      <div class="field"><label for="om-endereco">Endereço (linha)</label><input type="text" id="om-endereco" autocomplete="off"></div>
+      <div class="field"><label for="om-municipio">Município</label><input type="text" id="om-municipio" autocomplete="off"></div>
     </div>
 
     <div class="os-sec">
@@ -5106,20 +5112,29 @@
     </div>
 
     <div class="os-sec">
-      <div class="os-sec-tit">Condições</div>
-      <div class="field"><label for="om-pagamento">Condição de pagamento</label><input type="text" id="om-pagamento" autocomplete="off"></div>
-      <div class="field"><label for="om-obs">Observações</label><textarea id="om-obs"></textarea></div>
+      <div class="os-sec-tit">Itens no orçamento</div>
+      <div class="field">
+        <div class="toggle" id="om-itens"><button type="button" data-i="resumido">Resumido</button><button type="button" data-i="grupos">Por grupo</button></div>
+        <div class="campo-dica" id="om-itens-dica"></div>
+      </div>
+      <div id="om-resumo">
+        <div class="field"><label for="om-produto">Produto (linha com o valor)</label><input type="text" id="om-produto" autocomplete="off"></div>
+        <div class="field"><label for="om-descricao">Descrição (uma linha por item, sem valor)</label><textarea id="om-descricao" rows="6"></textarea></div>
+      </div>
     </div>
 
     <div class="os-sec">
-      <div class="os-sec-tit">Dados da Auriverde no orçamento</div>
-      <div class="field"><textarea id="om-empresa" placeholder="Auriverde&#10;CNPJ 00.000.000/0000-00&#10;Endereço · Cidade/SC&#10;Telefone"></textarea>
-        <div class="campo-dica">Uma informação por linha. Fica guardado neste aparelho para os próximos orçamentos.</div></div>
+      <div class="os-sec-tit">Condições</div>
+      <div class="field"><label for="om-pagamento">Condição de pagamento</label><input type="text" id="om-pagamento" autocomplete="off"></div>
+      <div class="field"><label for="om-galpao">Galpão</label><input type="text" id="om-galpao" autocomplete="off"></div>
+      <div class="field"><label for="om-obs">OBS</label><input type="text" id="om-obs" autocomplete="off"></div>
+      <div class="field"><label for="om-responsavel">Responsável (assina pela Auriverde)</label><input type="text" id="om-responsavel" autocomplete="off"></div>
     </div>
 
-    <div class="modal-actions">
+    <div class="modal-actions om-acoes">
       <button type="button" class="btn-secondary" id="om-fechar">Fechar</button>
-      <button type="button" class="btn-secondary" id="om-baixar">Baixar PDF</button>
+      <button type="button" class="btn-secondary" id="om-baixar">PDF</button>
+      <button type="button" class="btn-secondary" id="om-excel">Excel</button>
       <button type="button" class="btn-primary" id="om-enviar">Enviar</button>
     </div>
   </div>
@@ -6110,7 +6125,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.1';
+  const APP_VERSAO = '2026.11.17.2';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -16773,15 +16788,46 @@
     return r;
   }
 
-  // preço de cada grupo pela mesma conta da Calculadora: (custo − ICMS da origem) ÷ divisor, divisor = (80 − margem) ÷ 100
-  let ordemaxAtual = null, omOrigem = 'fora';
+  // ---------- orçamento no modelo da Auriverde (SAC-029) ----------
+  // O preço de cada grupo sai da mesma conta da Calculadora: (custo − ICMS da origem) ÷ divisor,
+  // com divisor = (80 − margem) ÷ 100. O orçamento sai no modelo de planilha da Auriverde
+  // (modelos/orcamento-auriverde.xlsx): em Excel é a própria planilha preenchida; em PDF, o mesmo desenho.
+  const MODELO_ORCAMENTO = 'modelos/orcamento-auriverde.xlsx';
+  const LINHAS_MODELO = 16; // linhas de itens do modelo (20 a 35)
+  let ordemaxAtual = null, omOrigem = 'fora', omItens = 'resumido';
   const arredOm = n => Math.round(n * 100) / 100;
   const pctLido = v => { const s = String(v == null ? '' : v).trim(); return s === '' ? null : parseMoney(s); };
   const margemValida = m => Number.isFinite(m) && m > 0 && m < 80;
+  const maiusc = s => String(s || '').trim().toLocaleUpperCase('pt-BR');
   function margemGeral() { const m = pctLido($('om-margem').value); return margemValida(m) ? m : Number(config.margemPadrao); }
   function margemDoGrupo(g) { return margemValida(g.margem) ? g.margem : margemGeral(); }
   function valorComMargem(g) { return arredOm(precoPelaFormula(g.valor, omOrigem, margemDoGrupo(g))); }
+  function totalOm() { return arredOm(ordemaxAtual.grupos.reduce((s, g) => s + valorComMargem(g), 0)); }
   function pintarOrigemOm() { $('om-origem').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.o === omOrigem)); }
+  function pintarItensOm() {
+    $('om-itens').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.i === omItens));
+    $('om-resumo').hidden = omItens !== 'resumido';
+    $('om-itens-dica').textContent = omItens === 'resumido'
+      ? 'Uma linha com o valor total e, embaixo, as linhas de descrição sem valor (como no orçamento do Anselmo).'
+      : 'Uma linha para cada grupo da Ordemax, com o preço do grupo já com a margem.';
+  }
+  function produtoPadrao(o) {
+    const t = (o.titulo || '').replace(/^Configura[cç][aã]o de\s*/i, '').replace(/\s*n[ºo°].*$/i, '').trim();
+    return maiusc((t || 'Ordenha') + ' Ordemax');
+  }
+  function descricaoPadrao(o) { return o.grupos.filter(g => g.valor > 0).map(g => g.nome).slice(0, LINHAS_MODELO - 1).join('\n'); }
+  function itensDoOrcamento() {
+    const o = ordemaxAtual;
+    if (omItens === 'grupos') return o.grupos.filter(g => g.valor > 0).map(g => ({ produto: g.nome, qtd: 1, preco: valorComMargem(g) }));
+    const linhas = $('om-descricao').value.split('\n').map(s => s.trim()).filter(Boolean);
+    return [{ produto: $('om-produto').value.trim() || produtoPadrao(o), qtd: 1, preco: totalOm() }].concat(linhas.map(l => ({ produto: l, qtd: null, preco: null })));
+  }
+  function dadosOrcamento() {
+    const v = id => $(id).value.trim();
+    return { produtor: v('om-cliente'), ie: v('om-ie'), cpf: v('om-cpf'), endereco: v('om-endereco'), municipio: v('om-municipio'),
+      pagamento: v('om-pagamento'), galpao: v('om-galpao'), obs: v('om-obs'), responsavel: v('om-responsavel'),
+      validade: Math.max(1, Math.round(parseMoney($('om-validade').value) || 30)), data: todayISO() };
+  }
   function renderOrdemax() {
     const o = ordemaxAtual;
     const box = $('om-grupos');
@@ -16802,7 +16848,7 @@
       box.appendChild(d);
     });
     const custo = arredOm(o.grupos.reduce((s, g) => s + g.valor, 0));
-    const total = arredOm(o.grupos.reduce((s, g) => s + valorComMargem(g), 0));
+    const total = totalOm();
     const div = (80 - margemGeral()) / 100;
     $('om-conta').textContent = 'Mesma conta da Calculadora: (custo − ICMS ' + numTxt(aliquotaDaOrigem(omOrigem)) + '%) ÷ ' +
       div.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '. Margem padrão da Auriverde: ' + numTxt(config.margemPadrao) + '%.';
@@ -16823,27 +16869,34 @@
     $('om-aviso').hidden = !avisos.length;
     $('om-cliente').value = o.cliente || '';
     $('om-endereco').value = o.endereco || '';
-    $('om-telefone').value = '';
+    ['om-ie', 'om-cpf', 'om-municipio', 'om-galpao'].forEach(id => { $(id).value = ''; });
     $('om-pagamento').value = o.pagamento || '';
     $('om-obs').value = o.obs || '';
+    $('om-responsavel').value = cfg.responsavel || nomeReal(viewerId) || '';
     $('om-margem').value = numTxt(config.margemPadrao);
+    $('om-validade').value = String(cfg.validade || 30);
+    $('om-produto').value = produtoPadrao(o);
+    $('om-descricao').value = descricaoPadrao(o);
     omOrigem = cfg.origem === 'dentro' ? 'dentro' : 'fora';
+    omItens = cfg.itens === 'grupos' ? 'grupos' : 'resumido';
     pintarOrigemOm();
-    $('om-validade').value = String(cfg.validade || o.validade || 7);
-    $('om-empresa').value = cfg.empresa || 'Auriverde';
+    pintarItensOm();
     renderOrdemax();
     $('modal-ordemax').hidden = false;
     $('modal-ordemax').querySelector('.modal-sheet').scrollTop = 0;
   }
   $('om-margem').addEventListener('input', renderOrdemax);
   $('om-origem').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { omOrigem = b.dataset.o; pintarOrigemOm(); renderOrdemax(); }));
+  $('om-itens').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { omItens = b.dataset.i; pintarItensOm(); }));
   $('om-escolher').addEventListener('click', () => {
     escolherProdutor('Orçamento para qual produtor?', pid => {
       const p = produtoresTodos.find(x => x.id === pid) || produtores.find(x => x.id === pid);
       if (!p) return;
       $('om-cliente').value = p.nome || '';
-      $('om-endereco').value = localDoProdutor(p) || '';
-      $('om-telefone').value = p.telefone || '';
+      $('om-ie').value = p.inscricaoEstadual || p.matricula || '';
+      $('om-cpf').value = p.cpfCnpj || '';
+      $('om-endereco').value = p.linha || p.propriedade || '';
+      $('om-municipio').value = p.cidade || '';
     });
   });
   $('om-fechar').addEventListener('click', () => { $('modal-ordemax').hidden = true; });
@@ -16861,112 +16914,137 @@
     }
   });
 
-  // modo 'baixar' salva o PDF no aparelho; 'enviar' abre o compartilhar (WhatsApp…) e, se não der, baixa
-  async function gerarPdfOrdemax(modo) {
-    const o = ordemaxAtual;
-    if (!o) return;
-    const cliente = $('om-cliente').value.trim();
-    if (!cliente) { avisar('Preencha o nome do cliente.'); return; }
-    const validade = Math.max(1, Math.round(parseMoney($('om-validade').value) || 7));
-    const empresa = $('om-empresa').value.split('\n').map(s => s.trim()).filter(Boolean);
-    gravarLS('auriverde_ordemax', { origem: omOrigem, validade, empresa: empresa.join('\n') });
-    const btn = $(modo === 'baixar' ? 'om-baixar' : 'om-enviar'), txt = btn.textContent;
-    btn.disabled = true; btn.textContent = 'Gerando PDF…';
+
+  // a planilha do modelo, preenchida (logo, bordas e fórmulas do modelo continuam)
+  async function planilhaOrdemax(d, itens) {
+    const EJ = await carregarExcelJS();
+    const r = await fetch(MODELO_ORCAMENTO);
+    if (!r.ok) throw new Error('não achei o modelo do orçamento');
+    const wb = new EJ.Workbook();
+    await wb.xlsx.load(await r.arrayBuffer());
+    const ws = wb.worksheets[0];
+    const pr = (c, v) => { ws.getCell(c).value = v === '' || v == null ? null : v; };
+    const [ano, mes, dia] = d.data.split('-').map(Number);
+    pr('D5', new Date(Date.UTC(ano, mes - 1, dia)));
+    pr('Q5', maiusc(d.responsavel));
+    pr('E9', maiusc(d.produtor)); pr('T9', 'I.E'); pr('U9', d.ie); pr('Y9', 'CPF'); pr('Z9', d.cpf);
+    pr('E11', maiusc(d.endereco)); pr('W11', maiusc(d.municipio));
+    pr('H13', maiusc(d.pagamento)); pr('V13', maiusc(d.galpao)); pr('D15', maiusc(d.obs));
+    for (let i = 0; i < LINHAS_MODELO; i++) {
+      const it = itens[i] || {}, l = 20 + i;
+      pr('B' + l, null); pr('E' + l, it.produto ? maiusc(it.produto) : null);
+      pr('Q' + l, it.qtd != null ? it.qtd : null); pr('U' + l, it.preco != null ? it.preco : null);
+    }
+    pr('C38', String(ws.getCell('C38').value || '').replace(/\d+\s*dias/, d.validade + ' dias'));
+    pr('E44', maiusc(d.responsavel)); pr('Q44', maiusc(d.produtor));
+    wb.calcProperties.fullCalcOnLoad = true;
+    return new Blob([await wb.xlsx.writeBuffer()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  // o PDF com o mesmo desenho do modelo (medidas tiradas da folha A4 impressa)
+  async function pdfOrdemax(d, itens) {
+    const JsPDF = await carregarJsPDF();
+    const doc = registrarFontePdf(new JsPDF({ unit: 'mm', format: 'a4' }));
+    const F = doc.__fonte, VERDE = [0, 102, 0];
+    const T = (s, x, y, o) => doc.text(pdfTxt(s), x, y, o);
+    const fonte = (tam, neg) => { doc.setFont(F, neg ? 'bold' : 'normal'); doc.setFontSize(tam); };
+    const caixa = (x1, y1, x2, y2, pontilhada) => {
+      doc.setDrawColor(0); doc.setLineWidth(0.25);
+      if (pontilhada) doc.setLineDashPattern([0.4, 0.6], 0);
+      doc.rect(x1, y1, x2 - x1, y2 - y1);
+      if (pontilhada) doc.setLineDashPattern([], 0);
+    };
+    const meio = (s, x1, x2, y, tam, neg) => { fonte(tam, neg); T(s, (x1 + x2) / 2, y, { align: 'center' }); };
+    const valor = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const faixa = (txt, y1, y2) => { doc.setFillColor(...VERDE); doc.rect(6.2, y1, 197.4, y2 - y1, 'F'); doc.setTextColor(255, 255, 255); fonte(12, true); T(txt, 9, y2 - 1.5); doc.setTextColor(0, 0, 0); };
+    // moldura, logo e título
+    doc.setDrawColor(0); doc.setLineWidth(0.4); doc.rect(4.8, 5.1, 199.7, 236.2);
+    const logo = logoParaPdf();
+    if (logo) doc.addImage(logo, 'PNG', 12, 5.8, 24, 16.2);
+    meio('COOPERATIVA REGIONAL AURIVERDE', 60, 200, 11.5, 11, true);
+    meio('ORÇAMENTO', 60, 200, 19, 13, true);
+    doc.setLineWidth(0.4); doc.line(4.8, 22.3, 204.5, 22.3);
+    // data e responsável
+    fonte(9.5); T('Data:', 6.6, 30.6);
+    caixa(23.8, 26.9, 63.7, 32.4); meio(fmtDate(d.data), 23.8, 63.7, 30.9, 11, true);
+    fonte(9.5); T('Responsável:', 101, 30.6, { align: 'right' });
+    caixa(102.7, 26.9, 203.1, 32.4); meio(maiusc(d.responsavel), 102.7, 203.1, 30.6, 9.5);
+    // dados do produtor
+    faixa('Dados', 34.6, 40.3);
+    caixa(24, 42.7, 112.8, 49.3, true); meio(maiusc(d.produtor), 24, 112.8, 47, 9.5, true);
+    fonte(9.5, true); T('I.E', 118.3, 47);
+    caixa(124.7, 42.7, 155.3, 49.3, true); meio(d.ie, 124.7, 155.3, 47, 9.5, true);
+    fonte(9.5, true); T('CPF', 165, 47);
+    caixa(171.6, 42.7, 203.1, 49.3, true); meio(d.cpf, 171.6, 203.1, 47, 9.5, true);
+    caixa(24, 51.5, 112.8, 58.4, true); meio(maiusc(d.endereco), 24, 112.8, 56, 9.5, true);
+    fonte(9.5, true); T('Município:', 119.6, 56);
+    caixa(139.9, 51.5, 203.1, 58.4, true); meio(maiusc(d.municipio), 139.9, 203.1, 56, 9.5, true);
+    fonte(9.5, true); T('Condição de Pagamento:', 6.6, 65);
+    caixa(50.4, 60.6, 112.8, 67.4, true); meio(maiusc(d.pagamento), 50.4, 112.8, 65, 9, true);
+    fonte(9.5, true); T('Galpão:', 118.5, 65);
+    caixa(132.8, 60.6, 203.1, 67.4, true); meio(maiusc(d.galpao), 132.8, 203.1, 65, 9, true);
+    fonte(9.5, true); T('OBS:', 15.4, 74);
+    caixa(23.8, 69.6, 203.1, 76.2, true); meio(maiusc(d.obs), 23.8, 203.1, 74, 9.5, true);
+    // itens
+    faixa('Itens', 78.6, 84.4);
+    const X = [6.2, 24, 102.4, 124.7, 161.5, 203.1];
+    ['Código', 'PRODUTO', 'Qtde', 'Preço Unit', 'Vl Total'].forEach((c, i) => { caixa(X[i], 86.6, X[i + 1], 91.9); meio(c, X[i], X[i + 1], 90.6, 10.5, true); });
+    const H = 5.77;
+    let total = 0;
+    for (let i = 0; i < LINHAS_MODELO; i++) {
+      const it = itens[i] || {}, y1 = 91.9 + i * H, yt = y1 + 4.1;
+      for (let c = 0; c < 5; c++) caixa(X[c], y1, X[c + 1], y1 + H);
+      if (it.produto) meio(maiusc(it.produto), X[1], X[2], yt, 9);
+      const tem = it.qtd != null && it.preco != null;
+      if (tem) {
+        meio(String(it.qtd).replace('.', ','), X[2], X[3], yt, 9);
+        fonte(9); T('R$', X[3] + 1.5, yt); T(valor(it.preco), X[4] - 1.5, yt, { align: 'right' });
+        total += it.qtd * it.preco;
+      }
+      fonte(9); T('R$', X[4] + 1.5, yt); T(tem ? valor(it.qtd * it.preco) : '-', X[5] - 1.5, yt, { align: 'right' });
+    }
+    const yT = 91.9 + LINHAS_MODELO * H;
+    caixa(X[3], yT, X[4], yT + H); meio('TOTAL', X[3], X[4], yT + 4.1, 9.5, true);
+    caixa(X[4], yT, X[5], yT + H); fonte(9.5); T('R$', X[4] + 1.5, yT + 4.1); T(valor(arredOm(total)), X[5] - 1.5, yT + 4.1, { align: 'right' });
+    // validade e assinaturas
+    fonte(9); T('Obs: Valores válidos por ' + d.validade + ' dias, contados a partir da assinatura do Orçamento.', 13, 197.2);
+    T('Após este período, os reajustes nos valores dos itens serão repassados ao produtor.', 13, 201.6);
+    meio(maiusc(d.responsavel), 20, 94, 227.4, 9.5, true); meio('Cooperativa Regional Auriverde', 20, 94, 232, 9.5);
+    meio(maiusc(d.produtor), 100, 175, 227.4, 9.5, true); meio('Produtor', 100, 175, 232, 9.5);
+    return doc.output('blob');
+  }
+  // tipo: 'pdf' e 'excel' baixam o arquivo; 'enviar' abre o compartilhar (WhatsApp…) com o PDF e, se não der, baixa
+  async function saidaOrdemax(tipo) {
+    if (!ordemaxAtual) return;
+    const d = dadosOrcamento();
+    if (!d.produtor) { avisar('Preencha o nome do produtor.'); return; }
+    const itens = itensDoOrcamento();
+    if (itens.length > LINHAS_MODELO) { avisar('O modelo tem ' + LINHAS_MODELO + ' linhas de itens e este orçamento tem ' + itens.length + '. Use "Resumido" ou junte algumas linhas da descrição.'); return; }
+    gravarLS('auriverde_ordemax', { origem: omOrigem, validade: d.validade, responsavel: d.responsavel, itens: omItens });
+    const btn = $({ pdf: 'om-baixar', excel: 'om-excel', enviar: 'om-enviar' }[tipo]), txt = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Gerando…';
     try {
-      const JsPDF = await carregarJsPDF();
-      const doc = registrarFontePdf(new JsPDF({ unit: 'mm', format: 'a4' }));
-      const F = doc.__fonte, W = 210, M = 15, D = W - M;
-      const VERDE = [0, 122, 61], CINZA = [90, 106, 96], TINTA = [22, 34, 27], LINHA = [225, 231, 226];
-      let y = 15;
-      const novaPagina = h => { if (y + h > 280) { doc.addPage(); y = 15; } };
-      const texto = (s, x, yy, opt) => doc.text(pdfTxt(s), x, yy, opt);
-      // cabeçalho: logo e dados da Auriverde
-      const logo = logoParaPdf();
-      if (logo) doc.addImage(logo, 'PNG', M, y, 27, 18.2);
-      doc.setTextColor(...TINTA); doc.setFont(F, 'bold'); doc.setFontSize(11);
-      texto(empresa[0] || 'Auriverde', D, y + 4, { align: 'right' });
-      doc.setFont(F, 'normal'); doc.setFontSize(8.5); doc.setTextColor(...CINZA);
-      empresa.slice(1, 6).forEach((l, i) => texto(l, D, y + 8.5 + i * 4, { align: 'right' }));
-      y += 26;
-      doc.setDrawColor(...VERDE); doc.setLineWidth(0.6); doc.line(M, y, D, y);
-      y += 8;
-      doc.setTextColor(...TINTA); doc.setFont(F, 'bold'); doc.setFontSize(15);
-      texto('Orçamento', M, y);
-      doc.setFont(F, 'normal'); doc.setFontSize(9); doc.setTextColor(...CINZA);
-      texto('Emitido em ' + fmtDate(todayISO()) + ' · válido por ' + validade + ' dias', D, y, { align: 'right' });
-      y += 5.5;
-      if (o.titulo) { doc.setFontSize(10); doc.setTextColor(...TINTA); texto(o.titulo.replace(/\s*n[ºo°]\s*\S+$/i, ''), M, y); y += 5; }
-      // cliente
-      y += 3;
-      doc.setFillColor(243, 245, 242); doc.roundedRect(M, y, D - M, 18, 2, 2, 'F');
-      doc.setFontSize(8); doc.setTextColor(...CINZA); texto('CLIENTE', M + 4, y + 5);
-      doc.setFont(F, 'bold'); doc.setFontSize(11); doc.setTextColor(...TINTA); texto(cliente, M + 4, y + 10.5);
-      doc.setFont(F, 'normal'); doc.setFontSize(9); doc.setTextColor(...CINZA);
-      texto([$('om-endereco').value.trim(), $('om-telefone').value.trim()].filter(Boolean).join(' · '), M + 4, y + 15);
-      y += 25;
-      // grupos e peças
-      o.grupos.forEach(g => {
-        novaPagina(16);
-        doc.setFillColor(227, 241, 233); doc.rect(M, y - 4.5, D - M, 7, 'F');
-        doc.setFont(F, 'bold'); doc.setFontSize(9.5); doc.setTextColor(...TINTA);
-        texto(g.nome, M + 2, y);
-        texto(fmt(valorComMargem(g)), D - 2, y, { align: 'right' });
-        y += 6;
-        doc.setFont(F, 'normal'); doc.setFontSize(8.5);
-        g.itens.forEach(it => {
-          const desc = doc.splitTextToSize(pdfTxt(it.descricao), 118);
-          novaPagina(desc.length * 4 + 1.5);
-          doc.setTextColor(...CINZA); texto(it.codigo, M + 2, y);
-          doc.setTextColor(...TINTA); doc.text(desc, M + 30, y);
-          texto(it.qtd + (it.un ? ' ' + it.un : ''), D - 2, y, { align: 'right' });
-          y += desc.length * 4 + 1.2;
-          doc.setDrawColor(...LINHA); doc.setLineWidth(0.15); doc.line(M + 2, y - 2.6, D - 2, y - 2.6);
-        });
-        y += 3;
-      });
-      // total
-      const total = arredOm(o.grupos.reduce((s, g) => s + valorComMargem(g), 0));
-      novaPagina(30);
-      doc.setDrawColor(...VERDE); doc.setLineWidth(0.6); doc.line(M, y, D, y);
-      y += 8;
-      doc.setFont(F, 'bold'); doc.setFontSize(13); doc.setTextColor(...VERDE);
-      texto('Total', M, y); texto(fmt(total), D, y, { align: 'right' });
-      y += 9;
-      doc.setFont(F, 'normal'); doc.setFontSize(9); doc.setTextColor(...TINTA);
-      [['Condição de pagamento', $('om-pagamento').value.trim()], ['Observações', $('om-obs').value.trim()]].forEach(([rot, val]) => {
-        if (!val) return;
-        const l = doc.splitTextToSize(pdfTxt(rot + ': ' + val), D - M);
-        novaPagina(l.length * 4.5 + 2);
-        doc.text(l, M, y); y += l.length * 4.5 + 2;
-      });
-      // assinaturas
-      novaPagina(30);
-      y += 18;
-      doc.setDrawColor(...CINZA); doc.setLineWidth(0.2);
-      doc.line(M, y, M + 75, y); doc.line(D - 75, y, D, y);
-      doc.setFontSize(8.5); doc.setTextColor(...CINZA);
-      texto(empresa[0] || 'Auriverde', M, y + 4.5); texto(cliente, D - 75, y + 4.5);
-      const n = doc.getNumberOfPages();
-      for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(...CINZA); texto('Página ' + i + ' de ' + n, D, 290, { align: 'right' }); }
-      const nome = 'orcamento-' + slug(cliente) + '-' + todayISO() + '.pdf';
-      const blob = doc.output('blob');
-      let compartilhou = false;
-      try {
-        const f = new File([blob], nome, { type: 'application/pdf' });
-        if (modo !== 'baixar' && navigator.canShare && navigator.share && navigator.canShare({ files: [f] })) {
-          await navigator.share({ files: [f], title: 'Orçamento ' + cliente, text: 'Segue o orçamento da Auriverde: ' + fmt(total) + '.' });
-          compartilhou = true;
-        }
-      } catch (e) { if (e && e.name === 'AbortError') compartilhou = true; }
-      if (!compartilhou) await baixarArquivo(nome, blob, 'o PDF');
+      const base = 'orcamento-' + slug(d.produtor) + '-' + d.data;
+      if (tipo === 'excel') { await baixarArquivo(base + '.xlsx', await planilhaOrdemax(d, itens), 'o Excel'); return; }
+      const blob = await pdfOrdemax(d, itens);
+      if (tipo === 'enviar') {
+        try {
+          const f = new File([blob], base + '.pdf', { type: 'application/pdf' });
+          if (navigator.canShare && navigator.share && navigator.canShare({ files: [f] })) {
+            await navigator.share({ files: [f], title: 'Orçamento ' + d.produtor, text: 'Segue o orçamento da Auriverde: ' + fmt(totalOm()) + '.' });
+            return;
+          }
+        } catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      await baixarArquivo(base + '.pdf', blob, 'o PDF');
     } catch (e) {
-      avisar('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e));
+      avisar('Não foi possível gerar o orçamento: ' + (e && e.message ? e.message : e));
     } finally {
       btn.disabled = false; btn.textContent = txt;
     }
   }
-  $('om-baixar').addEventListener('click', () => gerarPdfOrdemax('baixar'));
-  $('om-enviar').addEventListener('click', () => gerarPdfOrdemax('enviar'));
+  $('om-baixar').addEventListener('click', () => saidaOrdemax('pdf'));
+  $('om-excel').addEventListener('click', () => saidaOrdemax('excel'));
+  $('om-enviar').addEventListener('click', () => saidaOrdemax('enviar'));
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
   $('os-chamado').addEventListener('click', () => abrirChamado({}));

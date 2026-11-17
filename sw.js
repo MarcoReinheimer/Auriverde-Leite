@@ -1,10 +1,10 @@
 // Deixa o app abrir sem internet. Guarda os arquivos do app e as bibliotecas
 // (Excel, PDF, fontes). NUNCA guarda os dados do Supabase: esses vêm sempre do banco.
-const VERSAO = 'auriverde-v8';
+const VERSAO = 'auriverde-v9';
 // logo, ícone e fontes saíram de dentro do index.html para estes arquivos (img/ e fontes/)
 const ESTATICOS = ['./img/logo-auriverde.png', './img/favicon.png',
   './fontes/ibm-plex-sans-400.woff2', './fontes/ibm-plex-sans-500.woff2', './fontes/ibm-plex-sans-600.woff2', './fontes/ibm-plex-sans-700.woff2',
-  './fontes/plex-pdf-normal.ttf', './fontes/plex-pdf-bold.ttf'];
+  './fontes/plex-pdf-normal.ttf', './fontes/plex-pdf-bold.ttf', './modelos/orcamento-auriverde.xlsx'];
 const ARQUIVOS = ['./', './index.html', './config.js', './supabase.js', './claude-supabase.js', './claude-local.js',
   './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'].concat(ESTATICOS);
 const BIBLIOTECAS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
