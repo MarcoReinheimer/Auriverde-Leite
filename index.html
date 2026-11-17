@@ -1765,7 +1765,6 @@
   .op-botoes { display: flex; flex-direction: column; gap: 10px; }
   .op-botoes .add-record-btn { margin: 0; background: #1FA855; color: #FFFFFF; }
   .op-btn { display: flex; align-items: center; justify-content: center; min-height: 52px; text-decoration: none; }
-  .op-link[hidden] { display: none; }
 
   body.foco-manut #resumo-home-titulo, body.foco-manut #resumo-home, body.foco-manut #setores-home-titulo, body.foco-manut #setores-home { display: none !important; }
   @keyframes destacar-os { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); } 20% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
@@ -6178,9 +6177,8 @@
     <h2 id="op-titulo">PDF da OS</h2>
     <div class="leite-ficha-sub" id="op-sub" style="margin:-8px 0 14px"></div>
     <div class="op-botoes">
-      <button type="button" class="add-record-btn op-whats" id="op-compartilhar" hidden>📲 Enviar o PDF pelo WhatsApp</button>
+      <button type="button" class="add-record-btn op-whats" id="op-whats">📲 Enviar ao produtor pelo WhatsApp</button>
       <button type="button" class="btn-secondary op-btn" id="op-baixar">⬇️ Baixar o PDF</button>
-      <a class="btn-secondary op-btn op-link" id="op-whats-link" target="_blank" rel="noopener" hidden>💬 Abrir conversa com o produtor</a>
     </div>
     <div class="campo-dica" id="op-dica"></div>
     <div class="modal-actions"><button type="button" class="btn-secondary" id="op-fechar">Fechar</button></div>
@@ -16637,6 +16635,7 @@
     renderManutSub();
     osParaDestacar = vid;
     if (limpAviso && abrirCorretiva) setTimeout(() => abrirCorretivaLimp(pid, limpAviso.fora, payload.numero, dataServico), 120);
+    else if (st === 'concluida' && antes !== 'concluida') setTimeout(() => oferecerWhatsOS(pid, vid), 150);
   });
 
   // ---------- ações rápidas na OS ----------
@@ -18090,7 +18089,7 @@
 
   // ---------- PDF da OS + WhatsApp ----------
   var osPdfAtual = null;
-  async function gerarPdfOS(v, pid, btn) {
+  async function gerarPdfOS(v, pid, btn, opts = {}) {
     const p = produtoresTodos.find(x => x.id === pid);
     if (!p) return;
     const texto = btn ? btn.textContent : '';
@@ -18248,49 +18247,67 @@
       const blob = doc.output('blob');
       osPdfAtual = { blob, nome, v, p };
       mostrarPdfOS();
+      // veio do "Enviar ao produtor pelo WhatsApp" da OS concluída: já abre o compartilhamento do celular
+      if (opts.enviar && podeCompartilharPdf()) enviarPdfWhats(true);
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = texto; }
     }
   }
   function mensagemWhatsOS(v, p) {
-    const primeiro = (p.nome || '').split(' ')[0];
-    const linhas = ['Olá' + (primeiro ? ', ' + primeiro : '') + '! Aqui é da Auriverde.',
-      'Segue a ' + numOS(v.numero) + ' (' + OS_TIPOS[tipoOS(v)].toLowerCase() + ', ' + (CAT_LABEL[v.categoria] || '').toLowerCase() + ') de ' + fmtDate(statusOS(v) === 'agendada' && v.agendadaPara ? v.agendadaPara : v.data) + '.'];
-    if (v.descricao) linhas.push('Serviço: ' + resumoCurto(v.descricao, 200));
-    if (Number(v.total) > 0) linhas.push('Total: ' + fmt(Number(v.total)));
-    linhas.push('O PDF da ordem de serviço vai em anexo.');
-    return linhas.join('\n');
+    const primeiro = (p.nome || '').trim().split(/\s+/)[0];
+    const data = fmtDate(statusOS(v) === 'agendada' && v.agendadaPara ? v.agendadaPara : v.data);
+    return 'Olá' + (primeiro ? ' ' + primeiro : '') + '! Segue a ' + numOS(v.numero) + ' da Auriverde (' + OS_TIPOS[tipoOS(v)].toLowerCase() + ', ' + data + '). Qualquer dúvida, estou à disposição.';
+  }
+  // o celular deixa compartilhar o arquivo do PDF (Android e iPhone); no computador, em geral não
+  function podeCompartilharPdf() {
+    if (!osPdfAtual) return false;
+    try {
+      const f = new File([osPdfAtual.blob], osPdfAtual.nome, { type: 'application/pdf' });
+      return !!(navigator.canShare && navigator.share && navigator.canShare({ files: [f] }));
+    } catch (e) { return false; }
   }
   function mostrarPdfOS() {
-    const { blob, nome, v, p } = osPdfAtual;
+    const { v, p } = osPdfAtual;
     $('op-titulo').textContent = 'PDF da ' + numOS(v.numero);
     $('op-sub').textContent = (p.nome || '') + ' · ' + OS_STATUS[statusOS(v)];
-    let podeCompartilhar = false;
-    try {
-      const f = new File([blob], nome, { type: 'application/pdf' });
-      podeCompartilhar = !!(navigator.canShare && navigator.share && navigator.canShare({ files: [f] }));
-    } catch (e) {}
-    $('op-compartilhar').hidden = !podeCompartilhar;
-    const w = linkWhatsApp(p.telefone);
-    const link = $('op-whats-link');
-    link.hidden = !w;
-    if (w) link.href = w + '?text=' + encodeURIComponent(mensagemWhatsOS(v, p));
-    $('op-dica').textContent = podeCompartilhar
-      ? 'Toque no botão verde, escolha WhatsApp e depois o produtor: o PDF vai anexado.'
-      : (w ? 'Baixe o PDF e depois abra a conversa: a mensagem já vai escrita, é só anexar o PDF (clipe → Documento).' : 'Este produtor não tem telefone cadastrado. Baixe o PDF e envie por onde preferir.');
+    const compartilha = podeCompartilharPdf(), w = linkWhatsApp(p.telefone);
+    $('op-dica').textContent = !w
+      ? 'Cadastre o WhatsApp do produtor.' + (compartilha ? ' Enquanto isso, o botão verde abre o compartilhamento e você escolhe a conversa.' : '')
+      : compartilha ? 'Abre o compartilhamento do celular com o PDF anexado: escolha o WhatsApp e o produtor, confira e envie.'
+      : 'Baixa o PDF e abre a conversa com o produtor com a mensagem pronta: anexe o PDF (clipe → Documento), confira e envie.';
     $('modal-os-pdf').hidden = false;
   }
-  $('op-compartilhar').addEventListener('click', async () => {
+  // Nada sai sozinho: abre o compartilhamento (ou a conversa) e o técnico confere e envia.
+  async function enviarPdfWhats(automatico) {
     if (!osPdfAtual) return;
     const { blob, nome, v, p } = osPdfAtual;
-    try {
-      await navigator.share({ files: [new File([blob], nome, { type: 'application/pdf' })], title: numOS(v.numero), text: mensagemWhatsOS(v, p) });
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-      $('op-compartilhar').hidden = true;
-      $('op-dica').textContent = 'Este aparelho não deixou compartilhar direto daqui. Baixe o PDF e anexe na conversa do WhatsApp.';
+    const msg = mensagemWhatsOS(v, p);
+    if (podeCompartilharPdf()) {
+      try { await navigator.share({ files: [new File([blob], nome, { type: 'application/pdf' })], title: numOS(v.numero), text: msg }); return; }
+      catch (e) {
+        if (e && e.name === 'AbortError') return;
+        // aberto sozinho depois de gerar o PDF, o celular pode pedir um toque: fica o botão verde
+        if (automatico) return;
+      }
     }
-  });
+    if (automatico) return;
+    const w = linkWhatsApp(p.telefone);
+    if (!w) { avisar('Cadastre o WhatsApp do produtor.'); return; }
+    // sem compartilhar arquivo: abre a conversa com a mensagem pronta e baixa o PDF para anexar
+    const janela = window.open(w + '?text=' + encodeURIComponent(msg), '_blank');
+    if (janela) { try { janela.opener = null; } catch (e) {} }
+    else $('op-dica').textContent = 'Não consegui abrir o WhatsApp daqui. Baixe o PDF e envie na conversa com o produtor.';
+    baixarArquivo(nome, blob, 'o PDF');
+  }
+  $('op-whats').addEventListener('click', () => enviarPdfWhats(false));
+  // depois de concluir a OS: oferece mandar o PDF ao produtor
+  async function oferecerWhatsOS(pid, vid) {
+    if (!podeVer('exportar') || currentProdutorId !== pid) return;
+    const v = visitas.find(x => x.id === vid);
+    if (!v) return;
+    const ok = await abrirDialogo('OS concluída. Quer mandar o PDF para o produtor?', { ok: 'Enviar ao produtor pelo WhatsApp', cancelar: 'Agora não' });
+    if (ok) gerarPdfOS(v, pid, null, { enviar: true });
+  }
   $('op-baixar').addEventListener('click', () => { if (osPdfAtual) baixarArquivo(osPdfAtual.nome, osPdfAtual.blob, 'o PDF'); });
   $('op-fechar').addEventListener('click', () => { $('modal-os-pdf').hidden = true; });
 
