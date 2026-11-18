@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.19';
+  const APP_VERSAO = '2026.11.17.21';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -9518,6 +9518,7 @@
       sincronizarConjuntos(pid, l, confiavelEq);
       equipamentos = l.filter(naoArquivado).sort((a, b) => ((a.situacao === 'desativado') - (b.situacao === 'desativado')) || nomeEquip(a).localeCompare(nomeEquip(b)) || (a.criadoEm || 0) - (b.criadoEm || 0));
       renderEquipamentos();
+      try { renderTestesFicha(); } catch (e) { extraErro(e); }
       if (!$('modal-visita').hidden) { renderOSEquipChips(); preencherEquipProblema($('os-equip-problema'), equipamentos, osEquipProblema); }
       if (!$('modal-equip-ver').hidden) renderEquipVer();
     });
@@ -10297,6 +10298,7 @@
     $('manut-n-os').textContent = abertas ? String(abertas) : '';
     renderPreventivaFicha();
     try { renderLimpFicha(); } catch (e) { extraErro(e); }
+    try { renderTestesFicha(); } catch (e) { extraErro(e); }
     lista.forEach(v => container.appendChild(cartaoOSFicha(v, ultimaRev, perfis)));
     if (osParaDestacar && visitas.some(v => v.id === osParaDestacar)) { const id = osParaDestacar; osParaDestacar = null; setTimeout(() => destacarOS(id), 60); }
     else if (osParaDestacar && visitasConfiavel) osParaDestacar = null;
@@ -10430,6 +10432,7 @@
       setTimeout(() => { if (!osAssinaturaAtual) window.limparAssinatura(); }, 60);
     }, true);
     if (podeVer('exportar') && st !== 'cancelada') botao('📄 PDF / WhatsApp', e => gerarPdfOS(v, currentProdutorId, e.currentTarget));
+    if (podeVer('exportar') && st !== 'cancelada' && v.teste && testeTemAlgo(v.teste)) botao('🧪 Relatório do teste (ISO)', e => gerarPdfTesteISO(v, currentProdutorId, e.currentTarget));
     if (agendaDisponivel && ultimaRev && v.id === ultimaRev.id) {
       const prox = addMonthsISO(v.data, MESES_ATE_REVISAO);
       const b = document.createElement('button');
@@ -12088,7 +12091,7 @@
   }
   function mostrarPdfOS() {
     const { v, p } = osPdfAtual;
-    $('op-titulo').textContent = 'PDF da ' + numOS(v.numero);
+    $('op-titulo').textContent = osPdfAtual.titulo || 'PDF da ' + numOS(v.numero);
     $('op-sub').textContent = (p.nome || '') + ' · ' + OS_STATUS[statusOS(v)];
     const compartilha = podeCompartilharPdf(), w = linkWhatsApp(p.telefone);
     $('op-dica').textContent = !w
@@ -12097,13 +12100,315 @@
       : 'Baixa o PDF e abre a conversa com o produtor com a mensagem pronta: anexe o PDF (clipe → Documento), confira e envie.';
     $('modal-os-pdf').hidden = false;
   }
+  // ---------- relatório do teste da ordenhadeira (ISO 5707 / ISO 6690) ----------
+  // PDF separado do PDF da OS: medido × referência × situação, resumo no topo e o que fazer em cada item fora.
+  // As referências são as guardadas no próprio teste (ou, em teste antigo, as da Administração).
+  // Situação: OK = dentro da referência; Atenção = dentro, mas a menos de ISO_ATENCAO do limite; Fora = fora.
+  const ISO_ATENCAO = 0.10;
+  const ISO_SIT = { ok: 'OK', atencao: 'Atenção', fora: 'Fora', sem: 'Sem ref.' };
+  function sitISO(v, f) {
+    if (v == null) return null;
+    if (!f || (f.min == null && f.max == null)) return 'sem';
+    if (foraFaixa(v, f)) return 'fora';
+    if (f.min != null && f.max != null) { const m = (f.max - f.min) * ISO_ATENCAO; return v < f.min + m || v > f.max - m ? 'atencao' : 'ok'; }
+    if (f.min != null) return v < f.min * (1 + ISO_ATENCAO) ? 'atencao' : 'ok';
+    return v > f.max * (1 - ISO_ATENCAO) ? 'atencao' : 'ok';
+  }
+  // o que fazer quando o item fica fora: [abaixo, acima]
+  const ISO_REC = {
+    vacTrab: ['Vácuo de trabalho abaixo da referência: verificar o regulador de vácuo, as entradas de ar e a vazão da bomba.', 'Vácuo de trabalho acima da referência: ajustar o regulador de vácuo.'],
+    vacColetor: ['Vácuo no coletor abaixo da referência: verificar o vácuo de trabalho, as mangueiras do leite e a entrada de ar do coletor.', 'Vácuo no coletor acima da referência: conferir o regulador e a entrada de ar do coletor.'],
+    reserva: ['Reserva abaixo do mínimo: verificar entradas de ar, regulador e vazão da bomba.'],
+    vazao: ['Vazão da bomba abaixo do mínimo: revisar a bomba (palhetas, correia e óleo) e procurar entradas de ar.'],
+    vazaoManual: ['Vazão abaixo do recomendado pelo manual para esta altitude: revisar a bomba ou avaliar uma bomba de maior vazão.']
+  };
+  const nomeFaseISO = t => t.replace(/^Fase (\w)$/, (m, x) => 'Fase ' + x.toUpperCase());
+  function itensISO(t, hoje) {
+    let faixas = faixasDoTeste(t), refHoje = false;
+    if (hoje && ((faixas.reserva && faixas.reserva.min == null && hoje.conjuntos) || (faixas.vazao && faixas.vazao.min == null && hoje.vazaoNominal))) {
+      const fh = faixasTeste({ conjuntos: t.conjuntos || hoje.conjuntos, vazaoNominal: t.vazaoNominal || hoje.vazaoNominal });
+      faixas = { ...faixas };
+      ['reserva', 'vazao'].forEach(k => { if ((!faixas[k] || faixas[k].min == null) && fh[k].min != null) { faixas[k] = fh[k]; refHoje = true; } });
+    }
+    const nominal = Number(t.vazaoNominal) || (refHoje && hoje && Number(hoje.vazaoNominal)) || 0;
+    const av = avaliarTeste(t, faixas);
+    const geral = av.linhas.filter(l => l.v != null).map(l => ({ k: l.k, nome: l.tc || l.t, v: l.v, txt: fmtN(l.v) + ' ' + l.un, ref: faixaTxt(l.f, l.un), f: l.f, sit: sitISO(l.v, l.f) }));
+    // vazão: uma linha pela vazão nominal e, se o teste guardou, outra pelo manual (com a altitude)
+    const iv = geral.findIndex(x => x.k === 'vazao');
+    if (iv >= 0) {
+      const g = geral[iv];
+      g.nome = 'Vazão da bomba (pela nominal)';
+      if (g.ref && nominal > 0) g.ref += ' (' + fmtN(Math.round(g.f.min / nominal * 100), 0) + '% de ' + fmtN(nominal, 0) + ' L/min)';
+      const m = t.vazaoManual;
+      if (m && m.min > 0) geral.splice(iv + 1, 0, { k: 'vazaoManual', nome: 'Vazão da bomba (pelo manual)', v: g.v, txt: g.txt, ref: 'mín. ' + fmtN(m.min, 0) + ' L/min', f: { min: m.min, max: null }, sit: sitISO(g.v, { min: m.min, max: null }), nota: vazaoManualBase(m) });
+    }
+    let temCalc = false;
+    const puls = av.puls.map(p => {
+      const linhas = [];
+      const add = (campos, canal) => campos.forEach(c => {
+        if (c.v == null) return;
+        if (c.calc) temCalc = true;
+        linhas.push({ k: c.k, nome: nomeFaseISO(c.t) + (canal ? ' (canal ' + canal + ')' : ''), txt: fmtN(c.v) + ' ' + c.un + (c.calc ? '*' : ''), ref: faixaTxt(c.f, c.un), sit: sitISO(c.v, c.f) });
+      });
+      add(p.campos, p.campos2 ? 1 : 0);
+      if (p.campos2) add(p.campos2, 2);
+      if (p.limp) {
+        const lim = limpRefTxt(p.limp.L);
+        linhas.push({ k: 'limp', nome: 'Limp', txt: limpValTxt(p.limp) + (p.limp.canal ? ' (canal ' + p.limp.canal + ' maior)' : ''), ref: lim ? 'máx. ' + lim : '', sit: lim ? p.limp.nivel : 'sem' });
+      }
+      return { n: p.n, linhas };
+    }).filter(p => p.linhas.length);
+    const todas = geral.concat(...puls.map(p => p.linhas));
+    const conta = s => todas.filter(x => x.sit === s).length;
+    const n = { ok: conta('ok'), atencao: conta('atencao'), fora: conta('fora'), sem: conta('sem') };
+    n.avaliados = n.ok + n.atencao + n.fora;
+    n.dentro = n.ok + n.atencao;
+    // recomendações: uma frase por item fora (pulsador: uma frase com tudo o que ficou fora nele)
+    const rec = [];
+    geral.filter(x => x.sit === 'fora').forEach(x => {
+      const r = ISO_REC[x.k];
+      if (!r) return;
+      const acima = x.f && x.f.max != null && x.v > x.f.max;
+      rec.push(r[acima && r[1] ? 1 : 0]);
+    });
+    puls.forEach(p => {
+      const fora = p.linhas.filter(l => l.sit === 'fora');
+      if (!fora.length) return;
+      const nomes = [...new Set(fora.map(l => l.k === 'limp' ? 'Limp' : l.nome.replace(/ \(canal \d\)$/, '').toLowerCase()))];
+      rec.push('Pulsador ' + p.n + ' com ' + listaE(nomes) + ' fora da referência: revisar ou trocar o reparo do pulsador e conferir as mangueiras de pulsação' +
+        (fora.some(l => l.k === 'taxa') ? '; se a pulsação for eletrônica, conferir também o controlador' : '') + '.');
+    });
+    const atencao = geral.filter(x => x.sit === 'atencao').map(x => x.nome.toLowerCase())
+      .concat(...puls.map(p => p.linhas.filter(l => l.sit === 'atencao').map(l => 'pulsador ' + p.n + ' (' + (l.k === 'limp' ? 'Limp' : l.nome.toLowerCase()) + ')')));
+    return { geral, puls, n, rec, atencao, temCalc, faixas, refHoje };
+  }
+  function resumoISOTxt(n) {
+    return n.avaliados ? n.dentro + ' de ' + plural(n.avaliados, 'item dentro da referência', 'itens dentro da referência') : 'Sem itens com referência';
+  }
+  async function gerarPdfTesteISO(v, pid, btn) {
+    const p = produtoresTodos.find(x => x.id === pid);
+    if (!p || !v || !v.teste || !testeTemAlgo(v.teste)) return;
+    const texto = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Gerando PDF…'; }
+    try {
+      let JsPDF;
+      try { JsPDF = await carregarJsPDF(); }
+      catch (e) { avisar('Não consegui carregar o gerador de PDF. Verifique a internet e tente de novo.'); return; }
+      const t = v.teste;
+      const perfis = await perfisDe([v.tecnicoId, v.criadoPor]);
+      const tecNome = v.tecnicoId ? (nomeReal(v.tecnicoId) || (perfis[v.tecnicoId] && perfis[v.tecnicoId].name) || '') : ((v.revisao && v.revisao.responsavelTecnico) || '');
+      let eqs = [];
+      try { eqs = pid === equipPid && equipamentosTodos.length ? equipamentosTodos : await lerColecao('produtores/' + pid + '/equipamentos'); } catch (e) {}
+      const ativos = soInstalados((eqs || []).filter(e => !e.arquivado && e.situacao !== 'desativado'));
+      const ords = ativos.filter(e => e.tipo === 'ordenhadeira'), bombas = ativos.filter(e => e.tipo === 'bomba');
+      const marcaMod = l => l.map(e => [e.marca, e.modelo].filter(Boolean).join(' ')).filter(Boolean).join(' / ');
+      const sistema = ords.map(e => [e.extras && e.extras.sistema, e.extras && e.extras.linha].filter(Boolean).join(', ')).filter(Boolean).join(' / ') ||
+        (t.vazaoManual && CT_SIST_NOME[t.vazaoManual.sistema] ? CT_SIST_NOME[t.vazaoManual.sistema] : '');
+      const conj = Number(t.conjuntos) || conjuntosDeEquip(eqs) || conjuntosDoProdutor(p);
+      const nominalHoje = vazaoNominalDeEquip(eqs);
+      const iso = itensISO(t, { conjuntos: conj, vazaoNominal: nominalHoje });
+      const nomTxt = Number(t.vazaoNominal) || nominalHoje;
+      const bombaTxt = [marcaMod(bombas), nomTxt ? 'nominal ' + fmtN(nomTxt, 0) + ' L/min' : ''].filter(Boolean).join(' · ');
+
+      const doc = registrarFontePdf(new JsPDF({ unit: 'mm', format: 'a4' }));
+      const W = 210, H = 297, M = 14, LARG = W - 2 * M;
+      const MARCA = [14, 59, 92], MARCA_ESC = [8, 42, 66], OURO = [242, 184, 75], TINTA = [20, 34, 44], SUAVE = [86, 102, 115],
+        LINHA = [223, 230, 235], FUNDO = [242, 246, 248], BRANCO = [255, 255, 255];
+      // situação: cor do texto e fundo do selo (o texto escrito vai junto, para não depender só da cor)
+      const COR_SIT = { ok: [[21, 122, 110], [226, 243, 240]], atencao: [[154, 100, 16], [251, 240, 218]], fora: [[181, 65, 43], [246, 222, 216]], sem: [[86, 102, 115], [235, 239, 242]] };
+      const cT = c => doc.setTextColor(c[0], c[1], c[2]), cF = c => doc.setFillColor(c[0], c[1], c[2]), cL = c => doc.setDrawColor(c[0], c[1], c[2]);
+      const fonte = (tm, e) => { doc.setFont(doc.__fonte || 'helvetica', e || 'normal'); doc.setFontSize(tm); };
+      const num = numOS(v.numero);
+      let y = 0;
+      const cabPeq = () => { cF(MARCA); doc.rect(0, 0, W, 11, 'F'); cF(OURO); doc.rect(0, 11, W, 0.9, 'F'); fonte(9, 'bold'); cT(BRANCO); doc.text(pdfTxt('Ordenha360  ·  Relatório do teste  ·  ' + num + '  ·  ' + (p.nome || '')), M, 7.3); y = 20; };
+      const garantir = h => { if (y + h > H - 16) { doc.addPage(); cabPeq(); } };
+      const titulo = tx => { garantir(16); y += 2; fonte(11.5, 'bold'); cT(MARCA_ESC); doc.text(pdfTxt(tx), M, y); cL(OURO); doc.setLineWidth(0.8); doc.line(M, y + 2, M + 14, y + 2); y += 7.5; };
+      const paragrafo = (tx, o = {}) => { const tam = o.tam || 10; fonte(tam, o.estilo); cT(o.cor || TINTA); doc.splitTextToSize(pdfTxt(tx), o.largura || LARG - (o.x ? o.x - M : 0)).forEach(l => { garantir(tam * 0.45); doc.text(l, o.x || M, y); y += tam * 0.43; }); y += o.depois == null ? 1.5 : o.depois; };
+      const rot = (tx, x, yy) => { fonte(7.3, 'bold'); cT(SUAVE); doc.text(pdfTxt(tx).toUpperCase(), x, yy); };
+      function grade(itens, cols) {
+        const w = (LARG - (cols - 1) * 5) / cols;
+        for (let i = 0; i < itens.length; i += cols) {
+          const linha = itens.slice(i, i + cols);
+          const alt = Math.max(...linha.map(([, val]) => Math.min(3, doc.splitTextToSize(pdfTxt(val || '-'), w).length))) * 4.3 + 5;
+          garantir(alt);
+          linha.forEach(([r, val], k) => { const x = M + k * (w + 5); rot(r, x, y); fonte(9.8, 'bold'); cT(TINTA); doc.text(doc.splitTextToSize(pdfTxt(val || '-'), w).slice(0, 3), x, y + 4.4); });
+          y += alt + 1;
+        }
+      }
+      // tabela Medida | Medido | Referência | Situação (a situação vai num selo colorido com o texto)
+      function tabelaISO(linhas) {
+        const colunas = [{ t: 'Medida', w: 62 }, { t: 'Medido', w: 38 }, { t: 'Referência', w: 52 }, { t: 'Situação', w: 30 }];
+        const tot = colunas.reduce((s, c) => s + c.w, 0), larg = colunas.map(c => c.w / tot * LARG);
+        const cab = () => { garantir(8); cF(MARCA); doc.rect(M, y, LARG, 7, 'F'); fonte(8, 'bold'); cT(BRANCO); let x = M; colunas.forEach((c, i) => { doc.text(c.t, x + 1.8, y + 4.7); x += larg[i]; }); y += 7; };
+        cab();
+        linhas.forEach((l, k) => {
+          fonte(8.8, 'bold');
+          const nomeL = doc.splitTextToSize(pdfTxt(l.nome), larg[0] - 3.6);
+          fonte(8.8);
+          const refL = doc.splitTextToSize(pdfTxt(l.ref || 'sem referência'), larg[2] - 3.6);
+          const medL = doc.splitTextToSize(pdfTxt(l.txt), larg[1] - 3.6);
+          const h = Math.max(nomeL.length, refL.length, medL.length) * 3.9 + 3.4;
+          if (y + h > H - 16) { doc.addPage(); cabPeq(); cab(); }
+          if (k % 2) { cF(FUNDO); doc.rect(M, y, LARG, h, 'F'); }
+          let x = M;
+          fonte(8.8, 'bold'); cT(TINTA); doc.text(nomeL, x + 1.8, y + 4.6, { lineHeightFactor: 1.25 }); x += larg[0];
+          fonte(8.8, 'bold'); doc.text(medL, x + 1.8, y + 4.6, { lineHeightFactor: 1.25 }); x += larg[1];
+          fonte(8.8); cT(l.ref ? TINTA : SUAVE); doc.text(refL, x + 1.8, y + 4.6, { lineHeightFactor: 1.25 }); x += larg[2];
+          const s = l.sit || 'sem', [cor, fundo] = COR_SIT[s];
+          fonte(8.2, 'bold');
+          const txs = ISO_SIT[s], ws = doc.getTextWidth(txs) + 5;
+          cF(fundo); doc.roundedRect(x + 1.6, y + 1.3, ws, 5.2, 2.6, 2.6, 'F');
+          cT(cor); doc.text(txs, x + 1.6 + 2.5, y + 4.8);
+          cL(LINHA); doc.setLineWidth(0.2); doc.line(M, y + h, M + LARG, y + h);
+          y += h;
+        });
+        y += 3;
+      }
+
+      // cabeçalho
+      cF(MARCA); doc.rect(0, 0, W, 34, 'F');
+      cF(MARCA_ESC); doc.rect(0, 28, W, 6, 'F');
+      cF(OURO); doc.rect(0, 34, W, 1.6, 'F');
+      cF(BRANCO); doc.roundedRect(M, 8, 46, 17, 3, 3, 'F');
+      try { doc.addImage(logoParaPdf(), 'PNG', M + 2, 10.96, 42, 11.08, 'logo', 'FAST'); } catch (e) {}
+      fonte(17, 'bold'); cT(BRANCO); doc.text('Relatório do teste', M + 52, 15.5);
+      fonte(9); doc.text(pdfTxt('Ordenhadeira · ISO 5707 e ISO 6690'), M + 52, 21.5);
+      fonte(15, 'bold'); doc.text(pdfTxt(num), W - M, 15.5, { align: 'right' });
+      fonte(9, 'bold'); doc.text(pdfTxt(fmtDate(v.data)), W - M, 21.5, { align: 'right' });
+      y = 45;
+      fonte(15, 'bold'); cT(TINTA);
+      doc.splitTextToSize(pdfTxt(p.nome || 'Produtor'), LARG).forEach(l => { doc.text(l, M, y); y += 6.5; });
+      const end = [p.propriedade, p.linha, [p.cidade, p.estado].filter(Boolean).join(' - ')].filter(Boolean).join(' · ');
+      if (end) paragrafo(end, { cor: SUAVE, tam: 9.8, depois: 0.3 });
+      y += 3;
+      grade([['Produtor', p.nome], ['Propriedade', p.propriedade || '-'], ['Data do teste', fmtDate(v.data)],
+        ['Técnico', tecNome || '-'], ['Ordem de serviço', num], ['Nº de conjuntos', conj ? String(conj) : '-'],
+        ['Ordenhadeira (marca/modelo)', marcaMod(ords) || '-'], ['Sistema', sistema || '-'], ['Bomba de vácuo', bombaTxt || '-']], 3);
+
+      // resumo
+      const n = iso.n;
+      const corRes = n.fora ? COR_SIT.fora : n.atencao ? COR_SIT.atencao : COR_SIT.ok;
+      garantir(24);
+      y += 1;
+      cF(corRes[1]); doc.roundedRect(M, y, LARG, 19, 3, 3, 'F');
+      cF(corRes[0]); doc.rect(M, y, 1.6, 19, 'F');
+      fonte(14, 'bold'); cT(corRes[0]); doc.text(pdfTxt(resumoISOTxt(n)), M + 6, y + 8);
+      fonte(9); cT(TINTA);
+      doc.text(pdfTxt('OK: ' + n.ok + '   ·   Atenção: ' + n.atencao + '   ·   Fora: ' + n.fora + (n.sem ? '   ·   Sem referência: ' + n.sem : '')), M + 6, y + 14.2);
+      y += 25;
+
+      if (iso.geral.length) {
+        titulo('Vácuo e bomba');
+        tabelaISO(iso.geral);
+        const vm = iso.geral.find(x => x.k === 'vazaoManual');
+        if (vm) paragrafo('Vazão pelo manual: ' + vm.nota + '.', { tam: 8.3, cor: SUAVE });
+        if (iso.refHoje) paragrafo('Este teste não guardou o nº de conjuntos ou a vazão nominal da bomba: a referência da reserva e da vazão foi calculada com os equipamentos cadastrados hoje.', { tam: 8.3, cor: SUAVE });
+      }
+      if (iso.puls.length) {
+        titulo('Pulsadores');
+        iso.puls.forEach(pu => {
+          garantir(22);
+          fonte(9.5, 'bold'); cT(MARCA_ESC); doc.text(pdfTxt('Pulsador ' + pu.n), M, y + 1); y += 4;
+          tabelaISO(pu.linhas);
+        });
+        const L = limpRef(iso.faixas);
+        paragrafo('Limp: diferença entre os dois canais do pulsador, em valor absoluto' + (limpRefTxt(L) ? '; atenção a partir de ' + fmtN(L.atencao, 0) + '% do limite' : '') + '.' +
+          (iso.temCalc ? ' * calculado pelas fases A, B, C e D.' : ''), { tam: 8.3, cor: SUAVE });
+      }
+
+      titulo('Recomendações');
+      if (iso.rec.length) iso.rec.forEach(r => { garantir(6); fonte(9.6, 'bold'); cT(COR_SIT.fora[0]); doc.text('•', M + 1, y); paragrafo(r, { tam: 9.6, x: M + 5, depois: 1.2 }); });
+      else paragrafo('Nenhum item fora da referência.', { tam: 9.8, estilo: 'bold', cor: COR_SIT.ok[0] });
+      if (iso.atencao.length) paragrafo('Em atenção (dentro da referência, mas perto do limite): ' + listaE(iso.atencao) + '. Acompanhar no próximo teste.', { tam: 9.3, cor: COR_SIT.atencao[0] });
+      y += 2;
+      paragrafo('Teste conforme os procedimentos das normas ISO 5707 e ISO 6690.', { tam: 9.6, estilo: 'bold' });
+      paragrafo('Situação: OK = dentro da referência; Atenção = dentro da referência, mas a menos de ' + fmtN(ISO_ATENCAO * 100, 0) +
+        '% do limite; Fora = fora da referência. As referências são as cadastradas na Administração no dia do teste.', { tam: 8.3, cor: SUAVE });
+
+      // assinaturas (a do produtor só aparece se a OS tiver)
+      if (v.assinatura || tecNome) {
+        garantir(40);
+        y += 4;
+        const aw = (LARG - 12) / 2;
+        if (v.assinatura) { try { doc.addImage(v.assinatura, 'PNG', M + 2, y, aw - 4, (aw - 4) * 0.3, 'assinatura', 'FAST'); } catch (e) {} }
+        const ly = y + (aw - 4) * 0.3 + 2;
+        cL(SUAVE); doc.setLineWidth(0.3); doc.line(M, ly, M + aw, ly); doc.line(M + aw + 12, ly, W - M, ly);
+        fonte(8.5, 'bold'); cT(TINTA);
+        doc.text(pdfTxt(v.assinadoPor || p.nome || 'Produtor'), M, ly + 4.5);
+        doc.text(pdfTxt(tecNome || 'Técnico'), M + aw + 12, ly + 4.5);
+        fonte(7.5); cT(SUAVE);
+        doc.text(pdfTxt('Produtor' + (v.assinadaEm ? ' · assinado em ' + new Date(v.assinadaEm).toLocaleDateString('pt-BR') : '')), M, ly + 8.3);
+        doc.text('Técnico responsável', M + aw + 12, ly + 8.3);
+      }
+      const np = doc.getNumberOfPages();
+      for (let i = 1; i <= np; i++) {
+        doc.setPage(i);
+        cL(LINHA); doc.setLineWidth(0.3); doc.line(M, H - 11, W - M, H - 11);
+        fonte(8); cT(SUAVE);
+        doc.text(pdfTxt('Ordenha360 · Relatório do teste · ' + num + ' · gerado em ' + new Date().toLocaleDateString('pt-BR')), M, H - 6.5);
+        doc.text('Página ' + i + ' de ' + np, W - M, H - 6.5, { align: 'right' });
+      }
+      const nome = 'ordenha360-teste-' + num.replace(' ', '-').toLowerCase() + '-' + slug(p.nome) + '.pdf';
+      const primeiro = (p.nome || '').trim().split(/\s+/)[0];
+      osPdfAtual = { blob: doc.output('blob'), nome, v, p, titulo: 'Relatório do teste · ' + num,
+        msg: 'Olá' + (primeiro ? ' ' + primeiro : '') + '! Segue o relatório do teste da ordenhadeira (' + num + ', ' + fmtDate(v.data) + '): ' + resumoISOTxt(n).toLowerCase() + '. Qualquer dúvida, estou à disposição.' };
+      mostrarPdfOS();
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = texto; }
+    }
+  }
+  // ficha do produtor: os testes da ordenhadeira, do mais novo para o mais antigo, com o relatório de cada um
+  let ttFichaTodos = false;
+  function renderTestesFicha() {
+    const box = $('tt-ficha');
+    if (!box) return;
+    const lista = (visitas || []).filter(o => !o.arquivado && statusOS(o) !== 'cancelada' && o.teste && testeTemAlgo(o.teste))
+      .sort((a, b) => chaveOS(b).localeCompare(chaveOS(a)));
+    box.innerHTML = '';
+    box.hidden = !lista.length;
+    if (!lista.length) return;
+    const tit = document.createElement('div');
+    tit.className = 'section-label';
+    tit.textContent = 'Testes da ordenhadeira';
+    box.appendChild(tit);
+    const pid = currentProdutorId;
+    const hoje = { conjuntos: conjuntosDoProdutor(produtoresTodos.find(x => x.id === pid)), vazaoNominal: equipPid === pid ? vazaoNominalDeEquip(equipamentosTodos) : null };
+    if (equipPid === pid && equipamentosTodos.length) hoje.conjuntos = conjuntosDeEquip(equipamentosTodos) || hoje.conjuntos;
+    (ttFichaTodos ? lista : lista.slice(0, 3)).forEach(o => {
+      const n = itensISO(o.teste, hoje).n;
+      const l = document.createElement('div');
+      l.className = 'ttf-linha';
+      l.innerHTML = '<div class="ttf-info"><div class="ttf-nome"></div><div class="ttf-det"></div></div>';
+      l.querySelector('.ttf-nome').textContent = numOS(o.numero) + ' · ' + fmtDate(o.data);
+      const det = l.querySelector('.ttf-det');
+      det.textContent = resumoISOTxt(n) + (n.fora ? ' · ' + n.fora + ' fora' : n.atencao ? ' · ' + n.atencao + ' em atenção' : '');
+      det.classList.add(n.fora ? 'fora' : n.atencao ? 'atencao' : 'ok');
+      if (podeVer('exportar')) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn-secondary ttf-btn';
+        b.textContent = 'Relatório (ISO)';
+        b.addEventListener('click', () => gerarPdfTesteISO(o, pid, b));
+        l.appendChild(b);
+      }
+      box.appendChild(l);
+    });
+    if (lista.length > 3) {
+      const m = document.createElement('button');
+      m.type = 'button';
+      m.className = 'link-btn ttf-mais';
+      m.textContent = ttFichaTodos ? 'Ver só os 3 mais novos' : 'Ver todos (' + lista.length + ')';
+      m.addEventListener('click', () => { ttFichaTodos = !ttFichaTodos; renderTestesFicha(); });
+      box.appendChild(m);
+    }
+  }
   // Nada sai sozinho: abre o compartilhamento (ou a conversa) e o técnico confere e envia.
   async function enviarPdfWhats(automatico) {
     if (!osPdfAtual) return;
     const { blob, nome, v, p } = osPdfAtual;
-    const msg = mensagemWhatsOS(v, p);
+    const msg = osPdfAtual.msg || mensagemWhatsOS(v, p);
     if (podeCompartilharPdf()) {
-      try { await navigator.share({ files: [new File([blob], nome, { type: 'application/pdf' })], title: numOS(v.numero), text: msg }); return; }
+      try { await navigator.share({ files: [new File([blob], nome, { type: 'application/pdf' })], title: osPdfAtual.titulo || numOS(v.numero), text: msg }); return; }
       catch (e) {
         if (e && e.name === 'AbortError') return;
         // aberto sozinho depois de gerar o PDF, o celular pode pedir um toque: fica o botão verde
