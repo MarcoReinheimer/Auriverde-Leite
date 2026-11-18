@@ -26,6 +26,7 @@ App instalável (PWA) hospedado no GitHub Pages, com banco compartilhado no Supa
 | `fontes/` | fonte IBM Plex Sans da tela (`.woff2`) e do PDF (`.ttf`, baixada só ao gerar PDF) |
 | `.github/workflows/manter-supabase.yml` | tarefa diária que não deixa o Supabase pausar (ver abaixo) |
 | `emails-supabase.md` | e-mails do login em português (confirmação de cadastro e troca de senha), para colar no Supabase |
+| `supabase/functions/enviar-avisos/` | função do Supabase que manda os avisos no celular (ver "Avisos no celular") |
 
 Ao trocar um arquivo de `img/` ou `fontes/`, aumente a `VERSAO` no `sw.js`: esses arquivos ficam guardados no celular e só são baixados de novo quando a versão muda.
 
@@ -56,5 +57,60 @@ uma consulta mínima ao banco com a chave publicável do `config.js`. Ela não l
 - O Supabase também avisa por e-mail uma semana antes de pausar.
 - Para rodar na hora: Actions → Manter o Supabase acordado → **Run workflow**.
 
+## Avisos no celular (Web Push)
+O app já tem os botões para ligar os avisos; quem manda os avisos é a função **enviar-avisos** do Supabase
+(`supabase/functions/enviar-avisos/index.ts`). Enquanto ela não estiver publicada e a chave pública não estiver
+no `config.js`, os botões mostram "Os avisos ainda não foram configurados".
+
+**O que chega no celular**
+- **Produtor** (botão "Receber avisos no celular", no Início da área do produtor): todo dia às 8h de Brasília, no máximo
+  1 aviso por produtor, nesta ordem: visita agendada para amanhã; revisão marcada para os próximos 7 dias (avisa uma vez)
+  ou revisão vencida (uma vez por semana); troca de componente nos próximos 7 dias (avisa uma vez).
+  Ex.: "Sua ordenhadeira está com a revisão marcada para 23/11. Qualquer dúvida, abra um chamado no app."
+- **Técnico** (Mais → Avisos no celular): um aviso na hora em que um produtor abre um chamado.
+- O que foi enviado fica gravado em `avisos-enviados/` (para não repetir). Celular que desinstalou o app sai sozinho da lista.
+- **iPhone:** só funciona com o app instalado na tela inicial (Compartilhar → Adicionar à Tela de Início) e iOS 16.4 ou mais novo.
+- A data da próxima troca de componente é atualizada no cadastro do produtor sempre que alguém abre a ficha dele.
+
+**Passo a passo (uma vez, no computador, na pasta do app)**
+1. Gere as chaves VAPID:
+   ```
+   npx web-push generate-vapid-keys
+   ```
+   Guarde as duas. A **Public Key** vai no `config.js`, em `vapidPublicKey`. A **Private Key** nunca vai para o GitHub nem para o `config.js`.
+2. Entre no Supabase pelo terminal e ligue a pasta ao projeto (o `<ref>` é o começo do endereço do projeto: `https://<ref>.supabase.co`):
+   ```
+   npx supabase login
+   npx supabase link --project-ref <ref>
+   ```
+3. Guarde os segredos da função (troque os valores; o `AVISOS_SEGREDO` é uma senha longa que você inventa):
+   ```
+   npx supabase secrets set VAPID_PUBLIC_KEY="<public key>" VAPID_PRIVATE_KEY="<private key>" VAPID_SUBJECT="mailto:<seu e-mail>" AVISOS_SEGREDO="<senha longa>"
+   ```
+   O `SUPABASE_URL`, a `SUPABASE_ANON_KEY` e a `SUPABASE_SERVICE_ROLE_KEY` o Supabase já entrega para a função: não precisa pôr.
+4. Publique a função:
+   ```
+   npx supabase functions deploy enviar-avisos --no-verify-jwt
+   ```
+   (`--no-verify-jwt` porque o agendador entra com o `AVISOS_SEGREDO`; no aviso de chamado a própria função confere o login de quem pediu.)
+5. Teste na mão (deve responder com quantos produtores estão inscritos):
+   ```
+   curl -X POST "https://<ref>.supabase.co/functions/v1/enviar-avisos" -H "Authorization: Bearer <senha longa>" -H "Content-Type: application/json" -d "{\"modo\":\"diario\"}"
+   ```
+6. Agende todo dia às 8h de Brasília (11h no horário UTC; o Brasil não tem mais horário de verão).
+   Supabase → **Database → Extensions**: ligue **pg_cron** e **pg_net**. Depois, no **SQL Editor**:
+   ```sql
+   select cron.schedule('enviar-avisos-8h', '0 11 * * *', $$
+     select net.http_post(
+       url := 'https://<ref>.supabase.co/functions/v1/enviar-avisos',
+       headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer <senha longa>'),
+       body := '{"modo":"diario"}'::jsonb
+     );
+   $$);
+   ```
+   Para conferir: `select * from cron.job;` · para cancelar: `select cron.unschedule('enviar-avisos-8h');`
+   Este comando com a senha fica só no Supabase: não cole ele em arquivo do GitHub.
+7. Coloque a Public Key no `config.js` (`vapidPublicKey: '...'`) e suba no GitHub.
+
 ## Nunca coloque no config.js
-A chave **service_role / secret** nem a senha do banco.
+A chave **service_role / secret** nem a senha do banco. Nem a chave **privada** VAPID dos avisos (só a pública vai lá).

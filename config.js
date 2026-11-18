@@ -7,5 +7,7 @@
 // =====================================================================
 window.AURIVERDE_CONFIG = {
   supabaseUrl: 'https://udhktokpkquupxcupeij.supabase.co',
-  supabaseKey: 'sb_publishable_trMbL2MnXQZ1px8VrfF9Cw_EEjRrxxz'
+  supabaseKey: 'sb_publishable_trMbL2MnXQZ1px8VrfF9Cw_EEjRrxxz',
+  // avisos no celular: a chave PÚBLICA VAPID (a privada fica só nos segredos da Edge Function; veja o README)
+  vapidPublicKey: ''
 };
