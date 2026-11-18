@@ -1,6 +1,6 @@
 // Deixa o app abrir sem internet. Guarda os arquivos do app e as bibliotecas
 // (Excel, PDF, fontes). NUNCA guarda os dados do Supabase: esses vêm sempre do banco.
-const VERSAO = 'ordenha360-v11';
+const VERSAO = 'ordenha360-v12';
 // logo, ícone e fontes saíram de dentro do index.html para estes arquivos (img/ e fontes/)
 const ESTATICOS = ['./img/logo.png', './img/favicon.png',
   './fontes/ibm-plex-sans-400.woff2', './fontes/ibm-plex-sans-500.woff2', './fontes/ibm-plex-sans-600.woff2', './fontes/ibm-plex-sans-700.woff2',
@@ -38,4 +38,24 @@ self.addEventListener('fetch', (e) => {
     );
   }
   // qualquer outra coisa (Supabase, login): vai direto para a internet, sem guardar
+});
+
+// avisos no celular (Web Push): o servidor manda { titulo, texto, tela, tag }
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { texto: e.data ? e.data.text() : '' }; }
+  const opcoes = { body: d.texto || '', icon: './icon-192.png', badge: './icon-192.png', lang: 'pt-BR', data: { tela: d.tela || '' } };
+  if (d.tag) opcoes.tag = d.tag;
+  e.waitUntil(self.registration.showNotification(d.titulo || 'Ordenha360', opcoes));
+});
+// toque no aviso: traz o app para frente (ou abre) na tela certa
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const tela = (e.notification.data && e.notification.data.tela) || '';
+  const url = new URL('./' + (tela ? '?abrir=' + encodeURIComponent(tela) : ''), self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((lista) => {
+    const aberta = lista.find((c) => c.url.startsWith(self.registration.scope));
+    if (aberta) { aberta.postMessage({ tipo: 'abrir', tela }); return aberta.focus(); }
+    return self.clients.openWindow(url);
+  }));
 });

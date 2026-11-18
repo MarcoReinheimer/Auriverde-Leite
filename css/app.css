@@ -1973,6 +1973,13 @@
     background: var(--accent-suave); color: var(--accent-txt); font-size: 14px; font-weight: 600; line-height: 1.35; }
   .cz-s-base .ic { width: 18px; height: 18px; flex: none; margin-top: 1px; }
 
+  /* ---------- avisos no celular ---------- */
+  .pd-avisos { margin-top: 16px; }
+  .pd-av-tit { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .pd-av-txt { font-size: var(--fs-texto); color: var(--ink-soft); line-height: 1.4; }
+  .av-btn { width: 100%; margin: 12px 0 0; min-height: 48px; }
+  .pd-avisos .campo-dica, .mais-avisos .campo-dica:last-child { margin-top: 10px; }
+
   /* ---------- Painel da diretoria ---------- */
   .pn-filtros { margin-bottom: 12px; }
   .pn-filtros .flt-chips { margin-bottom: 10px; }

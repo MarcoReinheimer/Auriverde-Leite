@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.18.3';
+  const APP_VERSAO = '2026.11.18.5';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -114,7 +114,7 @@
   let dbRef = null;
   const DEMO_CHAVE = 'auriverde_demo';
   const DEMO_ATIVO = (() => { try { return localStorage.getItem(DEMO_CHAVE) === '1'; } catch (e) { return false; } })();
-  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque', 'orcamentos'];
+  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque', 'orcamentos', 'avisos', 'avisos-tecnicos'];
   function caminhoFisico(c) {
     if (!DEMO_ATIVO) return c;
     const i = c.indexOf('/'), raiz = i < 0 ? c : c.slice(0, i);
@@ -1302,6 +1302,13 @@
     const temp = ultimaTemperatura(visitas);
     campos.ultimaTempLeite = temp ? temp.valor : null;
     campos.ultimaTempLeiteData = temp ? temp.data : null;
+    // próxima troca de componente do plano preventivo (o servidor usa no aviso ao celular do produtor)
+    try {
+      const pl = planoDoProdutor(produtores.find(x => x.id === pid), visitas);
+      const prox = pl.itens.filter(i => i.proxima).sort((a, b) => a.proxima.localeCompare(b.proxima))[0];
+      campos.proximaTrocaData = prox ? prox.proxima : null;
+      campos.proximaTrocaComp = prox ? prox.comp.nome : null;
+    } catch (e) {}
     const p = produtores.find(x => x.id === pid);
     if (p && Object.keys(campos).every(k => (p[k] ?? null) === campos[k])) return;
     updateProdutor(pid, campos);
@@ -7121,6 +7128,7 @@
 
   // ---- "Mais" ----
   function abrirMais() {
+    avPintarTecnico();
     const box = $('mais-setores');
     box.innerHTML = '';
     SETORES.filter(s => podeVerSetor(s.id)).forEach(s => {
@@ -10383,6 +10391,151 @@
       btn.disabled = false; btn.textContent = texto;
     }
   });
+
+  // =====================================================================
+  // AVISOS NO CELULAR (Web Push)
+  // O produtor (na área do produtor) e o técnico (no Mais) ligam os avisos neste aparelho.
+  // A inscrição fica em avisos/<idDoProdutor>/inscricoes/<id> ou avisos-tecnicos/<idDaPessoa>/inscricoes/<id>
+  // (o id sai do endereço da inscrição: ligar duas vezes no mesmo aparelho não duplica).
+  // Quem manda os avisos é a Edge Function "enviar-avisos" do Supabase (veja o README): o app só inscreve.
+  // A chave pública VAPID fica no config.js (vapidPublicKey); a privada fica só nos segredos da função.
+  // =====================================================================
+  const avChavePublica = () => String((window.AURIVERDE_CONFIG || {}).vapidPublicKey || '').trim();
+  const avEhIPhone = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const avInstalado = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const avSuporta = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  const AV_IPHONE_TXT = 'No iPhone, os avisos só funcionam com o app instalado na tela inicial (Compartilhar → Adicionar à Tela de Início) e com o iOS 16.4 ou mais novo.';
+  function avBase64(b64) {
+    const pad = '='.repeat((4 - b64.length % 4) % 4);
+    const s = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(s, c => c.charCodeAt(0));
+  }
+  async function avIdDe(endpoint) {
+    const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint));
+    return [...new Uint8Array(h)].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  async function avInscricaoAtual() {
+    if (!avSuporta()) return null;
+    try { const reg = await navigator.serviceWorker.getRegistration(); return reg ? await reg.pushManager.getSubscription() : null; } catch (e) { return null; }
+  }
+  // o que impede os avisos neste aparelho ('' quando dá para ligar)
+  function avImpedimento() {
+    if (!avChavePublica()) return 'Os avisos ainda não foram configurados: falta a chave pública no config.js (veja o README).';
+    if (avEhIPhone() && !avInstalado()) return AV_IPHONE_TXT;
+    if (!avSuporta()) return 'Este navegador não recebe avisos. No Android, use o Chrome; no iPhone, instale o app na tela inicial (iOS 16.4 ou mais novo).';
+    if (Notification.permission === 'denied') return 'Os avisos estão bloqueados para este app nas configurações do celular. Libere as notificações e tente de novo.';
+    return '';
+  }
+  // este aparelho está inscrito nesta coleção?
+  async function avLigadoEm(colecao) {
+    const sub = await avInscricaoAtual();
+    if (!sub) return false;
+    const id = await avIdDe(sub.endpoint);
+    return (await lerColecao(colecao)).some(d => d.id === id);
+  }
+  async function avLigar(colecao, extra) {
+    const imp = avImpedimento();
+    if (imp) { avisar(imp); return false; }
+    const ok = await confirmar('Ligar os avisos neste celular? Ele vai pedir a sua permissão para mostrar notificações.' + (avEhIPhone() ? ' ' + AV_IPHONE_TXT : ''), 'Ligar avisos');
+    if (!ok) return false;
+    let perm = Notification.permission;
+    if (perm !== 'granted') perm = await Notification.requestPermission();
+    if (perm !== 'granted') { avisar('Sem a permissão, o celular não mostra os avisos. Dá para liberar depois nas configurações do celular.'); return false; }
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: avBase64(avChavePublica()) });
+      const j = sub.toJSON();
+      const id = await avIdDe(j.endpoint);
+      const r = await gravar('set', colecao + '/' + id, {
+        endpoint: j.endpoint, keys: j.keys, ...extra,
+        aparelho: avEhIPhone() ? 'iPhone' : /android/i.test(navigator.userAgent) ? 'Android' : 'Computador',
+        criadoPor: viewerId || null, criadoEm: Date.now()
+      });
+      if (r && r.recusado) return false;
+      return true;
+    } catch (e) {
+      avisar('Não consegui ligar os avisos: ' + (e && e.message ? e.message : e));
+      return false;
+    }
+  }
+  // tira só a inscrição desta coleção (o mesmo aparelho pode continuar inscrito em outra)
+  async function avDesligar(colecao) {
+    const sub = await avInscricaoAtual();
+    if (!sub) return;
+    gravar('delete', colecao + '/' + await avIdDe(sub.endpoint));
+  }
+  function avPintarBotao(btn, txt, dica, ligado, rotLigar, textoLigado, textoDesligado) {
+    btn.textContent = ligado ? 'Desligar os avisos' : rotLigar;
+    btn.className = ligado ? 'btn-secondary av-btn' : 'add-record-btn av-btn';
+    btn.disabled = false;
+    txt.textContent = ligado ? textoLigado : textoDesligado;
+    const imp = ligado ? '' : avImpedimento();
+    dica.textContent = imp + (DEMO_ATIVO ? (imp ? ' ' : '') + 'No modo demonstração os avisos não são enviados.' : '');
+    dica.hidden = !dica.textContent;
+  }
+
+  // ---------- produtor: lembrete da revisão, da troca de peças e da visita ----------
+  async function avPintarProdutor() {
+    if (!pdPid) return;
+    const pid = pdPid, col = 'avisos/' + pid + '/inscricoes';
+    const ligado = await avLigadoEm(col).catch(() => false);
+    if (pid !== pdPid) return;
+    avPintarBotao($('pd-av-btn'), $('pd-av-txt'), $('pd-av-dica'), ligado, 'Receber avisos no celular',
+      'Avisos ligados neste celular: lembrete da revisão, da troca de peças e da visita do técnico.',
+      'Receba no celular um lembrete da revisão, da troca de peças e da visita do técnico.');
+    $('pd-av-btn').dataset.ligado = ligado ? '1' : '';
+  }
+  $('pd-av-btn').addEventListener('click', async () => {
+    const btn = $('pd-av-btn'), pid = pdPid;
+    if (!pid) return;
+    const col = 'avisos/' + pid + '/inscricoes';
+    btn.disabled = true;
+    if (btn.dataset.ligado) { await avDesligar(col); avisoRapido('Avisos desligados neste celular.'); }
+    else if (await avLigar(col, { produtorId: pid })) avisoRapido('Pronto: este celular vai receber os avisos.');
+    avPintarProdutor();
+  });
+
+  // ---------- técnico: aviso de chamado novo aberto pelo produtor ----------
+  async function avPintarTecnico() {
+    if (!viewerId || !podeVer('visitas')) return;
+    const ligado = await avLigadoEm('avisos-tecnicos/' + viewerId + '/inscricoes').catch(() => false);
+    avPintarBotao($('mais-av-btn'), $('mais-av-txt'), $('mais-av-dica'), ligado, 'Ligar avisos de chamado',
+      'Avisos ligados neste celular: chega um aviso quando um produtor abre um chamado.',
+      'Receba um aviso no celular quando um produtor abrir um chamado.');
+    $('mais-av-btn').dataset.ligado = ligado ? '1' : '';
+  }
+  $('mais-av-btn').addEventListener('click', async () => {
+    const btn = $('mais-av-btn');
+    if (!viewerId) return;
+    const col = 'avisos-tecnicos/' + viewerId + '/inscricoes';
+    btn.disabled = true;
+    if (btn.dataset.ligado) { await avDesligar(col); avisoRapido('Avisos de chamado desligados neste celular.'); }
+    else if (await avLigar(col, { usuarioId: viewerId })) avisoRapido('Pronto: chega um aviso quando um produtor abrir um chamado.');
+    avPintarTecnico();
+  });
+  // chamado aberto pelo produtor: pede à função do servidor que avise os técnicos (se a conexão estiver ok)
+  function avisarChamadoAosTecnicos(pid, osId, r) {
+    const sb = window.auriverdeSupabase;
+    if (DEMO_ATIVO || !sb || !sb.functions || !avChavePublica() || (r && (r.naFila || r.recusado))) return;
+    sb.functions.invoke('enviar-avisos', { body: { modo: 'chamado', pid, osId } }).catch(() => {});
+  }
+
+  // ---------- toque no aviso: abre a tela certa ----------
+  function avAbrirTela(tela) {
+    if (tela === 'ordens' && acesso.estado === 'ativo' && podeVer('visitas')) { if (currentProdutorId) closeProdutorDetail(); showView('ordens'); }
+    else if (tela === 'p-inicio' && document.body.classList.contains('modo-produtor')) pdIr('inicio');
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { const d = e.data || {}; if (d.tipo === 'abrir') avAbrirTela(d.tela); });
+  (function abrirPeloAviso() {
+    const tela = new URLSearchParams(location.search).get('abrir');
+    if (!tela) return;
+    try { history.replaceState(history.state, '', location.pathname); } catch (e) {}
+    let n = 0;
+    // espera o app terminar de entrar (login e escolha de setor) e chegar no Início
+    const tentar = () => { if (acesso.estado === 'ativo' && document.body.dataset.view === 'home') { setTimeout(() => avAbrirTela(tela), 300); return; } if (++n < 120) setTimeout(tentar, 500); };
+    setTimeout(tentar, 800);
+  })();
 
   // =====================================================================
   // MEU ESTOQUE: peças no carro de cada técnico
@@ -17494,6 +17647,7 @@
     pdDesligar.push(assinar('produtores/' + pid + '/equipamentos', l => { pdEquip = l.filter(naoArquivado); pdRender(); }));
     pdIr('inicio');
     apFaixas();
+    avPintarProdutor();
   }
   function pdSairDados() {
     pdDesligar.forEach(f => { try { f(); } catch (e) {} });
@@ -18053,6 +18207,7 @@
     pdcEnviando = false;
     if (r && r.recusado) return;
     registrarAtividade('abriu', 'os', id, (p.nome || '') + ' · ' + numOS(doc.numero), 'pelo produtor');
+    avisarChamadoAosTecnicos(p.id, id, r);
     $('modal-pd-chamado').hidden = true;
     pdIr('cham');
     avisar('Chamado enviado: ' + numOS(doc.numero) + '. ' + (r && r.naFila ? 'Sem sinal agora: ele vai para a manutenção assim que a conexão voltar.' : 'A equipe de manutenção já recebeu e vai agendar a visita.'));
