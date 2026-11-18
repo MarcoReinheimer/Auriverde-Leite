@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.21';
+  const APP_VERSAO = '2026.11.17.23';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -45,12 +45,12 @@
   }
 
   // ================= router =================
-  const VIEWS = ['entrada', 'p-login', 'p-inicio', 'p-prop', 'p-qual', 'p-prat', 'p-cham', 'admin', 'home', 'setor', 'mais', 'encaminhamentos', 'ordens', 'preventivas', 'calctec', 'calc', 'historico', 'produtores', 'produtor', 'leite', 'medias', 'pmls', 'rota', 'vendas', 'venda-form', 'venda'];
+  const VIEWS = ['entrada', 'p-login', 'p-inicio', 'p-prop', 'p-qual', 'p-prat', 'p-cham', 'admin', 'home', 'setor', 'mais', 'encaminhamentos', 'ordens', 'preventivas', 'calctec', 'estoque', 'calc', 'historico', 'produtores', 'produtor', 'leite', 'medias', 'pmls', 'rota', 'vendas', 'venda-form', 'venda'];
   // qual aba da barra de baixo fica acesa em cada tela
   const TAB_DA_VIEW = {
     entrada: 'home', admin: 'mais', home: 'home', calc: 'mais', historico: 'mais', produtores: 'visitas', produtor: 'visitas', rota: 'visitas',
     leite: 'home', medias: 'home', pmls: 'home', vendas: 'mais', 'venda-form': 'mais', venda: 'mais',
-    encaminhamentos: 'mais', mais: 'mais', ordens: 'ordens', preventivas: 'ordens', calctec: 'home'
+    encaminhamentos: 'mais', mais: 'mais', ordens: 'ordens', preventivas: 'ordens', calctec: 'home', estoque: 'home'
   };
   function showView(name) {
     // sem acesso liberado, a única tela é a de entrada
@@ -58,7 +58,7 @@
     VIEWS.forEach(v => { $('view-' + v).hidden = (v !== name); });
     $('fab-add-produtor').hidden = (name !== 'produtores');
     document.body.dataset.view = name;
-    const abaDaBarra = name === 'setor' ? (setorAberto === 'comercial' ? 'mais' : 'home') : name === 'calctec' && ctVoltar === 'mais' ? 'mais' : TAB_DA_VIEW[name];
+    const abaDaBarra = name === 'setor' ? (setorAberto === 'comercial' ? 'mais' : 'home') : name === 'calctec' && ctVoltar === 'mais' ? 'mais' : name === 'estoque' && esVoltar === 'mais' ? 'mais' : TAB_DA_VIEW[name];
     document.querySelectorAll('.tab').forEach(t => {
       const ativa = t.dataset.tab === abaDaBarra;
       t.classList.toggle('ativa', ativa);
@@ -114,7 +114,7 @@
   let dbRef = null;
   const DEMO_CHAVE = 'auriverde_demo';
   const DEMO_ATIVO = (() => { try { return localStorage.getItem(DEMO_CHAVE) === '1'; } catch (e) { return false; } })();
-  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades'];
+  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque'];
   function caminhoFisico(c) {
     if (!DEMO_ATIVO) return c;
     const i = c.indexOf('/'), raiz = i < 0 ? c : c.slice(0, i);
@@ -1315,6 +1315,7 @@
   function deleteVisita(pid, vid) {
     // as fotos da visita vão junto
     const v = visitas.find(x => x.id === vid);
+    if (v && v.estoqueBaixa) estoqueAposGravarOS(pid, vid, v, true); // as peças baixadas voltam ao estoque
     ((v && v.fotos) || []).forEach(f => { if (f && f.id) gravar('delete', 'produtores/' + pid + '/fotos/' + f.id); });
     gravar('delete', 'ordens/' + vid);
     return gravar('delete', 'produtores/' + pid + '/visitas/' + vid);
@@ -6732,7 +6733,7 @@
     resolveu: 'resolveu', iniciou: 'começou a atender', reabriu: 'reabriu', concluiu: 'concluiu', agendou: 'agendou', cancelou: 'cancelou', abriu: 'abriu', migrou: 'converteu', mudou: 'mudou' };
   const ALVOS = { produtor: 'o produtor', venda: 'a venda', visita: 'a visita', configuracoes: 'as configurações', planilha: 'uma planilha de produtores',
     encaminhamento: 'o encaminhamento', nutricao: 'a avaliação de nutrição', atendimento: 'o atendimento veterinário', animal: 'o animal', sanidade: 'o registro de sanidade', reproducao: 'o registro de reprodução', coleta: 'a coleta de qualidade', acao: 'a ação do plano',
-    os: 'a OS', equipamento: 'o equipamento', peca: 'a peça do catálogo', modulos: 'os módulos ativos', visitasantigas: 'as visitas antigas em OS', lote: 'o lote', dieta: 'a dieta do lote', preventiva: 'o plano preventivo de' };
+    os: 'a OS', equipamento: 'o equipamento', peca: 'a peça do catálogo', modulos: 'os módulos ativos', visitasantigas: 'as visitas antigas em OS', lote: 'o lote', dieta: 'a dieta do lote', preventiva: 'o plano preventivo de', estoque: 'o estoque de' };
   let atividadesToken = 0;
   async function carregarAtividades() {
     const token = ++atividadesToken;
@@ -9201,6 +9202,7 @@
       pecasCatalogo = l.filter(naoArquivado).sort((a, b) => (a.descricao || '').localeCompare(b.descricao || ''));
       if (!$('view-admin').hidden) renderPecasAdmin();
       if (!$('modal-peca-escolher').hidden) renderEscolherPeca();
+      if (document.body.dataset.view === 'estoque') renderEstoque();
     });
   }
   function agendarRenderOS() {
@@ -9235,6 +9237,7 @@
     const r = mudancas ? gravar('update', caminho, mudancas) : gravar('set', caminho, completo);
     gravar('set', 'ordens/' + id, indiceDaOS(pid, id, completo));
     integAposGravarOS(pid, id, completo, mudancas);
+    estoqueAposGravarOS(pid, id, completo);
     return r;
   }
 
@@ -10006,6 +10009,7 @@
       b.querySelector('.pe-item-cod').textContent = [p.codigo, p.unidade].filter(Boolean).join(' · ');
       b.querySelector('.pe-item-preco').textContent = fmt(Number(p.preco) || 0);
       b.addEventListener('click', () => {
+        if (pecaEscolherCb) { const cb = pecaEscolherCb; pecaEscolherCb = null; $('modal-peca-escolher').hidden = true; cb(p); return; }
         const ja = osPecas.find(x => x.pecaId === p.id);
         if (ja) { ja.qtd = (Number(ja.qtd) || 0) + 1; if (!ja.valorManual) ja.valor = r2(ja.qtd * (Number(ja.precoUnit) || 0)); }
         else osPecas.push({ pecaId: p.id, codigo: p.codigo || '', descricao: p.descricao || '', unidade: p.unidade || 'un', qtd: 1, precoUnit: Number(p.preco) || 0, valor: r2(Number(p.preco) || 0), valorManual: false });
@@ -10025,15 +10029,346 @@
     av.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod">Peça fora do catálogo: você digita a descrição e o valor</span></span>';
     av.querySelector('.pe-item-desc').textContent = '+ Peça avulsa' + (texto ? ': "' + texto + '"' : '');
     av.addEventListener('click', () => {
+      if (pecaEscolherCb) { const cb = pecaEscolherCb; pecaEscolherCb = null; $('modal-peca-escolher').hidden = true; cb({ avulsa: true, texto }); return; }
       osPecas.push({ pecaId: null, codigo: '', descricao: texto, unidade: 'un', qtd: 1, precoUnit: 0, valor: 0, valorManual: false, avulsa: true });
       $('modal-peca-escolher').hidden = true;
       renderPecasOS();
     });
     box.appendChild(av);
   }
-  $('os-add-peca').addEventListener('click', () => { $('pe-busca').value = ''; renderEscolherPeca(); $('modal-peca-escolher').hidden = false; setTimeout(() => $('pe-busca').focus(), 60); });
+  $('os-add-peca').addEventListener('click', () => { pecaEscolherCb = null; $('pe-busca').value = ''; renderEscolherPeca(); $('modal-peca-escolher').hidden = false; setTimeout(() => $('pe-busca').focus(), 60); });
   $('pe-busca').addEventListener('input', renderEscolherPeca);
-  $('pe-fechar').addEventListener('click', () => { $('modal-peca-escolher').hidden = true; });
+  $('pe-fechar').addEventListener('click', () => { pecaEscolherCb = null; $('modal-peca-escolher').hidden = true; });
+
+  // =====================================================================
+  // MEU ESTOQUE: peças no carro de cada técnico
+  // estoque/<idDoTécnico>/itens/<id>: a peça (do catálogo: id "p_" + id da peça; avulsa: id novo),
+  //   com a quantidade mínima e a data da última conferência.
+  // estoque/<idDoTécnico>/movs/<id>: cada movimento (entrada, saída, ajuste e baixa de OS), com o
+  //   itemId. O saldo é a soma dos movimentos: duas pessoas lançando ao mesmo tempo não perdem nada.
+  // Na OS fica guardado o que já foi baixado (estoqueBaixa): editar ou reabrir lança só a diferença.
+  // =====================================================================
+  const ES_TIPOS = { entrada: 'Recebi da filial', saida: 'Devolvi sobra', ajuste: 'Ajuste da contagem', os: 'OS' };
+  var esTec = null, esItens = [], esMovs = [], esUnsub = [], esVoltar = 'setor', esItemAberto = null, esMovModo = null, esMovItem = null, pecaEscolherCb = null;
+  const esIdPeca = pecaId => 'p_' + pecaId;
+  const r3 = x => Math.round((Number(x) || 0) * 1000) / 1000;
+  const qtdTxt = (q, un) => numTxt(r3(q)) + (un ? ' ' + un : '');
+  function esTecnicos() {
+    const l = tecnicosManut().map(u => ({ id: u.id, nome: nomeReal(u.id) || 'Técnico' }));
+    if (viewerId && !l.some(u => u.id === viewerId)) l.unshift({ id: viewerId, nome: nomeReal(viewerId) || 'Eu' });
+    return l.sort((a, b) => (b.id === viewerId) - (a.id === viewerId) || a.nome.localeCompare(b.nome));
+  }
+  function esAssinar(tec) {
+    esUnsub.forEach(f => { try { f(); } catch (e) {} });
+    esUnsub = [];
+    esTec = tec; esItens = []; esMovs = [];
+    if (!tec) { renderEstoque(); return; }
+    esUnsub.push(assinar('estoque/' + tec + '/itens', l => { if (esTec !== tec) return; esItens = l; renderEstoque(); }));
+    esUnsub.push(assinar('estoque/' + tec + '/movs', l => { if (esTec !== tec) return; esMovs = l; renderEstoque(); }));
+  }
+  // itens com saldo (soma dos movimentos); peça do catálogo que só teve baixa de OS aparece pelos dados do catálogo
+  function esLista() {
+    const map = new Map(), fora = new Set();
+    esItens.forEach(i => { if (i.arquivado) fora.add(i.id); else map.set(i.id, { ...i, saldo: 0, movs: [] }); });
+    esMovs.forEach(m => {
+      if (!m.itemId || fora.has(m.itemId)) return;
+      let it = map.get(m.itemId);
+      if (!it) {
+        const pc = m.pecaId ? pecasCatalogo.find(p => p.id === m.pecaId) : null;
+        it = { id: m.itemId, pecaId: m.pecaId || null, descricao: (pc && pc.descricao) || m.descricao || 'Peça', codigo: (pc && pc.codigo) || m.codigo || '', unidade: (pc && pc.unidade) || m.unidade || 'un', min: null, saldo: 0, movs: [], soMov: true };
+        map.set(m.itemId, it);
+      }
+      it.saldo = r3(it.saldo + (Number(m.delta) || 0));
+      it.movs.push(m);
+    });
+    const ordem = { negativo: 0, repor: 1, ok: 2 };
+    return [...map.values()].map(it => {
+      const min = Number(it.min) > 0 ? Number(it.min) : null;
+      it.movs.sort((a, b) => (b.em || 0) - (a.em || 0));
+      return { ...it, min, situ: it.saldo < 0 ? 'negativo' : (min != null && it.saldo < min) ? 'repor' : 'ok' };
+    }).sort((a, b) => ordem[a.situ] - ordem[b.situ] || (a.descricao || '').localeCompare(b.descricao || ''));
+  }
+  function esGravarMov(tec, it, delta, tipo, extra = {}) {
+    return gravar('set', 'estoque/' + tec + '/movs/' + novoId(), {
+      itemId: it.id, pecaId: it.pecaId || null, descricao: it.descricao || '', codigo: it.codigo || '', unidade: it.unidade || 'un',
+      delta: r3(delta), tipo, data: extra.data || todayISO(), obs: extra.obs || '', motivo: extra.motivo || '',
+      osId: extra.osId || null, osNum: extra.osNum || null, produtor: extra.produtor || '', por: viewerId || null, em: Date.now()
+    });
+  }
+  // grava o item na primeira vez (set) ou só os campos que mudaram (update)
+  function esGravarItem(tec, it, campos) {
+    if (esTec === tec && esItens.some(x => x.id === it.id)) return campos ? gravar('update', 'estoque/' + tec + '/itens/' + it.id, { ...campos, atualizadoPor: viewerId || null, atualizadoEm: Date.now() }) : null;
+    return gravar('set', 'estoque/' + tec + '/itens/' + it.id, {
+      pecaId: it.pecaId || null, descricao: it.descricao || '', codigo: it.codigo || '', unidade: it.unidade || 'un',
+      min: it.min != null ? it.min : null, conferidoEm: null, criadoPor: viewerId || null, criadoEm: Date.now(), ...(campos || {})
+    });
+  }
+
+  // ---------- baixa automática pela OS ----------
+  // o que a OS deve ter baixado: só OS concluída, com técnico, e só peças do catálogo
+  function estoqueBaixaDaOS(os) {
+    if (!os || os.arquivado || statusOS(os) !== 'concluida' || !os.tecnicoId) return null;
+    const itens = {};
+    (os.pecas || []).forEach(p => { const q = Number(p.qtd) || 0; if (p.pecaId && q > 0) itens[p.pecaId] = r3((itens[p.pecaId] || 0) + q); });
+    return Object.keys(itens).length ? { tecnicoId: os.tecnicoId, itens } : null;
+  }
+  // compara com o que já foi baixado (os.estoqueBaixa) e lança só a diferença; estorna quando a OS sai de concluída
+  function estoqueAposGravarOS(pid, id, os, apagando) {
+    try {
+      const novo = apagando ? null : estoqueBaixaDaOS(os), feito = (os && os.estoqueBaixa) || null;
+      const chave = b => b ? b.tecnicoId + '|' + Object.keys(b.itens).sort().map(k => k + ':' + b.itens[k]).join(',') : '';
+      if (chave(novo) === chave(feito)) return;
+      const dif = {};
+      const somar = (b, sinal) => { if (b) Object.entries(b.itens).forEach(([pc, q]) => { const k = b.tecnicoId + '|' + pc; dif[k] = r3((dif[k] || 0) + sinal * q); }); };
+      somar(feito, 1); somar(novo, -1);
+      const prod = produtoresTodos.find(x => x.id === pid);
+      const num = numOS(os.numero);
+      Object.entries(dif).forEach(([k, d]) => {
+        if (!d) return;
+        const [tec, pecaId] = k.split('|');
+        const pc = pecasCatalogo.find(p => p.id === pecaId) || (os.pecas || []).find(p => p.pecaId === pecaId) || {};
+        esGravarMov(tec, { id: esIdPeca(pecaId), pecaId, descricao: pc.descricao || '', codigo: pc.codigo || '', unidade: pc.unidade || 'un' }, d, 'os', {
+          data: os.data || todayISO(), osId: id, osNum: os.numero || null, produtor: (prod && prod.nome) || '',
+          obs: d < 0 ? 'Baixa da ' + num : 'Volta ao estoque: ' + num + (apagando ? ' apagada' : novo ? ' editada' : ' reaberta ou cancelada')
+        });
+      });
+      if (!apagando) gravar('update', 'produtores/' + pid + '/visitas/' + id, { estoqueBaixa: novo });
+    } catch (e) { extraErro(e); }
+  }
+
+  // ---------- tela ----------
+  function abrirEstoque(voltar) {
+    if (currentProdutorId) closeProdutorDetail();
+    esVoltar = voltar || 'setor';
+    const ver = ehAdmin();
+    $('es-tec-campo').hidden = !ver;
+    let tec = esTec || viewerId;
+    if (ver) {
+      const l = esTecnicos();
+      const sel = $('es-tec');
+      sel.innerHTML = '';
+      l.forEach(u => { const o = document.createElement('option'); o.value = u.id; o.textContent = u.nome + (u.id === viewerId ? ' (eu)' : ''); sel.appendChild(o); });
+      if (!l.some(u => u.id === tec)) tec = l.length ? l[0].id : viewerId;
+      sel.value = tec;
+    } else tec = viewerId;
+    $('es-busca').value = '';
+    if (!$('es-mes').value) $('es-mes').value = todayISO().slice(0, 7);
+    showView('estoque');
+    if (tec !== esTec || !esUnsub.length) esAssinar(tec); else renderEstoque();
+  }
+  const esNomeTec = () => (esTec === viewerId ? nomeReal(viewerId) || 'Eu' : nomeReal(esTec)) || 'Técnico';
+  function renderEstoque() {
+    if (document.body.dataset.view === 'estoque') {
+      const lista = esLista();
+      $('es-titulo').textContent = esTec === viewerId ? 'Meu estoque' : 'Estoque de ' + esNomeTec();
+      const repor = lista.filter(i => i.situ === 'repor').length, neg = lista.filter(i => i.situ === 'negativo').length;
+      $('es-resumo').textContent = lista.length
+        ? [plural(lista.length, 'peça', 'peças'), repor ? plural(repor, 'para repor', 'para repor') : '', neg ? plural(neg, 'negativa', 'negativas') : ''].filter(Boolean).join(' · ')
+        : '';
+      const termo = normalizarBusca($('es-busca').value.trim());
+      const vis = lista.filter(i => !termo || normalizarBusca((i.codigo || '') + ' ' + (i.descricao || '')).includes(termo));
+      const box = $('es-lista');
+      box.innerHTML = '';
+      vis.forEach(it => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'es-item' + (it.situ !== 'ok' ? ' ' + it.situ : '');
+        b.innerHTML = '<span class="es-item-txt"><span class="es-item-desc"></span><span class="es-item-det"></span></span><span class="es-item-qtd"><span class="es-item-saldo"></span><span class="es-selo" hidden></span></span>';
+        b.querySelector('.es-item-desc').textContent = it.descricao || 'Peça';
+        b.querySelector('.es-item-det').textContent = [it.codigo, it.min != null ? 'mín. ' + qtdTxt(it.min, it.unidade) : '', it.conferidoEm ? 'conferido em ' + fmtDate(it.conferidoEm) : 'nunca conferido', it.pecaId ? '' : 'avulsa'].filter(Boolean).join(' · ');
+        b.querySelector('.es-item-saldo').textContent = qtdTxt(it.saldo, it.unidade);
+        const selo = b.querySelector('.es-selo');
+        if (it.situ !== 'ok') { selo.hidden = false; selo.textContent = it.situ === 'negativo' ? 'Negativo' : 'Repor'; }
+        b.addEventListener('click', () => abrirEsItem(it.id));
+        box.appendChild(b);
+      });
+      $('es-vazio').hidden = lista.length > 0;
+      $('es-vazio-busca').hidden = !lista.length || vis.length > 0;
+    }
+    if (!$('modal-es-item').hidden) renderEsItem();
+  }
+  $('es-busca').addEventListener('input', renderEstoque);
+  $('es-tec').addEventListener('change', () => esAssinar($('es-tec').value));
+  $('back-estoque').addEventListener('click', () => { if (esVoltar === 'mais') abrirMais(); else abrirSetor('manutencao'); });
+  $('nav-estoque').addEventListener('click', () => abrirEstoque('setor'));
+  $('nav-estoque').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirEstoque('setor'); } });
+  $('mais-estoque').addEventListener('click', () => abrirEstoque('mais'));
+
+  // ---------- item: saldo, mínimo, ações e histórico ----------
+  function abrirEsItem(id) { esItemAberto = id; renderEsItem(); $('modal-es-item').hidden = false; }
+  function renderEsItem() {
+    const it = esLista().find(x => x.id === esItemAberto);
+    if (!it) { $('modal-es-item').hidden = true; return; }
+    $('esi-titulo').textContent = it.descricao || 'Peça';
+    $('esi-sub').textContent = [it.codigo ? 'Código ' + it.codigo : '', it.unidade, it.pecaId ? 'peça do catálogo' : 'peça avulsa'].filter(Boolean).join(' · ');
+    const s = $('esi-saldo');
+    s.textContent = qtdTxt(it.saldo, it.unidade);
+    s.className = 'esi-saldo ' + it.situ;
+    $('esi-situ').textContent = it.situ === 'negativo' ? 'Estoque negativo: confira e faça um ajuste.' : it.situ === 'repor' ? 'Abaixo do mínimo: entra no pedido para a filial.' : '';
+    if (document.activeElement !== $('esi-min')) $('esi-min').value = it.min != null ? numTxt(it.min) : '';
+    $('esi-conf').textContent = it.conferidoEm ? 'Última conferência: ' + fmtDate(it.conferidoEm) : 'Ainda não foi conferido.';
+    $('esi-tirar').hidden = !(Math.abs(it.saldo) < 1e-9);
+    const box = $('esi-hist');
+    box.innerHTML = '';
+    it.movs.slice(0, 40).forEach(m => {
+      const d = document.createElement('div');
+      d.className = 'esi-mov';
+      d.innerHTML = '<div class="esi-mov-l"><div class="esi-mov-t"></div><div class="esi-mov-d"></div></div><div class="esi-mov-q"></div>';
+      d.querySelector('.esi-mov-t').textContent = m.tipo === 'os' ? (m.osNum ? numOS(m.osNum) : 'OS') + (m.produtor ? ' · ' + m.produtor : '') : ES_TIPOS[m.tipo] || 'Movimento';
+      d.querySelector('.esi-mov-d').textContent = [fmtDate(m.data), m.motivo || m.obs, m.por && m.por !== esTec ? 'por ' + (nomeReal(m.por) || 'outra pessoa') : ''].filter(Boolean).join(' · ');
+      const q = d.querySelector('.esi-mov-q');
+      const dl = Number(m.delta) || 0;
+      q.textContent = (dl > 0 ? '+' : dl < 0 ? '−' : '') + qtdTxt(Math.abs(dl));
+      q.classList.add(dl > 0 ? 'mais' : dl < 0 ? 'menos' : 'zero');
+      box.appendChild(d);
+    });
+    $('esi-hist-vazio').hidden = it.movs.length > 0;
+  }
+  $('esi-fechar').addEventListener('click', () => { $('modal-es-item').hidden = true; esItemAberto = null; });
+  $('esi-min-salvar').addEventListener('click', () => {
+    const it = esLista().find(x => x.id === esItemAberto);
+    if (!it) return;
+    const t = $('esi-min').value.trim(), n = t === '' ? null : parseNum(t);
+    if (n != null && (isNaN(n) || n < 0)) { avisar('Digite a quantidade mínima (ou deixe em branco).'); return; }
+    esGravarItem(esTec, it, { min: n });
+    avisoRapido(n == null ? 'Sem quantidade mínima.' : 'Mínimo: ' + qtdTxt(n, it.unidade) + '.');
+    $('esi-min').blur();
+  });
+  $('esi-tirar').addEventListener('click', async () => {
+    const it = esLista().find(x => x.id === esItemAberto);
+    if (!it || !(await confirmar('Tirar "' + (it.descricao || 'esta peça') + '" da lista? O histórico fica guardado.', 'Tirar da lista'))) return;
+    esGravarItem(esTec, it, { arquivado: true, arquivadoPor: viewerId || null, arquivadoEm: Date.now() });
+    $('modal-es-item').hidden = true;
+  });
+  ['entrada', 'saida', 'ajuste'].forEach(k => $('esi-' + k).addEventListener('click', () => {
+    const it = esLista().find(x => x.id === esItemAberto);
+    if (it) abrirEsMov(k, it);
+  }));
+
+  // ---------- movimento: recebi, devolvi, ajustar ----------
+  function abrirEsMov(modo, it) {
+    esMovModo = modo; esMovItem = it;
+    const novo = !esItens.some(x => x.id === it.id) && !it.soMov && !(it.movs && it.movs.length);
+    $('esm-titulo').textContent = ES_TIPOS[modo];
+    $('esm-item').textContent = (it.descricao || 'Peça') + (it.codigo ? ' · ' + it.codigo : '');
+    $('esm-saldo').textContent = 'No estoque hoje: ' + qtdTxt(it.saldo || 0, it.unidade);
+    $('esm-qtd-rot').textContent = modo === 'ajuste' ? 'Contagem no carro (' + (it.unidade || 'un') + ')' : 'Quantidade (' + (it.unidade || 'un') + ')';
+    $('esm-qtd').value = '';
+    $('esm-data').value = todayISO();
+    $('esm-obs-rot').innerHTML = modo === 'ajuste' ? 'Motivo da correção' : 'Observação <span class="opcional">(opcional)</span>';
+    $('esm-obs').value = '';
+    $('esm-obs').placeholder = modo === 'ajuste' ? 'Ex.: contei no carro e tinha 3' : modo === 'entrada' ? 'Ex.: retirado na filial de Pinhalzinho' : '';
+    $('esm-min-campo').hidden = !(modo === 'entrada' && novo);
+    $('esm-min').value = '';
+    $('modal-es-mov').hidden = false;
+    setTimeout(() => $('esm-qtd').focus(), 60);
+  }
+  $('esm-cancelar').addEventListener('click', () => { $('modal-es-mov').hidden = true; });
+  $('esm-salvar').addEventListener('click', async () => {
+    const it = esMovItem, modo = esMovModo;
+    if (!it || !esTec) return;
+    const q = parseNum($('esm-qtd').value.trim());
+    const obs = $('esm-obs').value.trim();
+    const data = $('esm-data').value || todayISO();
+    if (modo === 'ajuste') {
+      if ($('esm-qtd').value.trim() === '' || isNaN(q) || q < 0) { avisar('Digite quantas peças tem no carro agora.'); return; }
+      if (!obs) { avisar('Escreva o motivo da correção.'); return; }
+    } else if (!(q > 0)) { avisar('Digite a quantidade.'); return; }
+    const saldo = r3(it.saldo || 0);
+    if (modo === 'saida' && q > saldo + 1e-9 && !(await confirmar('Você tem ' + qtdTxt(saldo, it.unidade) + ' no estoque. Devolver ' + qtdTxt(q, it.unidade) + ' deixa o estoque negativo. Lançar assim mesmo?', 'Lançar'))) return;
+    const delta = modo === 'entrada' ? q : modo === 'saida' ? -q : r3(q - saldo);
+    const campos = {};
+    if (modo === 'ajuste') campos.conferidoEm = data;
+    if (modo === 'entrada' && !$('esm-min-campo').hidden && $('esm-min').value.trim() !== '') { const mn = parseNum($('esm-min').value.trim()); if (mn >= 0) campos.min = mn; }
+    esGravarItem(esTec, it, Object.keys(campos).length ? campos : null);
+    esGravarMov(esTec, it, delta, modo, { data, obs: modo === 'ajuste' ? '' : obs, motivo: modo === 'ajuste' ? obs : '' });
+    registrarAtividade('mudou', 'estoque', it.id, (it.descricao || 'Peça') + ' · ' + ES_TIPOS[modo], (delta > 0 ? '+' : '') + numTxt(delta));
+    $('modal-es-mov').hidden = true;
+    avisoRapido(modo === 'ajuste' ? 'Contagem corrigida: ' + qtdTxt(q, it.unidade) + '.' : ES_TIPOS[modo] + ': ' + qtdTxt(q, it.unidade) + '.');
+  });
+  // "Recebi da filial" de uma peça nova: escolhe no catálogo (ou digita uma avulsa) e abre o lançamento
+  $('es-receber').addEventListener('click', () => {
+    pecaEscolherCb = p => {
+      if (p.avulsa) {
+        const desc = (p.texto || '').trim();
+        if (!desc) { avisar('Digite a descrição da peça avulsa na busca e toque em "+ Peça avulsa".'); return; }
+        const ja = esLista().find(i => !i.pecaId && normalizarBusca(i.descricao) === normalizarBusca(desc));
+        abrirEsMov('entrada', ja || { id: novoId(), pecaId: null, descricao: maiusc(desc), codigo: '', unidade: 'un', saldo: 0, min: null });
+        return;
+      }
+      const ja = esLista().find(i => i.id === esIdPeca(p.id));
+      abrirEsMov('entrada', ja || { id: esIdPeca(p.id), pecaId: p.id, descricao: p.descricao || '', codigo: p.codigo || '', unidade: p.unidade || 'un', saldo: 0, min: null });
+    };
+    $('pe-busca').value = '';
+    renderEscolherPeca();
+    $('modal-peca-escolher').hidden = false;
+    setTimeout(() => $('pe-busca').focus(), 60);
+  });
+
+  // ---------- pedido para a filial ----------
+  function textoPedidoFilial() {
+    const faltam = esLista().map(it => {
+      const alvo = it.min != null ? it.min : 0;
+      return { it, q: r3(alvo - it.saldo) };
+    }).filter(x => x.q > 0 && (x.it.situ !== 'ok'));
+    if (!faltam.length) return { n: 0, txt: '' };
+    const linhas = ['Pedido de peças para a filial', 'Técnico: ' + esNomeTec(), 'Data: ' + fmtDate(todayISO()), ''];
+    faltam.forEach(({ it, q }) => linhas.push('• ' + (it.descricao || 'Peça') + (it.codigo ? ' (cód. ' + it.codigo + ')' : '') + ': ' + qtdTxt(q, it.unidade) +
+      (it.situ === 'negativo' ? ' (estoque negativo)' : '')));
+    linhas.push('', 'Total: ' + plural(faltam.length, 'item', 'itens') + '.');
+    return { n: faltam.length, txt: linhas.join('\n') };
+  }
+  $('es-pedido').addEventListener('click', () => {
+    const p = textoPedidoFilial();
+    $('esp-texto').value = p.n ? p.txt : '';
+    $('esp-texto').hidden = !p.n;
+    $('esp-vazio').hidden = !!p.n;
+    $('esp-copiar').disabled = !p.n;
+    $('esp-whats').disabled = !p.n;
+    $('esp-sub').textContent = p.n ? plural(p.n, 'peça abaixo do mínimo', 'peças abaixo do mínimo') + '. A quantidade completa até o mínimo de cada uma.' : '';
+    $('modal-es-pedido').hidden = false;
+  });
+  $('esp-fechar').addEventListener('click', () => { $('modal-es-pedido').hidden = true; });
+  $('esp-copiar').addEventListener('click', async () => {
+    const t = $('esp-texto').value;
+    try { await navigator.clipboard.writeText(t); avisoRapido('Pedido copiado.'); }
+    catch (e) { $('esp-texto').select(); avisoRapido('Selecionei o texto: toque em Copiar no menu do celular.'); }
+  });
+  $('esp-whats').addEventListener('click', () => {
+    const w = window.open('https://wa.me/?text=' + encodeURIComponent($('esp-texto').value), '_blank');
+    if (w) { try { w.opener = null; } catch (e) {} } else avisar('Não consegui abrir o WhatsApp daqui. Copie o texto e cole na conversa.');
+  });
+
+  // ---------- Excel: estoque de hoje e movimentos do mês ----------
+  $('es-excel').addEventListener('click', async () => {
+    const btn = $('es-excel'), texto = btn.textContent;
+    const mes = $('es-mes').value || todayISO().slice(0, 7);
+    btn.disabled = true; btn.textContent = 'Gerando…';
+    try {
+      let ExcelJS;
+      try { ExcelJS = await carregarExcelJS(); }
+      catch (e) { avisar('Não consegui carregar o gerador de planilhas. Verifique a internet e tente de novo.'); return; }
+      const SIT = { ok: 'OK', repor: 'Repor', negativo: 'Negativo' };
+      const lista = esLista();
+      const linhasEst = lista.map(it => ({ codigo: it.codigo || '', descricao: it.descricao || '', unidade: it.unidade || 'un', saldo: it.saldo, min: it.min, situacao: SIT[it.situ], conferido: it.conferidoEm || null, origem: it.pecaId ? 'Catálogo' : 'Avulsa' }));
+      const linhasMov = esMovs.filter(m => String(m.data || '').slice(0, 7) === mes).sort((a, b) => String(a.data).localeCompare(String(b.data)) || (a.em || 0) - (b.em || 0))
+        .map(m => ({ data: m.data, codigo: m.codigo || '', descricao: m.descricao || '', tipo: ES_TIPOS[m.tipo] || m.tipo, qtd: Number(m.delta) || 0, unidade: m.unidade || 'un',
+          os: m.osNum ? numOS(m.osNum) : '', produtor: m.produtor || '', obs: m.motivo || m.obs || '', por: nomeReal(m.por) || '' }));
+      const bytes = await gerarXlsx(ExcelJS, [
+        { nome: 'Estoque', linhas: linhasEst, colunas: [
+          { titulo: 'Código', key: 'codigo' }, { titulo: 'Descrição', key: 'descricao', max: 45 }, { titulo: 'Unidade', key: 'unidade' },
+          { titulo: 'Quantidade', key: 'saldo', fmt: '#,##0.###' }, { titulo: 'Mínimo', key: 'min', fmt: '#,##0.###' }, { titulo: 'Situação', key: 'situacao' },
+          { titulo: 'Última conferência', key: 'conferido', fmt: XLSX_DATA }, { titulo: 'Origem', key: 'origem' }] },
+        { nome: 'Movimentos ' + mes.slice(5) + '-' + mes.slice(0, 4), linhas: linhasMov, colunas: [
+          { titulo: 'Data', key: 'data', fmt: XLSX_DATA }, { titulo: 'Código', key: 'codigo' }, { titulo: 'Descrição', key: 'descricao', max: 40 }, { titulo: 'Tipo', key: 'tipo' },
+          { titulo: 'Quantidade (+ entra, − sai)', key: 'qtd', fmt: '+#,##0.###;-#,##0.###;0' }, { titulo: 'Unidade', key: 'unidade' }, { titulo: 'OS', key: 'os' },
+          { titulo: 'Produtor', key: 'produtor', max: 28 }, { titulo: 'Observação / motivo', key: 'obs', wrap: true, max: 40 }, { titulo: 'Lançado por', key: 'por' }] }
+      ]);
+      await baixarArquivo('ordenha360-estoque-' + slug(esNomeTec()) + '-' + mes + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o Excel');
+    } finally {
+      btn.disabled = false; btn.textContent = texto;
+    }
+  });
 
   // assinatura do produtor (com o dedo)
   (function padAssinatura() {
@@ -15759,7 +16094,7 @@
 
   // ---------- barra fina no topo das telas internas ----------
   const TITULO_TELA = {
-    admin: 'Administração', setor: () => (SETOR[setorAberto] || {}).nome || 'Setor', preventivas: 'Plano preventivo', calctec: 'Calculadoras técnicas', ordens: 'Ordens de serviço',
+    admin: 'Administração', setor: () => (SETOR[setorAberto] || {}).nome || 'Setor', preventivas: 'Plano preventivo', calctec: 'Calculadoras técnicas', estoque: 'Estoque', ordens: 'Ordens de serviço',
     mais: 'Mais', encaminhamentos: 'Tarefas', calc: 'Calculadora de margem', historico: 'Histórico de cálculos', produtores: 'Produtores',
     rota: 'Rota do dia', produtor: 'Produtor', vendas: 'Vendas', 'venda-form': 'Registrar venda', venda: 'Venda', leite: 'Média de leite',
     medias: 'Médias de leite', pmls: 'Mais Leite Saudável'
@@ -16223,6 +16558,7 @@
     for (const c of DEMO_TOPO) (await demoListar(c)).forEach(id => alvos.push(c + '/' + id));
     const uids = [...new Set([viewerId, ...usuariosLista.map(u => u.id)].filter(Boolean))];
     for (const u of uids) (await demoListar('demo_atividades/' + u + '/itens')).forEach(id => alvos.push('demo_atividades/' + u + '/itens/' + id));
+    for (const u of uids) for (const sc of ['itens', 'movs']) (await demoListar('demo_estoque/' + u + '/' + sc)).forEach(id => alvos.push('demo_estoque/' + u + '/' + sc + '/' + id));
     alvos.push('demo_sistema/migracaoOS', 'demo_sistema/demo');
     demoPrep('Limpando a demonstração anterior…', 0.05);
     await demoEscrever(alvos.map(c => ['delete', c]), 0.05, 0.3);
@@ -16538,6 +16874,26 @@
       { resposta: 'Amostra coletada e enviada ao laboratório. Resultado dentro do padrão.', resolvidoPor: eu, resolvidoEm: em(-15),
         historico: [{ acao: 'criou', por: eu, em: em(-20) }, { acao: 'resolveu', por: eu, em: em(-15) }] });
 
+    // estoque do técnico (peças no carro): uma para repor e uma negativa
+    if (eu) {
+      let nm = 0;
+      const it = (id, descricao, unidade, min, conf) => put('demo_estoque/' + eu + '/itens/' + id, { pecaId: null, descricao, codigo: '', unidade, min, conferidoEm: conf, criadoPor: eu, criadoEm: em(-40) });
+      const mv = (itemId, descricao, unidade, delta, tipo, dias, x = {}) => put('demo_estoque/' + eu + '/movs/dm' + (++nm), { itemId, pecaId: null, descricao, codigo: '', unidade, delta, tipo, data: d(dias),
+        obs: x.obs || '', motivo: x.motivo || '', osId: null, osNum: x.osNum || null, produtor: x.produtor || '', por: eu, em: em(dias) });
+      it('de1', 'JOGO DE TETEIRAS DE BORRACHA', 'jogo', 4, d(-12));
+      mv('de1', 'JOGO DE TETEIRAS DE BORRACHA', 'jogo', 8, 'entrada', -30, { obs: 'Retirado na filial' });
+      mv('de1', 'JOGO DE TETEIRAS DE BORRACHA', 'jogo', -3, 'os', -9, { osNum: 4, produtor: 'Adriana Zanella', obs: 'Baixa da OS 0004' });
+      mv('de1', 'JOGO DE TETEIRAS DE BORRACHA', 'jogo', -2, 'os', -2, { osNum: 19, produtor: 'Adriana Zanella', obs: 'Baixa da OS 0019' });
+      it('de2', 'REPARO DE PULSADOR', 'un', 6, d(-12));
+      mv('de2', 'REPARO DE PULSADOR', 'un', 12, 'entrada', -30, { obs: 'Retirado na filial' });
+      mv('de2', 'REPARO DE PULSADOR', 'un', -4, 'os', -9, { osNum: 4, produtor: 'Adriana Zanella', obs: 'Baixa da OS 0004' });
+      it('de3', 'MANGUEIRA CURTA DE LEITE', 'm', 10, null);
+      mv('de3', 'MANGUEIRA CURTA DE LEITE', 'm', 5, 'entrada', -20, { obs: 'Retirado na filial' });
+      mv('de3', 'MANGUEIRA CURTA DE LEITE', 'm', -7, 'os', -1, { osNum: 20, produtor: 'Adriana Zanella', obs: 'Baixa da OS 0020' });
+      it('de4', 'FILTRO DA VÁLVULA REGULADORA', 'un', null, d(-12));
+      mv('de4', 'FILTRO DA VÁLVULA REGULADORA', 'un', 3, 'entrada', -30, { obs: 'Retirado na filial' });
+      mv('de4', 'FILTRO DA VÁLVULA REGULADORA', 'un', -1, 'ajuste', -12, { motivo: 'Contei no carro e tinha 2' });
+    }
     put('demo_sistema/migracaoOS', { feita: true, em: agora });
     put('demo_sistema/demo', { geradoEm: hoje, em: agora, por: eu });
     demoPrep('Gravando os dados de demonstração…', 0.35);
