@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.25';
+  const APP_VERSAO = '2026.11.18.3';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -45,12 +45,12 @@
   }
 
   // ================= router =================
-  const VIEWS = ['entrada', 'p-login', 'p-inicio', 'p-prop', 'p-qual', 'p-prat', 'p-cham', 'admin', 'home', 'setor', 'mais', 'encaminhamentos', 'ordens', 'preventivas', 'calctec', 'estoque', 'calc', 'historico', 'produtores', 'produtor', 'leite', 'medias', 'pmls', 'rota', 'vendas', 'venda-form', 'venda'];
+  const VIEWS = ['entrada', 'p-login', 'p-inicio', 'p-prop', 'p-qual', 'p-prat', 'p-cham', 'admin', 'home', 'setor', 'mais', 'encaminhamentos', 'ordens', 'preventivas', 'calctec', 'estoque', 'painel', 'calc', 'historico', 'produtores', 'produtor', 'leite', 'medias', 'pmls', 'rota', 'vendas', 'venda-form', 'venda'];
   // qual aba da barra de baixo fica acesa em cada tela
   const TAB_DA_VIEW = {
     entrada: 'home', admin: 'mais', home: 'home', calc: 'mais', historico: 'mais', produtores: 'visitas', produtor: 'visitas', rota: 'visitas',
     leite: 'home', medias: 'home', pmls: 'home', vendas: 'mais', 'venda-form': 'mais', venda: 'mais',
-    encaminhamentos: 'mais', mais: 'mais', ordens: 'ordens', preventivas: 'ordens', calctec: 'home', estoque: 'home'
+    encaminhamentos: 'mais', mais: 'mais', ordens: 'ordens', preventivas: 'ordens', calctec: 'home', estoque: 'home', painel: 'mais'
   };
   function showView(name) {
     // sem acesso liberado, a única tela é a de entrada
@@ -114,7 +114,7 @@
   let dbRef = null;
   const DEMO_CHAVE = 'auriverde_demo';
   const DEMO_ATIVO = (() => { try { return localStorage.getItem(DEMO_CHAVE) === '1'; } catch (e) { return false; } })();
-  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque'];
+  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque', 'orcamentos'];
   function caminhoFisico(c) {
     if (!DEMO_ATIVO) return c;
     const i = c.indexOf('/'), raiz = i < 0 ? c : c.slice(0, i);
@@ -6119,12 +6119,12 @@
   ];
   const SETOR = Object.fromEntries(SETORES.map(s => [s.id, s]));
   const TODOS_SETORES = SETORES.map(s => s.id);
-  const MODULOS_GERAIS = ['produtores', 'exportar'];
+  const MODULOS_GERAIS = ['produtores', 'exportar', 'painel'];
   const MODULOS = [
     ['produtores', 'Produtores'], ['exportar', 'Relatórios, Excel e PDF'],
     ['visitas', 'Visitas de manutenção'], ['veterinaria', 'Veterinária'],
     ['leite', 'Média de leite'], ['pmls', 'Análises, coletas e PMLS'], ['nutricao', 'Nutrição'],
-    ['calc', 'Calculadora de margem'], ['vendas', 'Vendas'], ['comissoes', 'Comissões']
+    ['calc', 'Calculadora de margem'], ['vendas', 'Vendas'], ['comissoes', 'Comissões'], ['painel', 'Painel da diretoria']
   ];
   const ROTULO_MODULO = Object.fromEntries(MODULOS);
   // marcas que juntam vários módulos (o maior nível entre eles vale)
@@ -6134,9 +6134,9 @@
   const TUDO = Object.fromEntries(MODULOS.map(([k]) => [k, 3]));
   const PAPEIS = {
     admin: { nome: 'Administrador', perm: { ...TUDO }, setores: TODOS_SETORES.slice(), nivelSetor: 3 },
-    tecnico: { nome: 'Técnico', perm: { calc: 0, vendas: 0, comissoes: 0, produtores: 2, visitas: 2, veterinaria: 0, leite: 2, pmls: 2, nutricao: 0, exportar: 1 }, setores: ['manutencao', 'qualidade'], nivelSetor: 2 },
-    vendedor: { nome: 'Vendedor', perm: { calc: 2, vendas: 2, comissoes: 1, produtores: 1, visitas: 0, veterinaria: 0, leite: 0, pmls: 0, nutricao: 0, exportar: 1 }, setores: ['comercial'], nivelSetor: 2, soProprias: true },
-    consulta: { nome: 'Consulta', perm: { calc: 0, vendas: 0, comissoes: 0, produtores: 1, visitas: 1, veterinaria: 0, leite: 1, pmls: 1, nutricao: 0, exportar: 0 }, setores: ['manutencao', 'qualidade'], nivelSetor: 1 }
+    tecnico: { nome: 'Técnico', perm: { calc: 0, vendas: 0, comissoes: 0, produtores: 2, visitas: 2, veterinaria: 0, leite: 2, pmls: 2, nutricao: 0, exportar: 1, painel: 0 }, setores: ['manutencao', 'qualidade'], nivelSetor: 2 },
+    vendedor: { nome: 'Vendedor', perm: { calc: 2, vendas: 2, comissoes: 1, produtores: 1, visitas: 0, veterinaria: 0, leite: 0, pmls: 0, nutricao: 0, exportar: 1, painel: 0 }, setores: ['comercial'], nivelSetor: 2, soProprias: true },
+    consulta: { nome: 'Consulta', perm: { calc: 0, vendas: 0, comissoes: 0, produtores: 1, visitas: 1, veterinaria: 0, leite: 1, pmls: 1, nutricao: 0, exportar: 0, painel: 0 }, setores: ['manutencao', 'qualidade'], nivelSetor: 1 }
   };
   const FUNCOES = { tecnico: 'Técnico', vendedor: 'Vendedor', outro: 'Outro' };
   const PAPEL_DA_FUNCAO = { tecnico: 'tecnico', vendedor: 'vendedor', outro: 'consulta' };
@@ -6193,7 +6193,7 @@
   }
   // tela aberta que a pessoa não pode mais ver → volta para o Início
   const MODULO_DA_VIEW = { calc: 'calc', historico: 'calc', vendas: 'vendas', 'venda-form': 'vendas', venda: 'vendas',
-    produtores: 'produtores', produtor: 'produtores', rota: 'produtores', leite: 'leite', medias: 'leite', pmls: 'pmls', ordens: 'visitas', preventivas: 'visitas' };
+    produtores: 'produtores', produtor: 'produtores', rota: 'produtores', leite: 'leite', medias: 'leite', pmls: 'pmls', ordens: 'visitas', preventivas: 'visitas', painel: 'painel' };
   function conferirTelaAtual() {
     const v = document.body.dataset.view;
     if (v === 'admin' && !ehAdmin()) showView('home');
@@ -6579,8 +6579,9 @@
         sel.dataset.modulo = k;
         sel.id = 'mu-perm-' + k;
         row.querySelector('label').htmlFor = sel.id;
-        NIVEIS.forEach((t, n) => { const o = document.createElement('option'); o.value = String(n); o.textContent = t; sel.appendChild(o); });
-        sel.value = String(perm[k] || 0);
+        // o painel só tem dois níveis: não vê ou vê
+        NIVEIS.forEach((t, n) => { if (k === 'painel' && n > 1) return; const o = document.createElement('option'); o.value = String(n); o.textContent = k === 'painel' ? ['Não vê', 'Vê o painel'][n] : t; sel.appendChild(o); });
+        sel.value = String(k === 'painel' ? Math.min(1, perm[k] || 0) : (perm[k] || 0));
         sel.addEventListener('change', () => {
           // todos os módulos do setor em "Não vê" = a pessoa sai do setor
           const s = SETOR[id];
@@ -10041,6 +10042,349 @@
   $('pe-fechar').addEventListener('click', () => { pecaEscolherCb = null; $('modal-peca-escolher').hidden = true; });
 
   // =====================================================================
+  // PAINEL DA DIRETORIA: números da manutenção e das vendas no período
+  // Lê o que o app já tem (índice de OS, vendas, produtores e o plano preventivo) e os orçamentos
+  // gerados (coleção orcamentos, gravada a cada orçamento que sai em PDF ou Excel). Não grava nada.
+  // Para quem é Administrador ou tem a permissão "Painel da diretoria".
+  // =====================================================================
+  var pnPer = 'mes', pnOrc = [], pnOrcUnsub = null;
+  const PN_PERIODOS = [['mes', 'Este mês'], ['passado', 'Mês passado'], ['3m', 'Últimos 3 meses'], ['ano', 'Este ano'], ['datas', 'Escolher datas']];
+  const pnAbertas = ['aberta', 'agendada', 'andamento'];
+  // OS que nasceu de um chamado (do produtor ou de "Abrir chamado"): a primeira ação do histórico é "abriu"
+  const osDeChamado = o => !!(o && o.historico && o.historico[0] && o.historico[0].acao === 'abriu');
+  function periodoPainel() {
+    const hoje = todayISO(), mes = hoje.slice(0, 7);
+    const fimDoMes = m => addDaysISO(mesesAtras(m, -1) + '-01', -1);
+    if (pnPer === 'passado') { const m = mesesAtras(mes, 1); return { ini: m + '-01', fim: fimDoMes(m) }; }
+    if (pnPer === '3m') return { ini: mesesAtras(mes, 2) + '-01', fim: hoje };
+    if (pnPer === 'ano') return { ini: hoje.slice(0, 4) + '-01-01', fim: hoje };
+    if (pnPer === 'datas') {
+      const de = $('pn-de').value || mes + '-01', ate = $('pn-ate').value || hoje;
+      return de <= ate ? { ini: de, fim: ate } : { ini: ate, fim: de };
+    }
+    return { ini: mes + '-01', fim: hoje };
+  }
+  const pnNome = id => (id && nomeReal(id)) || (id ? 'Sem nome' : 'Sem técnico');
+  function dadosPainel() {
+    const per = periodoPainel(), tec = $('pn-tec').value || '';
+    const dentro = d => !!d && d >= per.ini && d <= per.fim;
+    const hoje = todayISO(), agora = Date.now();
+    const ativos = produtoresTodos.filter(p => naoArquivado(p) && situacaoDe(p) !== 'inativo');
+    const ids = new Set(produtoresTodos.filter(naoArquivado).map(p => p.id));
+    const todas = ordensIndice.filter(o => !o.arquivado && ids.has(o.produtorId));
+    const os = todas.filter(o => !tec || o.tecnicoId === tec);
+    const conc = os.filter(o => statusOS(o) === 'concluida' && dentro(o.data));
+    const abertas = os.filter(o => pnAbertas.includes(statusOS(o)));
+    const atrasadas = abertas.filter(osAtrasada);
+    const tempos = conc.filter(o => osDeChamado(o) && o.criadoEm && o.concluidaEm).map(o => Math.max(0, (o.concluidaEm - o.criadoEm) / 86400000));
+    const tempoMedio = tempos.length ? tempos.reduce((s, x) => s + x, 0) / tempos.length : null;
+    const revisoes = conc.filter(o => (o.itensRevisados || []).length > 0).length;
+    // preventiva em dia: produtores com troca registrada e nenhum componente vencido no plano preventivo
+    const porPid = {};
+    todas.forEach(o => { (porPid[o.produtorId] = porPid[o.produtorId] || []).push(o); });
+    const planos = ativos.map(p => ({ p, plano: planoDoProdutor(p, porPid[p.id] || []) }));
+    const comReg = planos.filter(x => x.plano.itens.some(i => i.ultima));
+    const emDia = comReg.filter(x => !x.plano.vencidas).length;
+    const vend = vendasTodas.filter(v => naoArquivado(v) && dentro(v.data) && (!tec || v.criadoPor === tec));
+    const faturamento = r2(vend.reduce((s, v) => s + (Number(v.valorTotal) || 0), 0));
+    const comissao = r2(vend.reduce((s, v) => s + (Number(v.comissaoValor) || 0), 0));
+    const orcs = pnOrc.filter(o => !o.arquivado && dentro(o.data) && (!tec || o.por === tec));
+    // gráficos
+    const mesAt = hoje.slice(0, 7);
+    const porMes = [];
+    for (let i = 11; i >= 0; i--) { const m = mesesAtras(mesAt, i); porMes.push({ m, n: os.filter(o => statusOS(o) === 'concluida' && String(o.data || '').slice(0, 7) === m).length }); }
+    const porTipo = Object.keys(OS_TIPOS).map(k => ({ k, nome: OS_TIPOS[k], n: conc.filter(o => tipoOS(o) === k).length }));
+    const pess = {};
+    const pessoa = id => (pess[id || ''] = pess[id || ''] || { id: id || '', nome: pnNome(id), os: 0, vendas: 0, nVendas: 0 });
+    conc.forEach(o => { pessoa(o.tecnicoId).os++; });
+    vend.forEach(v => { const x = pessoa(v.criadoPor); x.vendas = r2(x.vendas + (Number(v.valorTotal) || 0)); x.nVendas++; });
+    const porPessoa = Object.values(pess).filter(x => x.os || x.vendas).sort((a, b) => b.os - a.os || b.vendas - a.vendas || a.nome.localeCompare(b.nome));
+    // produtores que precisam de atenção (hoje, de todos os técnicos)
+    const atencao = [];
+    planos.forEach(({ p, plano }) => {
+      const motivos = [];
+      if (p.proximaRevisao && p.proximaRevisao < hoje) motivos.push({ t: 'Revisão vencida desde ' + fmtDate(p.proximaRevisao), peso: 2 });
+      if (plano.vencidas) motivos.push({ t: plural(plano.vencidas, 'componente vencido', 'componentes vencidos') + ': ' + listaE(plano.itens.filter(i => i.cls === 'vencida').map(i => i.comp.nome.toLowerCase()).slice(0, 3)), peso: 2 });
+      (porPid[p.id] || []).filter(o => statusOS(o) === 'aberta' && o.criadoEm && agora - o.criadoEm > 3 * 86400000)
+        .forEach(o => motivos.push({ t: 'Chamado aberto há ' + plural(Math.floor((agora - o.criadoEm) / 86400000), 'dia', 'dias') + ' (' + numOS(o.numero) + ')', peso: 3 }));
+      if (motivos.length) atencao.push({ p, motivos, peso: motivos.reduce((s, m) => s + m.peso, 0) });
+    });
+    atencao.sort((a, b) => b.peso - a.peso || (a.p.nome || '').localeCompare(b.p.nome || ''));
+    return {
+      per, tec, conc: conc.length, abertas: abertas.length, atrasadas: atrasadas.length, tempoMedio, nTempos: tempos.length, revisoes,
+      emDia, comReg: comReg.length, pctEmDia: comReg.length ? Math.round(emDia / comReg.length * 100) : null, semReg: planos.length - comReg.length,
+      faturamento, comissao, nVendas: vend.length, orcamentos: orcs.length, porMes, porTipo, porPessoa, atencao
+    };
+  }
+  function kpisPainel(d) {
+    return [
+      { t: 'OS concluídas', v: String(d.conc), s: 'no período' },
+      { t: 'OS em aberto', v: String(d.abertas), s: 'hoje' },
+      { t: 'OS atrasadas', v: String(d.atrasadas), s: 'agendadas para antes de hoje', alerta: d.atrasadas > 0 },
+      { t: 'Tempo médio de atendimento', v: d.tempoMedio == null ? '—' : fmtN(d.tempoMedio, 1) + (Math.abs(d.tempoMedio - 1) < 0.05 ? ' dia' : ' dias'),
+        s: d.nTempos ? 'do chamado à OS concluída (' + plural(d.nTempos, 'chamado', 'chamados') + ')' : 'nenhum chamado concluído no período' },
+      { t: 'Preventiva em dia', v: d.pctEmDia == null ? '—' : d.pctEmDia + '%',
+        s: d.comReg ? d.emDia + ' de ' + plural(d.comReg, 'produtor', 'produtores') + (d.semReg ? ' · ' + d.semReg + ' sem registro' : '') : 'sem trocas registradas', alerta: d.pctEmDia != null && d.pctEmDia < 70 },
+      { t: 'Revisões feitas', v: String(d.revisoes), s: 'no período' },
+      { t: 'Faturamento de vendas', v: fmt(d.faturamento), s: plural(d.nVendas, 'venda', 'vendas') },
+      { t: 'Comissão', v: fmt(d.comissao), s: 'das vendas do período' },
+      { t: 'Orçamentos gerados', v: String(d.orcamentos), s: 'no período' }
+    ];
+  }
+  const periodoTxt = d => fmtDate(d.per.ini) + ' a ' + fmtDate(d.per.fim) + (d.tec ? ' · ' + pnNome(d.tec) : ' · todos os técnicos');
+  function abrirPainel() {
+    if (!(ehAdmin() || podeVer('painel'))) return;
+    const sel = $('pn-tec'), atual = sel.value;
+    const pessoas = new Map();
+    tecnicosManut().forEach(u => pessoas.set(u.id, pnNome(u.id)));
+    ordensIndice.forEach(o => { if (o.tecnicoId && !pessoas.has(o.tecnicoId)) pessoas.set(o.tecnicoId, pnNome(o.tecnicoId)); });
+    vendasTodas.forEach(v => { if (v.criadoPor && !pessoas.has(v.criadoPor)) pessoas.set(v.criadoPor, pnNome(v.criadoPor)); });
+    sel.innerHTML = '<option value="">Todos</option>';
+    [...pessoas.entries()].sort((a, b) => a[1].localeCompare(b[1])).forEach(([id, nome]) => { const o = document.createElement('option'); o.value = id; o.textContent = nome; sel.appendChild(o); });
+    sel.value = pessoas.has(atual) ? atual : '';
+    if (!pnOrcUnsub) pnOrcUnsub = assinar('orcamentos', l => { pnOrc = l; if (document.body.dataset.view === 'painel') renderPainel(); });
+    showView('painel');
+    renderPainel();
+  }
+  function renderPainel() {
+    if (document.body.dataset.view !== 'painel') return;
+    $('pn-per').querySelectorAll('.flt-chip').forEach(b => { const on = b.dataset.p === pnPer; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    $('pn-datas').hidden = pnPer !== 'datas';
+    $('pn-dica').hidden = true;
+    const d = dadosPainel();
+    $('pn-sub').textContent = periodoTxt(d);
+    // quadros
+    const kb = $('pn-kpis');
+    kb.innerHTML = '';
+    kpisPainel(d).forEach(x => {
+      const c = document.createElement('div');
+      c.className = 'pn-kpi' + (x.alerta ? ' alerta' : '');
+      c.innerHTML = '<div class="pn-kpi-t"></div><div class="pn-kpi-v"></div><div class="pn-kpi-s"></div>';
+      c.querySelector('.pn-kpi-t').textContent = x.t;
+      c.querySelector('.pn-kpi-v').textContent = x.v;
+      c.querySelector('.pn-kpi-s').textContent = x.s;
+      kb.appendChild(c);
+    });
+    // OS concluídas por mês: colunas de uma cor só; o valor fica escrito no maior mês e no mês atual, o resto aparece ao tocar
+    const cm = $('pn-mes');
+    cm.innerHTML = '';
+    const max = Math.max(1, ...d.porMes.map(x => x.n));
+    const iMax = d.porMes.reduce((b, x, i) => x.n > d.porMes[b].n ? i : b, 0);
+    d.porMes.forEach((x, i) => {
+      const col = document.createElement('button');
+      col.type = 'button';
+      col.className = 'pn-col';
+      const [y, m] = x.m.split('-').map(Number);
+      const dica = MES_CURTO[m - 1] + '/' + y + ': ' + plural(x.n, 'OS concluída', 'OS concluídas');
+      col.setAttribute('aria-label', dica);
+      col.dataset.dica = dica;
+      col.innerHTML = '<span class="pn-col-v"></span><span class="pn-col-area"><span class="pn-col-b"></span></span><span class="pn-col-r"></span>';
+      col.querySelector('.pn-col-v').textContent = (i === iMax && x.n) || i === d.porMes.length - 1 ? String(x.n) : '';
+      col.querySelector('.pn-col-b').style.height = (x.n ? Math.max(3, x.n / max * 100) : 0) + '%';
+      col.querySelector('.pn-col-r').textContent = MES_CURTO[m - 1];
+      cm.appendChild(col);
+    });
+    // barras horizontais (cada medida na sua coluna, sem misturar escalas)
+    const barra = (box, nome, valor, txt, frac, cls) => {
+      const r = document.createElement('div');
+      r.className = 'pn-bar' + (cls ? ' ' + cls : '');
+      r.innerHTML = (nome ? '<span class="pn-bar-n"></span>' : '') + '<span class="pn-bar-trilho"><span class="pn-bar-b"></span></span><span class="pn-bar-v"></span>';
+      if (nome) r.querySelector('.pn-bar-n').textContent = nome;
+      r.querySelector('.pn-bar-b').style.width = (valor ? Math.max(2, frac * 100) : 0) + '%';
+      r.querySelector('.pn-bar-v').textContent = txt;
+      box.appendChild(r);
+    };
+    const bt = $('pn-tipo');
+    bt.innerHTML = '';
+    const maxT = Math.max(1, ...d.porTipo.map(x => x.n));
+    d.porTipo.forEach(x => barra(bt, x.nome, x.n, String(x.n), x.n / maxT));
+    const bp = $('pn-pessoas');
+    bp.innerHTML = '';
+    if (!d.porPessoa.length) bp.innerHTML = '<div class="campo-dica">Nenhuma OS concluída nem venda no período.</div>';
+    else {
+      const maxO = Math.max(1, ...d.porPessoa.map(x => x.os)), maxV = Math.max(1, ...d.porPessoa.map(x => x.vendas));
+      const cab = document.createElement('div');
+      cab.className = 'pn-pes pn-pes-cab';
+      cab.innerHTML = '<span></span><span>OS concluídas</span><span>Vendas</span>';
+      bp.appendChild(cab);
+      d.porPessoa.forEach(x => {
+        const r = document.createElement('div');
+        r.className = 'pn-pes';
+        r.innerHTML = '<span class="pn-pes-n"></span><span class="pn-pes-c"></span><span class="pn-pes-c"></span>';
+        r.querySelector('.pn-pes-n').textContent = x.nome;
+        const [c1, c2] = r.querySelectorAll('.pn-pes-c');
+        barra(c1, '', x.os, String(x.os), x.os / maxO);
+        barra(c2, '', x.vendas, x.vendas ? fmt(x.vendas) : '—', x.vendas / maxV, 'vendas');
+        bp.appendChild(r);
+      });
+    }
+    // produtores que precisam de atenção
+    const ba = $('pn-atencao');
+    ba.innerHTML = '';
+    if (!d.atencao.length) ba.innerHTML = '<div class="campo-dica">Nenhum produtor com revisão vencida, componente vencido ou chamado parado.</div>';
+    d.atencao.forEach(({ p, motivos }) => {
+      const r = document.createElement(podeVer('produtores') ? 'button' : 'div');
+      if (r.tagName === 'BUTTON') { r.type = 'button'; r.addEventListener('click', () => openProdutor(p.id)); }
+      r.className = 'pn-at';
+      r.innerHTML = '<span class="pn-at-n"></span><span class="pn-at-l"></span><span class="pn-at-m"></span>';
+      r.querySelector('.pn-at-n').textContent = p.nome || 'Produtor';
+      const loc = r.querySelector('.pn-at-l');
+      loc.textContent = localDoProdutor(p) || '';
+      loc.hidden = !loc.textContent;
+      const ul = r.querySelector('.pn-at-m');
+      motivos.forEach(m => { const s = document.createElement('span'); s.className = 'pn-at-mot'; s.textContent = m.t; ul.appendChild(s); });
+      ba.appendChild(r);
+    });
+    $('pn-at-n').textContent = d.atencao.length ? String(d.atencao.length) : '';
+    $('pn-at-n').hidden = !d.atencao.length;
+  }
+  // dica das colunas do mês: aparece ao tocar, focar ou passar o mouse
+  (function dicaColunasPainel() {
+    const tip = $('pn-dica'), box = $('pn-mes');
+    const mostrar = el => {
+      tip.textContent = el.dataset.dica; tip.hidden = false;
+      const r = el.getBoundingClientRect(), b = box.getBoundingClientRect(), w = tip.offsetWidth;
+      tip.style.left = Math.min(Math.max(0, r.left - b.left + r.width / 2 - w / 2), Math.max(0, b.width - w)) + 'px';
+    };
+    ['pointerover', 'focusin', 'click'].forEach(ev => box.addEventListener(ev, e => { const c = e.target.closest('.pn-col'); if (c) mostrar(c); }));
+    ['pointerleave', 'focusout'].forEach(ev => box.addEventListener(ev, () => { tip.hidden = true; }));
+  })();
+  (function montarFiltrosPainel() {
+    const box = $('pn-per');
+    PN_PERIODOS.forEach(([k, t]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flt-chip'; b.dataset.p = k; b.textContent = t;
+      b.addEventListener('click', () => {
+        pnPer = k;
+        if (k === 'datas' && !$('pn-de').value) { $('pn-de').value = todayISO().slice(0, 7) + '-01'; $('pn-ate').value = todayISO(); }
+        renderPainel();
+      });
+      box.appendChild(b);
+    });
+  })();
+  ['pn-de', 'pn-ate', 'pn-tec'].forEach(id => $(id).addEventListener('change', renderPainel));
+  $('mais-painel').addEventListener('click', abrirPainel);
+  $('back-painel').addEventListener('click', () => abrirMais());
+
+  // ---------- PDF do painel (para levar na reunião) ----------
+  $('pn-pdf').addEventListener('click', async () => {
+    const btn = $('pn-pdf'), texto = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Gerando PDF…';
+    try {
+      let JsPDF;
+      try { JsPDF = await carregarJsPDF(); }
+      catch (e) { avisar('Não consegui carregar o gerador de PDF. Verifique a internet e tente de novo.'); return; }
+      const d = dadosPainel();
+      const doc = registrarFontePdf(new JsPDF({ unit: 'mm', format: 'a4' }));
+      const W = 210, H = 297, M = 14, LARG = W - 2 * M;
+      const MARCA = [14, 59, 92], MARCA_ESC = [8, 42, 66], OURO = [242, 184, 75], TINTA = [20, 34, 44], SUAVE = [86, 102, 115], LINHA = [223, 230, 235],
+        FUNDO = [242, 246, 248], BRANCO = [255, 255, 255], ACENTO = [21, 122, 110], VERMELHO = [181, 65, 43];
+      const cT = c => doc.setTextColor(c[0], c[1], c[2]), cF = c => doc.setFillColor(c[0], c[1], c[2]), cL = c => doc.setDrawColor(c[0], c[1], c[2]);
+      const fonte = (t, e) => { doc.setFont(doc.__fonte || 'helvetica', e || 'normal'); doc.setFontSize(t); };
+      let y = 0;
+      const cabPeq = () => { cF(MARCA); doc.rect(0, 0, W, 11, 'F'); cF(OURO); doc.rect(0, 11, W, 0.9, 'F'); fonte(9, 'bold'); cT(BRANCO); doc.text(pdfTxt('Ordenha360  ·  Painel  ·  ' + periodoTxt(d)), M, 7.3); y = 20; };
+      const garantir = h => { if (y + h > H - 16) { doc.addPage(); cabPeq(); } };
+      const titulo = t => { garantir(18); y += 2; fonte(11.5, 'bold'); cT(MARCA_ESC); doc.text(pdfTxt(t), M, y); cL(OURO); doc.setLineWidth(0.8); doc.line(M, y + 2, M + 14, y + 2); y += 7.5; };
+      cF(MARCA); doc.rect(0, 0, W, 34, 'F');
+      cF(MARCA_ESC); doc.rect(0, 28, W, 6, 'F');
+      cF(OURO); doc.rect(0, 34, W, 1.6, 'F');
+      cF(BRANCO); doc.roundedRect(M, 8, 46, 17, 3, 3, 'F');
+      try { doc.addImage(logoParaPdf(), 'PNG', M + 2, 10.96, 42, 11.08, 'logo', 'FAST'); } catch (e) {}
+      fonte(18, 'bold'); cT(BRANCO); doc.text('Painel da diretoria', M + 52, 15.5);
+      fonte(9); doc.text(pdfTxt(periodoTxt(d)), M + 52, 21.5);
+      y = 44;
+      // quadros: 3 por linha
+      const kp = kpisPainel(d), bw = (LARG - 2 * 4) / 3, bh = 22;
+      kp.forEach((x, i) => {
+        const bx = M + (i % 3) * (bw + 4), by = y + Math.floor(i / 3) * (bh + 4);
+        cF(FUNDO); doc.roundedRect(bx, by, bw, bh, 2.5, 2.5, 'F');
+        if (x.alerta) { cF(VERMELHO); doc.rect(bx, by, 1.4, bh, 'F'); }
+        fonte(7.4, 'bold'); cT(SUAVE); doc.text(pdfTxt(x.t).toUpperCase(), bx + 4, by + 5.6);
+        fonte(15, 'bold'); cT(x.alerta ? VERMELHO : TINTA); doc.text(pdfTxt(x.v), bx + 4, by + 13.4);
+        fonte(7.2); cT(SUAVE); doc.text(doc.splitTextToSize(pdfTxt(x.s), bw - 8).slice(0, 2), bx + 4, by + 17.6);
+      });
+      y += Math.ceil(kp.length / 3) * (bh + 4) + 4;
+      titulo('OS concluídas por mês (últimos 12 meses)');
+      const ch = 34, base = y + ch, maxM = Math.max(1, ...d.porMes.map(x => x.n)), cw = LARG / 12;
+      cL(LINHA); doc.setLineWidth(0.3); doc.line(M, base, M + LARG, base);
+      d.porMes.forEach((x, i) => {
+        const h = x.n / maxM * (ch - 6), bx = M + i * cw + cw * 0.22, w = cw * 0.56;
+        if (x.n) { cF(ACENTO); doc.roundedRect(bx, base - h, w, h, 0.8, 0.8, 'F'); doc.rect(bx, base - Math.min(h, 1), w, Math.min(h, 1), 'F'); }
+        fonte(7.6, 'bold'); cT(TINTA); doc.text(String(x.n), bx + w / 2, base - h - 1.4, { align: 'center' });
+        const m = Number(x.m.slice(5));
+        fonte(7.2); cT(SUAVE); doc.text(MES_CURTO[m - 1] + (m === 1 || i === 0 ? '/' + x.m.slice(2, 4) : ''), bx + w / 2, base + 4, { align: 'center' });
+      });
+      y = base + 9;
+      const barras = (linhas, cor) => {
+        const maxB = Math.max(1, ...linhas.map(l => l.v));
+        linhas.forEach(l => {
+          garantir(7);
+          fonte(8.8); cT(TINTA); doc.text(doc.splitTextToSize(pdfTxt(l.nome), 46)[0], M, y + 3.6);
+          const x0 = M + 48, wMax = LARG - 48 - 34, w = l.v ? Math.max(0.8, l.v / maxB * wMax) : 0;
+          cF(FUNDO); doc.roundedRect(x0, y + 0.8, wMax, 3.6, 1.2, 1.2, 'F');
+          if (w) { cF(cor); doc.roundedRect(x0, y + 0.8, w, 3.6, 1.2, 1.2, 'F'); }
+          fonte(8.8, 'bold'); cT(TINTA); doc.text(pdfTxt(l.txt), M + LARG, y + 3.6, { align: 'right' });
+          y += 6.4;
+        });
+        y += 3;
+      };
+      titulo('OS concluídas por tipo');
+      barras(d.porTipo.map(x => ({ nome: x.nome, v: x.n, txt: String(x.n) })), ACENTO);
+      if (d.porPessoa.some(x => x.os)) { titulo('OS concluídas por técnico'); barras(d.porPessoa.filter(x => x.os).map(x => ({ nome: x.nome, v: x.os, txt: String(x.os) })), ACENTO); }
+      if (d.porPessoa.some(x => x.vendas)) { titulo('Vendas por pessoa'); barras(d.porPessoa.filter(x => x.vendas).map(x => ({ nome: x.nome, v: x.vendas, txt: fmt(x.vendas) })), MARCA); }
+      titulo('Produtores que precisam de atenção');
+      if (!d.atencao.length) { fonte(9.6); cT(SUAVE); doc.text('Nenhum produtor com revisão vencida, componente vencido ou chamado parado.', M, y); y += 6; }
+      d.atencao.forEach(({ p, motivos }) => {
+        fonte(8.8);
+        const linhas = motivos.map(m => doc.splitTextToSize(pdfTxt('• ' + m.t), LARG - 6)).flat();
+        garantir(6 + linhas.length * 4.2);
+        fonte(9.8, 'bold'); cT(TINTA); doc.text(pdfTxt((p.nome || 'Produtor') + (localDoProdutor(p) ? '  ·  ' + localDoProdutor(p) : '')), M, y);
+        y += 4.6;
+        fonte(8.8); cT(VERMELHO); linhas.forEach(l => { doc.text(l, M + 3, y); y += 4.2; });
+        y += 2;
+      });
+      const np = doc.getNumberOfPages();
+      for (let i = 1; i <= np; i++) {
+        doc.setPage(i);
+        cL(LINHA); doc.setLineWidth(0.3); doc.line(M, H - 11, W - M, H - 11);
+        fonte(8); cT(SUAVE);
+        doc.text(pdfTxt('Ordenha360 · Painel · gerado em ' + new Date().toLocaleDateString('pt-BR')), M, H - 6.5);
+        doc.text('Página ' + i + ' de ' + np, W - M, H - 6.5, { align: 'right' });
+      }
+      await baixarArquivo('ordenha360-painel-' + d.per.ini + '-a-' + d.per.fim + '.pdf', doc.output('blob'), 'o PDF');
+    } finally {
+      btn.disabled = false; btn.textContent = texto;
+    }
+  });
+  // ---------- Excel do painel ----------
+  $('pn-excel').addEventListener('click', async () => {
+    const btn = $('pn-excel'), texto = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Gerando…';
+    try {
+      let ExcelJS;
+      try { ExcelJS = await carregarExcelJS(); }
+      catch (e) { avisar('Não consegui carregar o gerador de planilhas. Verifique a internet e tente de novo.'); return; }
+      const d = dadosPainel();
+      const bytes = await gerarXlsx(ExcelJS, [
+        { nome: 'Indicadores', linhas: [{ ind: 'Período', val: periodoTxt(d), obs: '' }].concat(kpisPainel(d).map(x => ({ ind: x.t, val: x.v, obs: x.s }))), colunas: [
+          { titulo: 'Indicador', key: 'ind', max: 32 }, { titulo: 'Valor', key: 'val', max: 40 }, { titulo: 'Observação', key: 'obs', max: 50 }] },
+        { nome: 'OS por mês', total: true, linhas: d.porMes.map(x => ({ mes: MES_CURTO[Number(x.m.slice(5)) - 1] + '/' + x.m.slice(0, 4), n: x.n })), colunas: [
+          { titulo: 'Mês', key: 'mes' }, { titulo: 'OS concluídas', key: 'n', fmt: '0', soma: true }] },
+        { nome: 'OS por tipo', total: true, linhas: d.porTipo.map(x => ({ tipo: x.nome, n: x.n })), colunas: [
+          { titulo: 'Tipo', key: 'tipo' }, { titulo: 'OS concluídas', key: 'n', fmt: '0', soma: true }] },
+        { nome: 'Por pessoa', total: true, linhas: d.porPessoa.map(x => ({ nome: x.nome, os: x.os, nv: x.nVendas, vendas: x.vendas })), colunas: [
+          { titulo: 'Pessoa', key: 'nome', max: 30 }, { titulo: 'OS concluídas', key: 'os', fmt: '0', soma: true }, { titulo: 'Nº de vendas', key: 'nv', fmt: '0', soma: true },
+          { titulo: 'Vendas (R$)', key: 'vendas', fmt: XLSX_MOEDA, soma: true }] },
+        { nome: 'Atenção', linhas: d.atencao.map(({ p, motivos }) => ({ nome: p.nome || '', local: localDoProdutor(p) || '', motivos: motivos.map(m => m.t).join('; ') })), colunas: [
+          { titulo: 'Produtor', key: 'nome', max: 30 }, { titulo: 'Linha / cidade', key: 'local', max: 28 }, { titulo: 'O que precisa de atenção', key: 'motivos', wrap: true, max: 70 }] }
+      ]);
+      await baixarArquivo('ordenha360-painel-' + d.per.ini + '-a-' + d.per.fim + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o Excel');
+    } finally {
+      btn.disabled = false; btn.textContent = texto;
+    }
+  });
+
+  // =====================================================================
   // MEU ESTOQUE: peças no carro de cada técnico
   // estoque/<idDoTécnico>/itens/<id>: a peça (do catálogo: id "p_" + id da peça; avulsa: id novo),
   //   com a quantidade mínima e a data da última conferência.
@@ -11436,6 +11780,9 @@
     const itens = itensDoOrcamento();
     if (itens.length > LINHAS_MODELO) { avisar('O modelo tem ' + LINHAS_MODELO + ' linhas de itens e este orçamento tem ' + itens.length + '. Use "Resumido" ou junte algumas linhas da descrição.'); return; }
     gravarLS('auriverde_ordemax', { origem: omOrigem, validade: d.validade, responsavel: d.responsavel, itens: omItens });
+    if (!ordemaxAtual._regId) ordemaxAtual._regId = novoId();
+    gravar('set', 'orcamentos/' + ordemaxAtual._regId, { data: d.data || todayISO(), produtor: d.produtor || '', total: r2(totalOm()), tipo: ordemaxAtual.tipo || 'ordemax',
+      titulo: ordemaxAtual.titulo || '', fornecedor: ordemaxAtual.fornecedor || '', saida: tipo, por: viewerId || null, em: Date.now() });
     const btn = $({ pdf: 'om-baixar', excel: 'om-excel', enviar: 'om-enviar' }[tipo]), txt = btn.textContent;
     btn.disabled = true; btn.textContent = 'Gerando…';
     try {
@@ -16222,7 +16569,7 @@
 
   // ---------- barra fina no topo das telas internas ----------
   const TITULO_TELA = {
-    admin: 'Administração', setor: () => (SETOR[setorAberto] || {}).nome || 'Setor', preventivas: 'Plano preventivo', calctec: 'Calculadoras técnicas', estoque: 'Estoque', ordens: 'Ordens de serviço',
+    admin: 'Administração', setor: () => (SETOR[setorAberto] || {}).nome || 'Setor', preventivas: 'Plano preventivo', calctec: 'Calculadoras técnicas', estoque: 'Estoque', painel: 'Painel', ordens: 'Ordens de serviço',
     mais: 'Mais', encaminhamentos: 'Tarefas', calc: 'Calculadora de margem', historico: 'Histórico de cálculos', produtores: 'Produtores',
     rota: 'Rota do dia', produtor: 'Produtor', vendas: 'Vendas', 'venda-form': 'Registrar venda', venda: 'Venda', leite: 'Média de leite',
     medias: 'Médias de leite', pmls: 'Mais Leite Saudável'
@@ -16570,7 +16917,7 @@
   // ---------- modo demonstração ----------
   const DEMO_SUBCOLS = ['equipamentos', 'visitas', 'medias', 'coletas', 'fotos', 'animais', 'lotes', 'atendimentos', 'sanidade', 'reproducao',
     'nutricao', 'dietas', 'acoes', 'ccsVacas', 'checklists'];
-  const DEMO_TOPO = ['demo_ordens', 'demo_encaminhamentos', 'demo_vendas', 'demo_calculos'];
+  const DEMO_TOPO = ['demo_ordens', 'demo_encaminhamentos', 'demo_vendas', 'demo_calculos', 'demo_orcamentos'];
   function nomeArquivoDemo(n) { return DEMO_ATIVO ? 'DEMONSTRACAO-' + n : n; }
   // PDFs gerados no modo demonstração saem marcados em todas as páginas
   function carimboDemoPdf(doc) {
@@ -16879,7 +17226,7 @@
     OS('dp2', 'do21', concluida(-215, 0, { tipo: 'preventiva', categoria: 'ordenha', motivo: 'Revisão da ordenhadeira', equipamentos: ['edp2o', 'edp2b'],
       descricao: 'Troca de teteiras e revisão dos pulsadores.', revisao: revisao(-215, ['teteiras', 'pulsadores', 'oleoBomba']),
       componentesTrocados: ['teteira-borracha', 'reparo-pulsador'], teste: teste(true), pecas: pecasRev, _assina: true }));
-    OS('dp2', 'do22', concluida(-62, 1, { tipo: 'corretiva', categoria: 'resfriador', motivo: 'Leite chegando a 6 °C na coleta', equipamentos: ['edp2r'], equipamentoProblema: 'edp2r',
+    OS('dp2', 'do22', concluida(-62, 1, { historico: hist([['abriu', 'aberta', -65], ['agendou', 'agendada', -64], ['iniciou', 'andamento', -62], ['concluiu', 'concluida', -62]], tec(1)), criadoEm: em(-65), tipo: 'corretiva', categoria: 'resfriador', motivo: 'Leite chegando a 6 °C na coleta', equipamentos: ['edp2r'], equipamentoProblema: 'edp2r',
       defeito: 'Condensador sujo e ventilador do condensador fraco.', descricao: 'Limpeza do condensador e troca do motor do ventilador.', temperaturaLeite: 4.8,
       resfriador: { tempoAte4: 205, pressaoAlta: 270, pressaoBaixa: 32, corrente: 13.5, tensao: 218, condensadorLimpo: false, agitadorOk: true, termostatoOk: true },
       pecas: [{ descricao: 'Motor do ventilador do condensador', qtd: 1, unidade: 'un', precoUnit: 0, valor: 0 }], _foto: ['snowflake', 'Condensador do resfriador', ['#2D6A8F', '#12324A']], _assina: true }));
@@ -16890,7 +17237,7 @@
     OS('dp3', 'do31', concluida(-95, 0, { tipo: 'preventiva', categoria: 'ordenha', motivo: 'Revisão da ordenhadeira', equipamentos: ['edp3o'],
       descricao: 'Troca de teteiras, limpeza geral e regulagem da máquina.', revisao: revisao(-95, ['teteiras', 'limpezaGeral', 'regulagemMaquina']),
       componentesTrocados: ['teteira-borracha', 'mangueira-curta'], teste: teste(false), pecas: pecasRev.slice(0, 1), _foto: ['wrench', 'Troca das teteiras', ['#1C5A82', '#0B2E47']], _assina: true }));
-    OS('dp3', 'do32', concluida(-21, 1, { tipo: 'corretiva', categoria: 'ordenha', motivo: 'Vazamento de leite no coletor', equipamentos: ['edp3o'], equipamentoProblema: 'edp3o',
+    OS('dp3', 'do32', concluida(-21, 1, { historico: hist([['abriu', 'aberta', -22], ['iniciou', 'andamento', -21], ['concluiu', 'concluida', -21]], tec(1)), criadoEm: em(-22), tipo: 'corretiva', categoria: 'ordenha', motivo: 'Vazamento de leite no coletor', equipamentos: ['edp3o'], equipamentoProblema: 'edp3o',
       defeito: 'Borracha do coletor ressecada.', descricao: 'Troca da borracha do coletor e teste de vácuo.', vacuoKpa: 44,
       pecas: [{ descricao: 'Borracha do coletor', qtd: 4, unidade: 'un', precoUnit: 0, valor: 0 }], _assina: true }));
     OS('dp3', 'do33', { status: 'agendada', tipo: 'visita', categoria: 'ordenha', data: d(-2), agendadaPara: d(3), tecnicoId: tec(1),
@@ -17002,6 +17349,9 @@
       { resposta: 'Amostra coletada e enviada ao laboratório. Resultado dentro do padrão.', resolvidoPor: eu, resolvidoEm: em(-15),
         historico: [{ acao: 'criou', por: eu, em: em(-20) }, { acao: 'resolveu', por: eu, em: em(-15) }] });
 
+    // orçamentos gerados (contam no Painel da diretoria)
+    [[-2, 'dp1', 18450.9, 'conforto'], [-9, 'dp3', 7320, 'ordemax'], [-17, 'dp5', 41516.04, 'conforto'], [-26, 'dp2', 3579.37, 'ordemax'], [-41, 'dp4', 12890.5, 'ordemax'], [-70, 'dp6', 5230, 'conforto']]
+      .forEach(([dia, pid, total, tipo], i) => put('demo_orcamentos/dq' + (i + 1), { data: d(dia), produtor: prodDe[pid] ? prodDe[pid].nome : '', total, tipo, titulo: '', fornecedor: '', saida: 'pdf', por: eu, em: em(dia) }));
     // estoque do técnico (peças no carro): uma para repor e uma negativa
     if (eu) {
       let nm = 0;

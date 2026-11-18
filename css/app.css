@@ -1973,6 +1973,64 @@
     background: var(--accent-suave); color: var(--accent-txt); font-size: 14px; font-weight: 600; line-height: 1.35; }
   .cz-s-base .ic { width: 18px; height: 18px; flex: none; margin-top: 1px; }
 
+  /* ---------- Painel da diretoria ---------- */
+  .pn-filtros { margin-bottom: 12px; }
+  .pn-filtros .flt-chips { margin-bottom: 10px; }
+  .pn-datas { margin-bottom: 10px; }
+  .pn-datas > .field { margin: 0; }
+  .pn-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .pn-kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--raio); padding: 12px; min-width: 0; }
+  .pn-kpi.alerta { border-left: 4px solid var(--tax); }
+  .pn-kpi-t { font-size: var(--fs-legenda); font-weight: 600; color: var(--ink-soft); line-height: 1.25; }
+  .pn-kpi-v { font-size: 22px; font-weight: 800; margin-top: 4px; line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .pn-kpi.alerta .pn-kpi-v { color: var(--tax); }
+  .pn-kpi-s { font-size: var(--fs-mini); color: var(--ink-soft); margin-top: 3px; line-height: 1.3; }
+  .pn-card { margin-bottom: 12px; }
+  .pn-card .section-label { margin-top: 0; display: flex; align-items: center; gap: 8px; }
+  .pn-nota { font-size: var(--fs-legenda); color: var(--ink-soft); margin: -2px 0 10px; line-height: 1.35; }
+  .pn-mes-wrap { position: relative; }
+  .pn-mes { display: flex; align-items: stretch; gap: 2px; height: 150px; }
+  .pn-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 0; border: none; border-radius: 4px; background: none; font-family: inherit; color: var(--ink); cursor: pointer; }
+  .pn-col:focus-visible { outline: 2px solid var(--accent-txt); outline-offset: 1px; }
+  .pn-col-v { font-size: 11px; font-weight: 700; height: 16px; line-height: 16px; font-variant-numeric: tabular-nums; }
+  .pn-col-area { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--line); }
+  .pn-col-b { width: 62%; max-width: 20px; background: var(--accent); border-radius: 4px 4px 0 0; }
+  .pn-col:hover .pn-col-b { opacity: 0.8; }
+  .pn-col-r { font-size: 10.5px; color: var(--ink-soft); margin-top: 4px; }
+  .pn-dica { position: absolute; top: -10px; z-index: 2; padding: 4px 8px; border-radius: 6px; background: var(--ink); color: var(--surface);
+    font-size: 12px; font-weight: 600; white-space: nowrap; pointer-events: none; }
+  .pn-bar { display: grid; grid-template-columns: minmax(0, 108px) 1fr auto; align-items: center; gap: 8px; min-height: 30px; font-size: 14px; }
+  .pn-bar-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pn-bar-trilho { height: 10px; border-radius: 4px; background: color-mix(in srgb, var(--line) 70%, transparent); overflow: hidden; }
+  .pn-bar-b { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; }
+  .pn-bar.vendas .pn-bar-b { background: var(--brand); }
+  :root[data-theme="dark"] .pn-bar.vendas .pn-bar-b { background: #5B9FCC; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pn-bar.vendas .pn-bar-b { background: #5B9FCC; } }
+  .pn-bar-v { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; min-width: 22px; white-space: nowrap; }
+  /* no celular, o nome numa linha e as duas medidas embaixo (cada uma com a sua escala) */
+  .pn-pes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); column-gap: 12px; row-gap: 2px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+  .pn-pes-n { grid-column: 1 / -1; font-size: 14px; font-weight: 600; overflow-wrap: break-word; }
+  .pn-pes-cab { border-top: none; padding: 0 0 2px; font-size: var(--fs-mini); font-weight: 700; color: var(--ink-soft); }
+  .pn-pes-cab > span:first-child { display: none; }
+  @media (min-width: 720px) {
+    .pn-pes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr); }
+    .pn-pes-n { grid-column: auto; }
+    .pn-pes-cab > span:first-child { display: block; }
+  }
+  .pn-pes .pn-bar { grid-template-columns: minmax(0, 1fr) auto; min-height: 24px; font-size: 13px; gap: 6px; }
+  .pn-at { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; padding: 10px 0; border: none; border-top: 1px solid var(--line);
+    background: none; color: var(--ink); font-family: inherit; cursor: pointer; }
+  .pn-at:first-child { border-top: none; padding-top: 0; }
+  .pn-at-n { font-size: var(--fs-texto); font-weight: 600; }
+  .pn-at-l { font-size: var(--fs-legenda); color: var(--ink-soft); }
+  .pn-at-m { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+  .pn-at-mot { font-size: 13px; font-weight: 600; color: var(--tax); }
+  .pn-at-mot::before { content: '! '; font-weight: 800; }
+  .pn-conta { font-size: var(--fs-mini); font-weight: 700; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--tax) 14%, var(--surface)); color: var(--tax); }
+  .pn-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 16px; }
+  .pn-acoes button { margin: 0; min-height: 48px; }
+  @media (min-width: 720px) { .pn-kpis { grid-template-columns: repeat(3, 1fr); } }
+
   /* ---------- Meu estoque (peças no carro) ---------- */
   .es-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 12px; }
   .es-acoes button { margin: 0; min-height: 48px; padding: 10px 8px; }
