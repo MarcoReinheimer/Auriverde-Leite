@@ -1949,6 +1949,16 @@
   .tt-card.limp { color: var(--tax); }
   /* histórico do Limp na ficha */
   .limp-ficha { margin-bottom: 12px; }
+  /* ficha do produtor: testes da ordenhadeira com o relatório (ISO) de cada um */
+  .tt-ficha { margin-bottom: 12px; }
+  .ttf-linha { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .ttf-linha:first-of-type { border-top: none; }
+  .ttf-info { min-width: 0; }
+  .ttf-nome { font-size: var(--fs-texto); font-weight: 600; }
+  .ttf-det { font-size: var(--fs-legenda); margin-top: 2px; }
+  .ttf-det.ok { color: var(--accent-txt); } .ttf-det.atencao { color: var(--soon); } .ttf-det.fora { color: var(--tax); }
+  .ttf-btn { flex: none; width: auto; min-height: 40px; padding: 8px 12px; font-size: var(--fs-legenda); }
+  .ttf-mais { margin-top: 6px; }
   .limp-ficha-sub { font-size: 13px; color: var(--ink-soft); margin: 2px 0 6px; line-height: 1.35; }
   .limp-linha { display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
   .limp-nome { font-weight: 700; font-size: 15px; }
