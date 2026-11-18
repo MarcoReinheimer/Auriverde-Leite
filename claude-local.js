@@ -1,5 +1,5 @@
 /*
- * Auriverde · versão independente (GitHub Pages)
+ * Ordenha360 · versão independente (GitHub Pages)
  * ------------------------------------------------
  * O app foi feito para rodar dentro do Claude, que fornece banco de dados,
  * identificação da conta e downloads. Este arquivo cria um "window.claude"

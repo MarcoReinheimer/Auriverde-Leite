@@ -1,4 +1,4 @@
-# Auriverde — app de manutenção de ordenha, resfriador e conforto animal
+# Ordenha360 — app de manutenção de ordenha, resfriador, conforto animal e vendas
 
 App instalável (PWA) hospedado no GitHub Pages, com banco compartilhado no Supabase.
 
