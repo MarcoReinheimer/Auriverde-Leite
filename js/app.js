@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.23';
+  const APP_VERSAO = '2026.11.17.25';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -11555,6 +11555,7 @@
   function renderConfigurador() {
     renderFornConforto();
     pintarPista();
+    pintarRebanho();
     $('cc-tipo').querySelectorAll('button').forEach(b => { const on = b.dataset.t === ccTipo; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on); });
     $('cc-fonte').textContent = ccFonte;
     $('cz-busca').value = ccBusca;
@@ -11760,6 +11761,13 @@
         });
       });
     }
+    if (ccRebanho.linha && ccForn !== 'kit' && sel.length) {
+      const bl = document.createElement('div');
+      bl.className = 'cz-s-base';
+      bl.innerHTML = iconeHtml('fan') + '<span></span>';
+      bl.querySelector('span').textContent = ccRebanho.linha;
+      box.prepend(bl);
+    }
     const total = fmt(totalConforto());
     const final = !!FORNECEDORES_CONFORTO[ccForn].precoFinal;
     $('cz-tot-rot').textContent = final ? 'Total (preço de venda, tabela própria)' : 'Total (custo do fornecedor)';
@@ -11852,11 +11860,124 @@
     });
     $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') $(id).blur(); });
   });
+  // ---------- compost barn e free stall: dimensionar pelo nº de vacas ----------
+  // As regras ficam aqui; a Administração (Referências técnicas → Conforto animal) pode trocar cada uma.
+  //   compost: área = vacas × compostM2PorVaca; free stall: camas = vacas × freeStallCamaPorVaca e área ≈ vacas × freeStallM2PorVaca
+  //   ventiladores = arredondar para cima(comprimento ÷ metrosPorVentilador) × arredondar para cima(largura ÷ linhasVentiladorPorLargura)
+  const REGRAS_GALPAO = { compostM2PorVaca: 12, freeStallCamaPorVaca: 1, freeStallM2PorVaca: 9, metrosPorVentilador: 10, linhasVentiladorPorLargura: 12 };
+  // sem comprimento e largura, o app sugere esta largura e calcula o comprimento pela área
+  const GALPAO_LARGURA_SUGERIDA = { compost: 20, freestall: 18 };
+  // acessórios que têm a palavra na descrição, mas não são o ventilador nem o separador
+  const RE_ACESSORIO_VENT = /(p\/|para|do|de|dos|da)\s+ventilador/, RE_ACESSORIO_SEP = /(p\/|para|do|de|cinta|frontal)\s+separador/;
+  let ccRebanho = { vacas: null, comp: null, larg: null, ventSel: '', sepSel: '', aplicado: '', linha: '', ids: [] };
+  const regrasGalpao = () => ({ ...REGRAS_GALPAO, ...((typeof cfgPrev !== 'undefined' && cfgPrev && cfgPrev.galpao) || {}) });
+  function contaRebanho(tipo, vacas, comp, larg) {
+    const R = regrasGalpao();
+    const m2 = tipo === 'compost' ? R.compostM2PorVaca : R.freeStallM2PorVaca;
+    const area = Math.round(vacas * m2 * 10) / 10;
+    let sugerido = '';
+    if (!(comp > 0) && !(larg > 0)) { larg = GALPAO_LARGURA_SUGERIDA[tipo] || 20; comp = paraCima(area / larg); sugerido = 'tudo'; }
+    else if (!(comp > 0)) { comp = paraCima(area / larg); sugerido = 'comp'; }
+    else if (!(larg > 0)) { larg = paraCima(area / comp); sugerido = 'larg'; }
+    const areaGalpao = Math.round(comp * larg * 10) / 10;
+    const porLinha = paraCima(comp / R.metrosPorVentilador), linhas = paraCima(larg / R.linhasVentiladorPorLargura);
+    return { tipo, vacas, m2, area, comp, larg, sugerido, areaGalpao, porVaca: areaGalpao / vacas, abaixo: areaGalpao < area - 1e-9, falta: Math.max(0, area - areaGalpao),
+      ventiladores: porLinha * linhas, porLinha, linhas, camas: tipo === 'freestall' ? paraCima(vacas * R.freeStallCamaPorVaca) : 0 };
+  }
+  function linhaRebanho(c, falta) {
+    const nomeForn = FORNECEDORES_CONFORTO[ccForn].nome;
+    return (c.tipo === 'compost' ? 'Compost barn' : 'Free stall') + ' para ' + c.vacas + ' vacas: ' + fmtN(c.area, 0) + ' m² (galpão ' + numTxt(c.comp) + ' × ' + numTxt(c.larg) + ' m)' +
+      (c.tipo === 'freestall' ? ', ' + plural(c.camas, 'cama', 'camas') + (falta && falta.sep ? ' (sem separador na tabela da ' + nomeForn + ')' : '') : '') +
+      ', ' + plural(c.ventiladores, 'ventilador', 'ventiladores') + (falta && falta.vent ? ' (sem ventilador na tabela da ' + nomeForn + ')' : '');
+  }
+  function modelosRebanho(palavra, reAcess) {
+    return ccTabela.filter(i => { const n = normalizarBusca(i.descricao); return n.includes(palavra) && !reAcess.test(n); });
+  }
+  const chaveRebanho = () => [ccForn, ccTipo, ccRebanho.vacas, ccRebanho.comp, ccRebanho.larg, ccRebanho.ventSel, ccTipo === 'freestall' ? ccRebanho.sepSel : ''].join('|');
+  function pintarRebanho() {
+    const box = $('cz-rebanho');
+    box.hidden = ccForn === 'kit' || !ccTabela;
+    if (box.hidden) return;
+    const preencher = (id, v) => { if (document.activeElement !== $(id)) $(id).value = v == null ? '' : numTxt(v); };
+    preencher('cz-r-vacas', ccRebanho.vacas); preencher('cz-r-comp', ccRebanho.comp); preencher('cz-r-larg', ccRebanho.larg);
+    $('cz-r-tipo').textContent = ccTipo === 'compost' ? 'Compost barn' : 'Free stall';
+    const res = $('cz-r-res'), av = $('cz-r-aviso'), mods = $('cz-r-modelos');
+    res.innerHTML = ''; mods.innerHTML = ''; av.hidden = true; $('cz-r-pend').hidden = true;
+    const vacas = ccRebanho.vacas;
+    if (!(vacas > 0)) {
+      res.textContent = 'Informe o nº de vacas. Comprimento e largura são opcionais: sem eles, o app sugere o tamanho do galpão.';
+      res.classList.add('pendente');
+      $('cz-r-aplicar').disabled = true;
+      return;
+    }
+    res.classList.remove('pendente');
+    const c = contaRebanho(ccTipo, vacas, ccRebanho.comp, ccRebanho.larg);
+    const linha = (k, v) => { const d = document.createElement('div'); d.className = 'cz-r-l'; d.innerHTML = '<span></span><b></b>'; d.querySelector('span').textContent = k; d.querySelector('b').textContent = v; res.appendChild(d); };
+    linha('Área necessária', fmtN(c.area, 0) + ' m² (' + vacas + ' × ' + numTxt(c.m2) + ' m²)');
+    linha(c.sugerido === 'tudo' ? 'Galpão sugerido' : c.sugerido ? 'Galpão (' + (c.sugerido === 'comp' ? 'comprimento' : 'largura') + ' sugerido' + (c.sugerido === 'comp' ? '' : 'a') + ')' : 'Galpão informado',
+      numTxt(c.comp) + ' × ' + numTxt(c.larg) + ' m = ' + fmtN(c.areaGalpao, 0) + ' m² · ' + fmtN(c.porVaca, 1) + ' m²/vaca');
+    if (c.tipo === 'freestall') linha('Camas', String(c.camas));
+    linha('Ventiladores', c.ventiladores + ' (' + c.porLinha + ' por linha × ' + plural(c.linhas, 'linha', 'linhas') + ')');
+    if (c.abaixo) { av.hidden = false; av.textContent = 'Abaixo do padrão de ' + numTxt(c.m2) + ' m² por vaca: faltam ' + fmtN(Math.ceil(c.falta - 1e-9), 0) + ' m² para ' + vacas + ' vacas.'; }
+    // modelo: com mais de um na tabela, a pessoa escolhe qual usar
+    const nomeForn = FORNECEDORES_CONFORTO[ccForn].nome;
+    const escolha = (rot, lista, chave, padrao) => {
+      if (!lista.length) { const d = document.createElement('div'); d.className = 'campo-dica'; d.textContent = 'A tabela da ' + nomeForn + ' não tem ' + rot.toLowerCase() + '.'; mods.appendChild(d); ccRebanho[chave] = ''; return; }
+      if (!lista.some(i => i.id === ccRebanho[chave])) ccRebanho[chave] = (lista.find(i => padrao.test(normalizarBusca(i.descricao))) || lista[0]).id;
+      const f = document.createElement('div');
+      f.className = 'field';
+      const id = 'cz-r-' + chave;
+      f.innerHTML = '<label></label><select></select>';
+      f.querySelector('label').textContent = rot + (lista.length > 1 ? ' (' + lista.length + ' modelos)' : '');
+      f.querySelector('label').htmlFor = id;
+      const s = f.querySelector('select');
+      s.id = id;
+      lista.forEach(i => { const o = document.createElement('option'); o.value = i.id; o.textContent = partesItemConforto(i.descricao).nome + ' · ' + fmt(i.preco); s.appendChild(o); });
+      s.value = ccRebanho[chave];
+      s.disabled = lista.length < 2;
+      s.addEventListener('change', () => { ccRebanho[chave] = s.value; pintarRebanho(); });
+      mods.appendChild(f);
+    };
+    const vents = modelosRebanho('ventilador', RE_ACESSORIO_VENT);
+    const seps = c.tipo === 'freestall' ? modelosRebanho('separador', RE_ACESSORIO_SEP) : [];
+    escolha('Ventilador', vents, 'ventSel', /^(new )?ventilador/);
+    if (c.tipo === 'freestall') escolha('Separador de cama', seps, 'sepSel', /separador/);
+    $('cz-r-aplicar').disabled = !vents.length && !seps.length;
+    $('cz-r-pend').hidden = !ccRebanho.aplicado || ccRebanho.aplicado === chaveRebanho();
+  }
+  ['cz-r-vacas', 'cz-r-comp', 'cz-r-larg'].forEach(id => $(id).addEventListener('input', () => {
+    const ler = k => { const s = $(k).value.trim(); if (!s) return null; const n = parseNum(s); return n > 0 ? n : null; };
+    const v = ler('cz-r-vacas');
+    ccRebanho.vacas = v ? Math.round(v) : null;
+    ccRebanho.comp = ler('cz-r-comp');
+    ccRebanho.larg = ler('cz-r-larg');
+    pintarRebanho();
+  }));
+  $('cz-r-aplicar').addEventListener('click', () => {
+    if (!(ccRebanho.vacas > 0)) { avisar('Informe o nº de vacas.'); return; }
+    const c = contaRebanho(ccTipo, ccRebanho.vacas, ccRebanho.comp, ccRebanho.larg);
+    const vent = ccTabela.find(i => i.id === ccRebanho.ventSel) || null;
+    const sep = c.tipo === 'freestall' ? ccTabela.find(i => i.id === ccRebanho.sepSel) || null : null;
+    if (!vent && !sep) { avisar('A tabela da ' + FORNECEDORES_CONFORTO[ccForn].nome + ' não tem ventilador' + (c.tipo === 'freestall' ? ' nem separador de cama' : '') + '. Escolha outro fornecedor ou ponha os itens à mão.'); return; }
+    // tira o modelo que tinha sido aplicado antes, se agora é outro
+    (ccRebanho.ids || []).forEach(id => { if (id !== (vent && vent.id) && id !== (sep && sep.id)) delete ccQtd[id]; });
+    const ids = [];
+    if (vent) { if (c.ventiladores > 0) ccQtd[vent.id] = c.ventiladores; else delete ccQtd[vent.id]; ids.push(vent.id); }
+    if (sep) { if (c.camas > 0) ccQtd[sep.id] = c.camas; else delete ccQtd[sep.id]; ids.push(sep.id); }
+    ccRebanho.ids = ids;
+    ccRebanho.aplicado = chaveRebanho();
+    ccRebanho.linha = linhaRebanho(c, { vent: !vent, sep: c.tipo === 'freestall' && !sep });
+    const feitos = [vent ? plural(c.ventiladores, 'ventilador', 'ventiladores') : '', sep ? plural(c.camas, 'separador', 'separadores') : ''].filter(Boolean);
+    avisoRapido('Coloquei ' + listaE(feitos) + '. Dá para ajustar à mão.');
+    marcarChipsConforto(); renderItensConforto(); renderResumoConforto(); pintarRebanho();
+  });
+  function zerarRebanhoAplicado() { ccRebanho.aplicado = ''; ccRebanho.linha = ''; ccRebanho.ids = []; ccRebanho.ventSel = ''; ccRebanho.sepSel = ''; }
   async function trocarFornConforto(f) {
     if (f === ccForn) return;
     if (ccTabela && ccTabela.some(i => ccQtd[i.id] > 0) && !(await confirmar('Trocar de fornecedor limpa os itens escolhidos. Trocar?', 'Trocar'))) return;
     try { await carregarFornecedor(f); } catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
     ccQtd = {};
+    zerarRebanhoAplicado();
     // o kit já vem montado: cada item com a quantidade padrão
     ccTabela.forEach(i => { if (Number(i.qtdPadrao) > 0 && !(ccTipo === 'compost' && (i.grupo === 'BAIAS' || i.grupo === 'FREE STALL'))) ccQtd[i.id] = Number(i.qtdPadrao); });
     // voltou para o kit depois de já ter dimensionado: refaz a conta com os mesmos campos
@@ -11880,6 +12001,7 @@
     if (!(await confirmar('Tirar todos os itens escolhidos?', 'Limpar'))) return;
     ccQtd = {};
     ccPista.calculado = false;
+    zerarRebanhoAplicado();
     renderConfigurador();
   });
   $('cz-ver-resumo').addEventListener('click', () => $('cz-resumo').scrollIntoView({ block: 'start', behavior: 'smooth' }));
@@ -11900,7 +12022,7 @@
     });
     const o = { tipo: 'conforto', titulo: 'Configuração de Conforto Animal ' + (ccTipo === 'compost' ? 'Compost Barn' : 'Free Stall'),
       fornecedor: FORNECEDORES_CONFORTO[ccForn].nome, origem: FORNECEDORES_CONFORTO[ccForn].origem,
-      cliente: '', endereco: '', pagamento: '', obs: '', grupos, total: arredOm(grupos.reduce((s, g) => s + g.valor, 0)), validade: 0 };
+      cliente: '', endereco: '', pagamento: '', obs: ccRebanho.linha && ccForn !== 'kit' ? ccRebanho.linha + '.' : '', grupos, total: arredOm(grupos.reduce((s, g) => s + g.valor, 0)), validade: 0 };
     $('modal-conforto').hidden = true;
     abrirOrdemax(o, ccFonte);
   });
@@ -13377,7 +13499,7 @@
     };
   }
   function prevPadrao() {
-    return { componentes: PREV_COMP_PADRAO.map(normalizarComp), horasPorOrdenha: 1.5, resfriamentoMax: 180, ref: clonar(PREV_REF_PADRAO), conforto: { ...CONFORTO_PADRAO } };
+    return { componentes: PREV_COMP_PADRAO.map(normalizarComp), horasPorOrdenha: 1.5, resfriamentoMax: 180, ref: clonar(PREV_REF_PADRAO), conforto: { ...CONFORTO_PADRAO }, galpao: { ...REGRAS_GALPAO } };
   }
   var cfgPrev = prevPadrao(), cfgPrevDoBanco = false;
   function aplicarConfigPrev(doc) {
@@ -13392,6 +13514,8 @@
       if (r.limp && typeof r.limp === 'object') c.ref.limp = { pct: numOuNulo(r.limp.pct), ms: numOuNulo(r.limp.ms), atencao: numOuNulo(r.limp.atencao) > 0 && Number(r.limp.atencao) <= 100 ? Number(r.limp.atencao) : 80 };
       const cf = doc.conforto || {};
       Object.keys(CONFORTO_PADRAO).forEach(k => { if (numOuNulo(cf[k]) != null) c.conforto[k] = Number(cf[k]); });
+      const gp = doc.galpao || {};
+      Object.keys(REGRAS_GALPAO).forEach(k => { if (Number(gp[k]) > 0) c.galpao[k] = Number(gp[k]); });
       c.atualizadoPor = doc.atualizadoPor || null;
       c.atualizadoEm = doc.atualizadoEm || null;
     }
@@ -15381,7 +15505,7 @@
   async function salvarCfgPrev(novo, detalhe) {
     const doc = {
       componentes: novo.componentes.map(c => ({ id: c.id, nome: c.nome, unidade: c.unidade, vida: c.vida, limiteMeses: c.limiteMeses || null, checklist: c.checklist, ativo: c.ativo })),
-      horasPorOrdenha: novo.horasPorOrdenha, resfriamentoMax: novo.resfriamentoMax, ref: novo.ref, conforto: novo.conforto,
+      horasPorOrdenha: novo.horasPorOrdenha, resfriamentoMax: novo.resfriamentoMax, ref: novo.ref, conforto: novo.conforto, galpao: novo.galpao || { ...REGRAS_GALPAO },
       padraoVer: PREV_PADRAO_VER, atualizadoPor: viewerId || null, atualizadoEm: Date.now()
     };
     const r = await gravar('set', 'config/preventiva', doc);
@@ -15490,6 +15614,7 @@
     $('par-resfriamentoMax').value = txtNum(c.resfriamentoMax);
     $('par-horasPorOrdenha').value = txtNum(c.horasPorOrdenha);
     Object.keys(CONFORTO_PADRAO).forEach(k => { $('par-' + k).value = txtNum(c.conforto[k]); });
+    Object.keys(REGRAS_GALPAO).forEach(k => { $('par-' + k).value = txtNum((c.galpao || REGRAS_GALPAO)[k]); });
   }
   $('adm-prev-ref-alterar').addEventListener('click', () => { if (!ehAdmin()) return; preencherParRef(cfgPrev); $('modal-pa-ref').hidden = false; });
   $('par-padrao').addEventListener('click', () => { const p = prevPadrao(); p.componentes = cfgPrev.componentes; preencherParRef(p); });
@@ -15515,6 +15640,9 @@
     for (const k of Object.keys(CONFORTO_PADRAO)) { const v = lerNumInput('par-' + k); if (v == null) { avisar('Preencha as faixas de ITU e o limite da frequência respiratória.'); return; } cf[k] = v; }
     if (!(cf.ituVerde < cf.ituAmarelo && cf.ituAmarelo < cf.ituLaranja)) { avisar('As faixas de ITU precisam subir: verde < amarelo < laranja.'); return; }
     novo.conforto = cf;
+    const gp = {};
+    for (const k of Object.keys(REGRAS_GALPAO)) { const v = lerNumInput('par-' + k); if (!(v > 0)) { avisar('Preencha as regras do galpão (conforto animal) com números maiores que zero.'); return; } gp[k] = v; }
+    novo.galpao = gp;
     if (await salvarCfgPrev(novo, 'Referências do teste, do resfriador e do conforto')) $('modal-pa-ref').hidden = true;
   });
 

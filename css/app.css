@@ -1959,6 +1959,19 @@
   .ttf-det.ok { color: var(--accent-txt); } .ttf-det.atencao { color: var(--soon); } .ttf-det.fora { color: var(--tax); }
   .ttf-btn { flex: none; width: auto; min-height: 40px; padding: 8px 12px; font-size: var(--fs-legenda); }
   .ttf-mais { margin-top: 6px; }
+  /* configurador: dimensionar compost barn e free stall pelo rebanho */
+  .cz-r-tipo { margin-left: auto; font-size: var(--fs-legenda); font-weight: 600; color: var(--ink-soft); }
+  .cz-r-res { display: flex; flex-direction: column; gap: 4px; }
+  .cz-r-l { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .cz-r-l span { color: var(--ink-soft); }
+  .cz-r-l b { text-align: right; font-variant-numeric: tabular-nums; }
+  .cz-r-modelos { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .cz-r-modelos .field { margin: 0; }
+  .cz-r-modelos select { width: 100%; }
+  .cz-r-aplicar { width: 100%; margin-top: 12px; min-height: 48px; }
+  .cz-s-base { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; margin-bottom: 10px; border-radius: var(--raio-p);
+    background: var(--accent-suave); color: var(--accent-txt); font-size: 14px; font-weight: 600; line-height: 1.35; }
+  .cz-s-base .ic { width: 18px; height: 18px; flex: none; margin-top: 1px; }
 
   /* ---------- Meu estoque (peças no carro) ---------- */
   .es-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 12px; }
