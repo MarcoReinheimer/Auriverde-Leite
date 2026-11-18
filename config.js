@@ -1,5 +1,5 @@
 // =====================================================================
-// Auriverde · configuração do banco compartilhado (Supabase)
+// Ordenha360 · configuração do banco compartilhado (Supabase)
 //   - supabaseUrl: endereço do projeto no Supabase
 //   - supabaseKey: chave publicável (feita para ficar no app)
 // NUNCA coloque aqui a "service_role" / "secret key" nem a senha do banco.

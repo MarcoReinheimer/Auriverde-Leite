@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.17.17';
+  const APP_VERSAO = '2026.11.17.19';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -636,7 +636,7 @@
   function calcular() {
     const custo = parseMoney(custoEl.value);
     const aliquota = aliquotaDaOrigem(origem);
-    // Tabela Auriverde: cada 1 ponto de margem equivale a 0,01 no divisor,
+    // Tabela da empresa: cada 1 ponto de margem equivale a 0,01 no divisor,
     // na direção oposta (17% = 0,63, 18% = 0,62, 16% = 0,64).
     const margemAuriverde = margemDoCalculo();
     const divisor = (80 - margemAuriverde) / 100;
@@ -657,7 +657,7 @@
     document.getElementById('out-markup').textContent = fmtPct(markup);
     document.getElementById('out-mult').textContent = fmtMult(multiplicador);
     document.getElementById('out-margem-auriverde').textContent = fmtPct(margemAuriverde);
-    document.getElementById('divisor-hint').textContent = '= divisor ' + divisor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' (tabela Auriverde)';
+    document.getElementById('divisor-hint').textContent = '= divisor ' + divisor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' (tabela da empresa)';
 
     saveCalcState();
   }
@@ -672,7 +672,7 @@
   function pintarDicaMargem() {
     const igual = Math.abs(margemDoCalculo() - config.margemPadrao) < 1e-9;
     $('margem-padrao-dica').textContent = igual
-      ? 'Margem padrão da Auriverde: ' + numTxt(config.margemPadrao) + '%. Mudar aqui vale só para este cálculo.'
+      ? 'Margem padrão: ' + numTxt(config.margemPadrao) + '%. Mudar aqui vale só para este cálculo.'
       : 'Só para este cálculo. O padrão é ' + numTxt(config.margemPadrao) + '%.';
     $('margem-voltar-padrao').hidden = igual;
   }
@@ -812,15 +812,15 @@
     return excelJsPromise;
   }
 
-  // Gera um .xlsx no padrão Auriverde: cabeçalho verde congelado, filtros,
+  // Gera um .xlsx no padrão do app: cabeçalho azul congelado, filtros,
   // larguras ajustadas, números de verdade e (opcional) linha de TOTAL.
   // abas: [{ nome, colunas: [{titulo, key, fmt, soma, wrap, max}], linhas: [{...}], total }]
   const XLSX_MOEDA = '"R$" #,##0.00';
   const XLSX_DATA = 'dd/mm/yyyy';
   async function gerarXlsx(ExcelJS, abas) {
-    const VERDE = 'FF007A3D';
+    const VERDE = 'FF0E3B5C';
     const wb = new ExcelJS.Workbook();
-    wb.creator = 'Auriverde';
+    wb.creator = 'Ordenha360';
     wb.created = new Date();
 
     const paraData = iso => {
@@ -858,7 +858,7 @@
         col.alignment = c.wrap ? { wrapText: true, vertical: 'top' } : { vertical: 'top' };
       });
       // células coloridas por faixa (ex.: Limp dentro / atenção / fora do padrão): linha.__cor = { chave: 'ok' | 'atencao' | 'fora' }
-      const XLSX_FAIXA = { ok: ['FFE3F1E9', 'FF007A3D'], atencao: ['FFFBF0DA', 'FF9A6410'], fora: ['FFF6DED8', 'FFB5412B'] };
+      const XLSX_FAIXA = { ok: ['FFE2F3F0', 'FF157A6E'], atencao: ['FFFBF0DA', 'FF9A6410'], fora: ['FFF6DED8', 'FFB5412B'] };
       linhas.forEach((l, ri) => {
         if (!l || !l.__cor) return;
         colunas.forEach((c, ci) => {
@@ -874,7 +874,7 @@
       cab.height = 22;
       cab.eachCell(cell => {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: VERDE } };
-        cell.font = { name: 'IBM Plex Sans', bold: true, color: { argb: 'FFFFFFFF' } }; cell.border = { bottom: { style: 'medium', color: { argb: 'FFF2D300' } } };
+        cell.font = { name: 'IBM Plex Sans', bold: true, color: { argb: 'FFFFFFFF' } }; cell.border = { bottom: { style: 'medium', color: { argb: 'FFF2B84B' } } };
         cell.alignment = { vertical: 'middle' };
       });
 
@@ -892,7 +892,7 @@
         const tr = ws.addRow(vals);
         tr.eachCell({ includeEmpty: true }, (cell, n) => {
           cell.font = { name: 'IBM Plex Sans', bold: true };
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE3F1E9' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2F3F0' } };
           cell.border = { top: { style: 'thin', color: { argb: VERDE } } };
           const c = colunas[n - 1];
           cell.numFmt = (c && c.fmt && c.fmt !== XLSX_DATA && !c.ehData) ? c.fmt : 'General';
@@ -1047,7 +1047,7 @@
       const bytes = await montarPlanilha(ExcelJS, calcRows, visRows);
       const arquivo = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       try {
-        await downloads.save({ filename: nomeArquivoDemo('auriverde-' + todayISO() + '.xlsx'), data: arquivo });
+        await downloads.save({ filename: nomeArquivoDemo('ordenha360-' + todayISO() + '.xlsx'), data: arquivo });
       } catch (e) {
         const code = e && e.code;
         if (code === 'declined') return; // a pessoa cancelou: tudo bem
@@ -1384,7 +1384,7 @@
     if (v.vacuoKpa) linhas.push('Vácuo deixado: ' + v.vacuoKpa + ' kPa.');
     if (v.descricao) linhas.push('Observações: ' + v.descricao);
     if (v.revisao.responsavelTecnico) linhas.push('Responsável técnico: ' + v.revisao.responsavelTecnico + '.');
-    linhas.push('', 'Criado pelo app Auriverde.');
+    linhas.push('', 'Criado pelo app Ordenha360.');
     return linhas.join('\n');
   }
 
@@ -1502,7 +1502,7 @@
     const d = iso => iso.replace(/-/g, '');
     const dh = (iso, h) => d(iso) + 'T' + h.replace(':', '') + '00';
     const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Auriverde//App Auriverde//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Ordenha360//App Ordenha360//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
       'UID:' + String(ev.uid || novoId()).replace(/[^\w.-]/g, '') + '@auriverde.app', 'DTSTAMP:' + stamp];
     if (horaValida(ev.hora)) {
       L.push('DTSTART:' + dh(ev.data, ev.hora), 'DTEND:' + dh(ev.data, horaValida(ev.horaFim) ? ev.horaFim : somarHora(ev.hora, 60)));
@@ -1615,7 +1615,7 @@
       titulo: (CAT_LABEL[o.categoria] || 'OS') + ' – ' + nome + ' (' + numOS(o.numero) + ')',
       data: o.agendadaPara, hora: horaValida(o.horaInicio) ? o.horaInicio : null,
       local: localAgenda(p) || o.produtorLocal || '',
-      descricao: linhas.join('\n') + '\n\nCriado pelo app Auriverde.'
+      descricao: linhas.join('\n') + '\n\nCriado pelo app Ordenha360.'
     };
   }
   function eventoPreventiva(p, itens) {
@@ -1625,7 +1625,7 @@
       titulo: 'Troca preventiva – ' + (p.nome || '') + ': ' + itens.map(i => i.comp.nome).join(', '),
       data, local: localAgenda(p),
       descricao: ['Próxima troca prevista pelo plano preventivo:'].concat(itens.map(i => '• ' + i.comp.nome + ' (' + vidaTxt(i.comp) + (i.ultima ? '; última troca em ' + fmtDate(i.ultima.data) : '') + ')'))
-        .concat(['', 'Criado pelo app Auriverde.']).join('\n')
+        .concat(['', 'Criado pelo app Ordenha360.']).join('\n')
     };
   }
   function linhaBotaoAgenda(ev, rotulo) {
@@ -2586,7 +2586,7 @@
       const bytes = await montarPlanilhaMedias(ExcelJS, linhas);
       const arquivo = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       try {
-        await downloads.save({ filename: nomeArquivoDemo('auriverde-medias-' + todayISO() + '.xlsx'), data: arquivo });
+        await downloads.save({ filename: nomeArquivoDemo('ordenha360-medias-' + todayISO() + '.xlsx'), data: arquivo });
       } catch (e) {
         const code = e && e.code;
         if (code === 'declined') return;
@@ -2913,7 +2913,7 @@
       it.produto = nomeItemCatalogo(c);
       q('.it-produto').value = it.produto;
       if (c.precoFinal) {
-        // kit Auriverde: o preço da tabela já é o de venda; o custo fica em branco
+        // kit próprio: o preço da tabela já é o de venda; o custo fica em branco
         it.custoUnit = 0;
         it.precoUnit = r2(c.preco);
         it.precoManual = true;
@@ -2921,7 +2921,7 @@
         opcoesMarcas(q('.it-marca'), '');
         q('.it-custo').value = '';
         q('.it-preco').value = fmtMoedaCampo(it.precoUnit);
-        avisoRapido('Preço de venda da Auriverde: o custo fica em branco.');
+        avisoRapido('Preço de venda (tabela própria): o custo fica em branco.');
       } else {
         let marca = marcaComNome(c.fornecedor), id = marca ? marca.id : '';
         if (!marca && c.fornecedor && nivel('calc') >= 2) id = criarMarca(c.fornecedor, c.origem);
@@ -3442,7 +3442,7 @@
       const arquivo = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const mes = $('vendas-mes').value;
       try {
-        await downloads.save({ filename: nomeArquivoDemo('auriverde-vendas-' + (mes || 'todas') + '.xlsx'), data: arquivo });
+        await downloads.save({ filename: nomeArquivoDemo('ordenha360-vendas-' + (mes || 'todas') + '.xlsx'), data: arquivo });
       } catch (e) {
         const code = e && e.code;
         if (code === 'declined') return;
@@ -4438,12 +4438,12 @@
   $('pp-exportar').addEventListener('click', () => {
     const p = produtores.find(x => x.id === ppId);
     if (!p) return;
-    exportarPmls([p.id], 'auriverde-pmls-' + slug(p.nome) + '-' + todayISO() + '.xlsx', $('pp-exportar'));
+    exportarPmls([p.id], 'ordenha360-pmls-' + slug(p.nome) + '-' + todayISO() + '.xlsx', $('pp-exportar'));
   });
   $('pmls-exportar-todos').addEventListener('click', () => {
     const ids = produtores.filter(p => participa(p) || mesesPmls(p).length || pmlsDe(p).ultChecklistPct != null).map(p => p.id);
     if (!ids.length) { avisar('Nenhum produtor participa do PMLS ainda. Abra um produtor e marque "Participa: Sim".'); return; }
-    exportarPmls(ids, 'auriverde-pmls-' + todayISO() + '.xlsx', $('pmls-exportar-todos'));
+    exportarPmls(ids, 'ordenha360-pmls-' + todayISO() + '.xlsx', $('pmls-exportar-todos'));
   });
 
 
@@ -4665,7 +4665,7 @@
     }
     return Promise.all([jsPdfPromise, fontes]).then(([J]) => J);
   }
-  // As fontes do PDF ficam em fontes/plex-pdf-*.ttf e o logo em img/logo-auriverde.png (antes iam como
+  // As fontes do PDF ficam em fontes/plex-pdf-*.ttf e o logo em img/logo.png (antes iam como
   // texto dentro do index.html). São lidos na primeira vez que alguém gera um PDF; o sw.js guarda para usar sem internet.
   const emBase64 = buf => {
     const b = new Uint8Array(buf);
@@ -4681,7 +4681,7 @@
       fontesPdfPromise = Promise.all([
         ...['normal', 'bold'].map(k => lerArquivo('fontes/plex-pdf-' + k + '.ttf').then(buf => { PLEX_TTF[k] = emBase64(buf); })),
         // o logo com os mesmos bytes do arquivo (redesenhar num canvas deixaria o PDF maior)
-        lerArquivo('img/logo-auriverde.png').then(buf => { logoPdfCache = 'data:image/png;base64,' + emBase64(buf); }).catch(() => {})
+        lerArquivo('img/logo.png').then(buf => { logoPdfCache = 'data:image/png;base64,' + emBase64(buf); }).catch(() => {})
       ]).catch(() => { fontesPdfPromise = null; });
     }
     return fontesPdfPromise;
@@ -4752,10 +4752,10 @@
 
       const doc = registrarFontePdf(new JsPDF({ unit: 'mm', format: 'a4' }));
       const W = 210, H = 297, M = 14, LARG = W - 2 * M;
-      const VERDE = [0, 122, 61], VERDE_ESC = [11, 94, 54], OURO = [242, 211, 0], TINTA = [22, 34, 27], SUAVE = [90, 106, 96],
-        LINHA = [225, 231, 226], FUNDO = [243, 245, 242], BRANCO = [255, 255, 255], VERMELHO = [181, 65, 43], AMARELO = [154, 100, 16];
+      const VERDE = [14, 59, 92], VERDE_ESC = [8, 42, 66], OURO = [242, 184, 75], TINTA = [20, 34, 44], SUAVE = [86, 102, 115],
+        LINHA = [223, 230, 235], FUNDO = [242, 246, 248], ACENTO = [21, 122, 110], BRANCO = [255, 255, 255], VERMELHO = [181, 65, 43], AMARELO = [154, 100, 16];
       const iconeTitulo = await prepararIconesPdf(VERDE);
-      const COR_Q = { bom: VERDE, atencao: AMARELO, ruim: VERMELHO };
+      const COR_Q = { bom: ACENTO, atencao: AMARELO, ruim: VERMELHO };
       const nomeProd = pdfTxt(p.nome || 'Produtor');
       let y = 0;
       const corTexto = c => doc.setTextColor(c[0], c[1], c[2]);
@@ -4767,7 +4767,7 @@
         corFundo(VERDE); doc.rect(0, 0, W, 11, 'F');
         corFundo(OURO); doc.rect(0, 11, W, 0.9, 'F');
         fonte(9, 'bold'); corTexto(BRANCO);
-        doc.text('Auriverde  ·  Relatório do produtor  ·  ' + nomeProd, M, 7.3);
+        doc.text('Ordenha360  ·  Relatório do produtor  ·  ' + nomeProd, M, 7.3);
         y = 21;
       }
       function garantir(h) { if (y + h > H - 16) { doc.addPage(); cabecalhoPequeno(); } }
@@ -4850,11 +4850,11 @@
       corFundo(VERDE); doc.rect(0, 0, W, 36, 'F');
       corFundo(VERDE_ESC); doc.rect(0, 30, W, 6, 'F');
       corFundo(OURO); doc.rect(0, 36, W, 1.6, 'F');
-      corFundo(BRANCO); doc.roundedRect(M, 7, 33, 22, 3, 3, 'F');
-      try { doc.addImage(logoParaPdf(), 'PNG', M + 2.5, 8.8, 28, 18.9); } catch (e) {}
-      fonte(19, 'bold'); corTexto(BRANCO); doc.text('Relatório do produtor', M + 40, 17);
+      corFundo(BRANCO); doc.roundedRect(M, 7, 46, 17, 3, 3, 'F');
+      try { doc.addImage(logoParaPdf(), 'PNG', M + 2, 9.96, 42, 11.08); } catch (e) {}
+      fonte(19, 'bold'); corTexto(BRANCO); doc.text('Relatório do produtor', M + 52, 17);
       fonte(9.5); doc.text(pdfTxt('Gerado em ' + new Date().toLocaleDateString('pt-BR') + ' às ' +
-        new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + (viewerName ? ' por ' + viewerName : '')), M + 40, 24);
+        new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + (viewerName ? ' por ' + viewerName : '')), M + 52, 24);
       y = 50;
       fonte(20, 'bold'); corTexto(TINTA);
       doc.splitTextToSize(nomeProd, LARG - 40).forEach(l => { doc.text(l, M, y); y += 8; });
@@ -4864,7 +4864,7 @@
         fonte(8.5, 'bold');
         const ws = doc.getTextWidth(selo) + 6;
         corFundo(OURO); doc.roundedRect(W - M - ws, 44.5, ws, 7, 3.5, 3.5, 'F');
-        corTexto([58, 48, 0]); doc.text(selo, W - M - ws + 3, 49.2);
+        corTexto([58, 38, 0]); doc.text(selo, W - M - ws + 3, 49.2);
       }
       y -= 2;
       const endereco = [p.propriedade, p.linha, [p.cidade, p.estado].filter(Boolean).join(' - ')].filter(Boolean).join(' · ');
@@ -4915,7 +4915,7 @@
         blocos([
           { rotulo: 'Média atual', valor: fmtL(p.leiteMediaDia) + ' L/dia', sub: 'período ' + fmtDataCurta(p.leitePeriodoInicio) + ' a ' + fmtDataCurta(p.leitePeriodoFim), cor: VERDE },
           { rotulo: 'Por vaca', valor: p.leiteMediaVaca ? fmtL(p.leiteMediaVaca) + ' L' : '-', sub: p.leiteVacas ? p.leiteVacas + ' vacas em lactação' : '' },
-          { rotulo: 'Variação', valor: t ? (t.cls === 'igual' ? '=' : fmtPctVar(t.v)) : '-', sub: 'vs média anterior', cor: t ? (t.cls === 'sobe' ? VERDE : t.cls === 'desce' ? VERMELHO : null) : null }
+          { rotulo: 'Variação', valor: t ? (t.cls === 'igual' ? '=' : fmtPctVar(t.v)) : '-', sub: 'vs média anterior', cor: t ? (t.cls === 'sobe' ? ACENTO : t.cls === 'desce' ? VERMELHO : null) : null }
         ]);
       }
       tabela([{ t: 'Período', w: 34 }, { t: 'Dias', w: 10, dir: 1 }, { t: 'Litros', w: 18, dir: 1 }, { t: 'L/dia', w: 16, dir: 1 }, { t: 'L/vaca/dia', w: 16, dir: 1 }, { t: 'Vacas', w: 11, dir: 1 }, { t: 'Salvo por', w: 22 }],
@@ -4952,7 +4952,7 @@
           rotulo('CCS por vaca', M, y); y += 4.5;
           tabela([{ t: 'Vaca', w: 24 }, { t: 'Última CCS', w: 16, dir: 1 }, { t: 'Data', w: 18 }, { t: 'Situação', w: 26 }, { t: 'Cultura / observação', w: 50 }],
             grupos.map(g => [
-              { t: g.nome, b: 1 }, { t: numBR(g.ultima.ccs, 0), cor: g.alta ? VERMELHO : VERDE, b: 1 }, fmtDate(g.ultima.data),
+              { t: g.nome, b: 1 }, { t: numBR(g.ultima.ccs, 0), cor: g.alta ? VERMELHO : ACENTO, b: 1 }, fmtDate(g.ultima.data),
               { t: g.reincidente ? 'Reincidente (' + g.seguidos + ' altas seguidas)' : g.alta ? 'Alta' : 'Normal', cor: g.alta ? VERMELHO : TINTA },
               [g.ultima.cultura, g.ultima.observacao].filter(Boolean).join(' · ')
             ]));
@@ -4963,7 +4963,7 @@
           tabela([{ t: 'Item', w: 40 }, { t: 'Resultado', w: 26 }, { t: 'Observação', w: 60 }],
             PMLS_CHECK_ITENS.map(([k, r]) => {
               const res = (ck.itens || {})[k];
-              return [r, { t: RESPOSTA_ROTULO[res] || '-', cor: res === 'nc' ? VERMELHO : res === 'c' ? VERDE : SUAVE, b: 1 }, (ck.obs || {})[k] || ''];
+              return [r, { t: RESPOSTA_ROTULO[res] || '-', cor: res === 'nc' ? VERMELHO : res === 'c' ? ACENTO : SUAVE, b: 1 }, (ck.obs || {})[k] || ''];
             }));
           if (ck.observacao) paragrafo('Observação: ' + ck.observacao, { tam: 9, cor: SUAVE });
         }
@@ -5001,7 +5001,7 @@
       }
 
       // ---- setores novos (Veterinária) ----
-      (PDF_EXTRA_SECOES || []).forEach(f => { try { f({ p, doc, titulo, paragrafo, tabela, blocos, rotulo, garantir, dados: pdfExtra, CORES: { VERDE, VERMELHO, AMARELO, SUAVE, TINTA }, M, get y() { return y; }, set y(v) { y = v; } }); } catch (e) {} });
+      (PDF_EXTRA_SECOES || []).forEach(f => { try { f({ p, doc, titulo, paragrafo, tabela, blocos, rotulo, garantir, dados: pdfExtra, CORES: { VERDE, ACENTO, VERMELHO, AMARELO, SUAVE, TINTA }, M, get y() { return y; }, set y(v) { y = v; } }); } catch (e) {} });
 
       // ---- nutrição ----
       if (podeVer('nutricao') && (nutriOrd.length || p.proximaNutricao)) {
@@ -5040,10 +5040,10 @@
         doc.setPage(i);
         corLinha(LINHA); doc.setLineWidth(0.3); doc.line(M, H - 11, W - M, H - 11);
         fonte(8); corTexto(SUAVE);
-        doc.text('Auriverde · ' + nomeProd, M, H - 6.5);
+        doc.text('Ordenha360 · ' + nomeProd, M, H - 6.5);
         doc.text('Página ' + i + ' de ' + n, W - M, H - 6.5, { align: 'right' });
       }
-      await baixarArquivo('auriverde-relatorio-' + slug(p.nome) + '-' + todayISO() + '.pdf', doc.output('blob'), 'o PDF');
+      await baixarArquivo('ordenha360-relatorio-' + slug(p.nome) + '-' + todayISO() + '.pdf', doc.output('blob'), 'o PDF');
     } finally {
       btn.disabled = false;
       btn.textContent = texto;
@@ -5262,7 +5262,7 @@
     if (participa(p)) s.push(['PMLS', 'selo-pmls']);
     if (p.proximaRevisao && diasAte(p.proximaRevisao) < 0) s.push(['Revisão vencida', 'selo-vencida']);
     if (situacaoDe(p) === 'inativo') s.push(['Inativo', 'selo-inativo']);
-    else if ((p.matricula || '').trim()) s.push(['Associado Auriverde', 'selo-associado']);
+    else if ((p.matricula || '').trim()) s.push(['Associado', 'selo-associado']);
     return s;
   }
   // sem: classes de etiqueta que não entram (ex.: na lista, a linha "Revisão vencida desde…" já diz o mesmo)
@@ -5460,7 +5460,7 @@
     const blocos = [
       ['Dados pessoais', 'pf-pessoais', [['Nome', p.nome], ['Propriedade', p.propriedade], ['CPF / CNPJ', p.cpfCnpj], ['Telefone / WhatsApp', p.telefone], ['E-mail', p.email]]],
       ['Endereço', 'pf-endereco', [['Linha / comunidade', p.linha], ['Cidade', p.cidade], ['Estado', p.estado], ['Altitude', temValor(p.altitude) ? numBR(p.altitude, 0) + ' m' : ''], ['Ponto de referência', p.referencia], ['Localização no mapa', textoLocalizacao(p)]]],
-      ['Cadastro Auriverde', 'pf-auriverde', [['Nº de matrícula', p.matricula], ['Cód. fornecedor de leite', p.codFornecedor], ['Inscrição estadual', p.inscricaoEstadual],
+      ['Cadastro na empresa', 'pf-auriverde', [['Nº de matrícula', p.matricula], ['Cód. fornecedor de leite', p.codFornecedor], ['Inscrição estadual', p.inscricaoEstadual],
         ['Data de associação', p.dataAssociacao ? fmtDate(p.dataAssociacao) : ''], ['Situação', situacaoDe(p) === 'inativo' ? 'Inativo' : 'Ativo'],
         ['Unidade / filial', p.unidade], ['Linha de coleta do leite', p.linhaColeta], ['Técnico responsável', p.tecnico]]],
       ['Propriedade', 'pf-propriedade', [['Área total', temValor(p.areaHa) ? numBR(p.areaHa, 2) + ' ha' : ''], ['Total de animais', temValor(p.totalAnimais) ? String(p.totalAnimais) : ''],
@@ -6035,14 +6035,14 @@
       try { ExcelJS = await carregarExcelJS(); }
       catch (e) { avisar('Não consegui carregar o gerador de planilhas. Verifique a internet e tente de novo.'); return; }
       const wb = new ExcelJS.Workbook();
-      wb.creator = 'Auriverde';
+      wb.creator = 'Ordenha360';
       const ws = wb.addWorksheet('Produtores', { views: [{ state: 'frozen', ySplit: 1 }] });
       ws.columns = CAMPOS_IMPORT.map(c => ({ header: c.t, key: c.k, width: Math.max(14, Math.min(34, c.t.length + 4)) }));
       const cab = ws.getRow(1);
       cab.height = 30;
       cab.eachCell(cell => {
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF007A3D' } };
-        cell.font = { name: 'IBM Plex Sans', bold: true, color: { argb: 'FFFFFFFF' } }; cell.border = { bottom: { style: 'medium', color: { argb: 'FFF2D300' } } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0E3B5C' } };
+        cell.font = { name: 'IBM Plex Sans', bold: true, color: { argb: 'FFFFFFFF' } }; cell.border = { bottom: { style: 'medium', color: { argb: 'FFF2B84B' } } };
         cell.alignment = { vertical: 'middle', wrapText: true };
       });
       const col = k => ws.getColumn(CAMPOS_IMPORT.findIndex(c => c.k === k) + 1).letter;
@@ -6058,8 +6058,8 @@
       const inst = wb.addWorksheet('Instruções');
       inst.columns = [{ header: 'Coluna', key: 'c', width: 34 }, { header: 'O que colocar', key: 'o', width: 70 }];
       inst.getRow(1).eachCell(cell => {
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF007A3D' } };
-        cell.font = { name: 'IBM Plex Sans', bold: true, color: { argb: 'FFFFFFFF' } }; cell.border = { bottom: { style: 'medium', color: { argb: 'FFF2D300' } } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0E3B5C' } };
+        cell.font = { name: 'IBM Plex Sans', bold: true, color: { argb: 'FFFFFFFF' } }; cell.border = { bottom: { style: 'medium', color: { argb: 'FFF2B84B' } } };
       });
       const EXPLICA = {
         nome: 'Obrigatório. Nome do produtor, uma linha por produtor.',
@@ -6079,7 +6079,7 @@
       inst.addRow({ c: 'Importante', o: 'Quem já existe no app (mesma matrícula ou mesmo nome) é atualizado, não duplicado. Células vazias não apagam o que já está cadastrado.' });
       inst.getColumn(2).alignment = { wrapText: true, vertical: 'top' };
       const bytes = await wb.xlsx.writeBuffer();
-      await baixarArquivo('auriverde-modelo-produtores.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o modelo');
+      await baixarArquivo('ordenha360-modelo-produtores.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o modelo');
     } finally {
       btn.disabled = false;
       btn.textContent = texto;
@@ -6397,11 +6397,11 @@
     b.textContent = String(n);
     b.hidden = !n;
   }
-  // foto da conta; sem foto, um círculo verde com a inicial do nome
+  // foto da conta; sem foto, um círculo azul com a inicial do nome
   function avatarSrc(url, nome) {
     if (url) return url;
     const letra = ((nome || '?').trim()[0] || '?').toUpperCase().replace(/[<>&"']/g, '?');
-    return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#0E7A42"/><text x="20" y="26.5" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="#fff">' + letra + '</text></svg>');
+    return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#0E3B5C"/><text x="20" y="26.5" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="#fff">' + letra + '</text></svg>');
   }
   function nomeUsuario(u, perfis) {
     return u.apelido || (perfis && perfis[u.id] && perfis[u.id].name) || 'Sem nome';
@@ -6850,7 +6850,7 @@
         return { id: u.id, nomeDaConta: (perfis[u.id] && perfis[u.id].name) || '', ...achatar(u), telefone: contatoDe(u.id).telefone || u.telefone || '', ultimoAcesso: a && a.em ? new Date(a.em) : null };
       }), ['id', 'nomeDaConta', 'apelido', 'papel', 'situacao']));
       const bytes = await gerarXlsx(ExcelJS, abas);
-      await baixarArquivo('backup-auriverde-' + todayISO() + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o backup');
+      await baixarArquivo('backup-ordenha360-' + todayISO() + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o backup');
     } finally {
       btn.disabled = false;
       btn.textContent = texto;
@@ -7133,7 +7133,7 @@
     });
     // com um setor só (Manutenção), o cartão de setores não tem o que escolher
     $('mais-setores-card').hidden = box.children.length < 2;
-    $('app-versao').textContent = 'Auriverde · versão ' + APP_VERSAO;
+    $('app-versao').textContent = 'Ordenha360 · versão ' + APP_VERSAO;
     if (!$('os-rel-mes').value) $('os-rel-mes').value = mesAtualISO();
     $('mais-quem').textContent = [nomeParaSaudar(), acesso.dono ? 'Administrador (dono do app)' : nomePapel(acesso.papel)].filter(Boolean).join(' · ');
     const meus = meusSetores().map(id => SETOR[id].nome);
@@ -8578,7 +8578,7 @@
       if (podeVer('vendas')) abas.push(abaDe('Compras', vendas.filter(v => v.produtorId === pid).map(v => { const { itens, ...r } = v; return achatar({ ...r, itens: (itens || []).map(i => fmtQtd(i.quantidade) + 'x ' + i.produto).join('; ') }); }), ['data', 'valorTotal', 'itens']));
       abas.push(abaDe('Encaminhamentos', encaminhamentos.filter(e => e.produtorId === pid).map(e => { const { historico, origem, ...r } = e; return achatar({ ...r, setor: (SETOR[e.setor] || {}).nome || e.setor, origem: origem ? origem.resumo || '' : '' }); }), ['setor', 'status', 'prioridade', 'prazo', 'motivo']));
       const bytes = await gerarXlsx(ExcelJS, abas);
-      await baixarArquivo('auriverde-produtor-' + slug(p.nome) + '-' + todayISO() + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o Excel');
+      await baixarArquivo('ordenha360-produtor-' + slug(p.nome) + '-' + todayISO() + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o Excel');
     } finally {
       btn.disabled = false;
       btn.textContent = texto;
@@ -10046,7 +10046,7 @@
       if (cv.width === Math.round(r.width * dpr) && cv.height === Math.round(r.height * dpr)) return;
       cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#13241A';
+      ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#14222C';
       osAssinDesenhou = false;
       $('os-assin-guia').hidden = false;
     }
@@ -10747,7 +10747,7 @@
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
-  // aplica a margem em cada grupo e gera o orçamento com os dados da Auriverde. O PDF não sai do aparelho.
+  // aplica a margem em cada grupo e gera o orçamento com os dados da empresa. O PDF não sai do aparelho.
   const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
   const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
   let pdfjsPromise = null;
@@ -10824,11 +10824,11 @@
     return r;
   }
 
-  // ---------- orçamento no modelo da Auriverde (SAC-029) ----------
+  // ---------- orçamento no modelo de planilha (SAC-029) ----------
   // O preço de cada grupo sai da mesma conta da Calculadora: (custo − ICMS da origem) ÷ divisor,
-  // com divisor = (80 − margem) ÷ 100. O orçamento sai no modelo de planilha da Auriverde
-  // (modelos/orcamento-auriverde.xlsx): em Excel é a própria planilha preenchida; em PDF, o mesmo desenho.
-  const MODELO_ORCAMENTO = 'modelos/orcamento-auriverde.xlsx';
+  // com divisor = (80 − margem) ÷ 100. O orçamento sai no modelo de planilha
+  // (modelos/orcamento.xlsx): em Excel é a própria planilha preenchida; em PDF, o mesmo desenho.
+  const MODELO_ORCAMENTO = 'modelos/orcamento.xlsx';
   const LINHAS_MODELO = 16; // linhas de itens do modelo (20 a 35)
   let ordemaxAtual = null, omOrigem = 'fora', omItens = 'resumido';
   const arredOm = n => Math.round(n * 100) / 100;
@@ -10837,7 +10837,7 @@
   const maiusc = s => String(s || '').trim().toLocaleUpperCase('pt-BR');
   function margemGeral() { const m = pctLido($('om-margem').value); return margemValida(m) ? m : Number(config.margemPadrao); }
   function margemDoGrupo(g) { return margemValida(g.margem) ? g.margem : margemGeral(); }
-  // grupo com preço final (kit da Auriverde): o valor já é o de venda, sem margem nem ICMS
+  // grupo com preço final (kit de tabela própria): o valor já é o de venda, sem margem nem ICMS
   function valorComMargem(g) { return g.precoFinal ? arredOm(g.valor) : arredOm(precoPelaFormula(g.valor, omOrigem, margemDoGrupo(g))); }
   function totalOm() { return arredOm(ordemaxAtual.grupos.reduce((s, g) => s + valorComMargem(g), 0)); }
   function pintarOrigemOm() { $('om-origem').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.o === omOrigem)); }
@@ -10905,7 +10905,7 @@
       d.querySelector('.om-g-sub').textContent = (o.fornecedor || 'Ordemax') + ' ' + fmt(g.valor) + ' · ' + (o.tipo === 'conforto' ? plural(g.itens.length, 'item', 'itens') : plural(g.itens.length, 'peça', 'peças'));
       if (g.precoFinal) {
         const pecas = g.itens.every(i => i.un === 'UN') ? g.itens.reduce((s, i) => s + (parseMoney(i.qtd) || 0), 0) : g.itens.length;
-        d.querySelector('.om-g-sub').textContent = 'Preço de venda Auriverde · ' + plural(pecas, 'peça', 'peças');
+        d.querySelector('.om-g-sub').textContent = 'Preço de venda (tabela própria) · ' + plural(pecas, 'peça', 'peças');
         d.querySelector('.om-g-margem').hidden = true;
         box.appendChild(d);
         return;
@@ -10921,12 +10921,12 @@
     const total = totalOm();
     const div = (80 - margemGeral()) / 100;
     $('om-conta').textContent = 'Mesma conta da Calculadora: (custo − ICMS ' + numTxt(aliquotaDaOrigem(omOrigem)) + '%) ÷ ' +
-      div.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '. Margem padrão da Auriverde: ' + numTxt(config.margemPadrao) + '%.';
+      div.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '. Margem padrão: ' + numTxt(config.margemPadrao) + '%.';
     $('om-totais').innerHTML = '<div><span></span><span></span></div><div><span>Diferença sobre o custo</span><span></span></div><div class="tot"><span>Total do orçamento</span><span></span></div>';
     const soFinal = o.grupos.length && o.grupos.every(g => g.precoFinal);
-    $('om-totais').querySelector('span').textContent = soFinal ? 'Preços de venda Auriverde' : 'Custo ' + (o.fornecedor || 'Ordemax');
+    $('om-totais').querySelector('span').textContent = soFinal ? 'Preços de venda (tabela própria)' : 'Custo ' + (o.fornecedor || 'Ordemax');
     $('om-totais').children[1].hidden = !!soFinal;
-    if (soFinal) $('om-conta').textContent = 'Preços de venda da Auriverde: a margem e o ICMS não entram na conta.';
+    if (soFinal) $('om-conta').textContent = 'Preços de venda (tabela própria): a margem e o ICMS não entram na conta.';
     const v = $('om-totais').querySelectorAll('div span:last-child');
     v[0].textContent = fmt(custo);
     v[1].textContent = fmt(arredOm(total - custo)) + (custo ? ' (' + fmtPct((total / custo - 1) * 100) + ')' : '');
@@ -11019,7 +11019,7 @@
   async function pdfOrdemax(d, itens) {
     const JsPDF = await carregarJsPDF();
     const doc = registrarFontePdf(new JsPDF({ unit: 'mm', format: 'a4' }));
-    const F = doc.__fonte, VERDE = [0, 102, 0];
+    const F = doc.__fonte, VERDE = [14, 59, 92];
     const T = (s, x, y, o) => doc.text(pdfTxt(s), x, y, o);
     const fonte = (tam, neg) => { doc.setFont(F, neg ? 'bold' : 'normal'); doc.setFontSize(tam); };
     const caixa = (x1, y1, x2, y2, pontilhada) => {
@@ -11031,12 +11031,9 @@
     const meio = (s, x1, x2, y, tam, neg) => { fonte(tam, neg); T(s, (x1 + x2) / 2, y, { align: 'center' }); };
     const valor = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const faixa = (txt, y1, y2) => { doc.setFillColor(...VERDE); doc.rect(6.2, y1, 197.4, y2 - y1, 'F'); doc.setTextColor(255, 255, 255); fonte(12, true); T(txt, 9, y2 - 1.5); doc.setTextColor(0, 0, 0); };
-    // moldura, logo e título
+    // moldura e título (o modelo não leva nome nem logo da empresa)
     doc.setDrawColor(0); doc.setLineWidth(0.4); doc.rect(4.8, 5.1, 199.7, 236.2);
-    const logo = logoParaPdf();
-    if (logo) doc.addImage(logo, 'PNG', 12, 5.8, 24, 16.2);
-    meio('COOPERATIVA REGIONAL AURIVERDE', 60, 200, 11.5, 11, true);
-    meio('ORÇAMENTO', 60, 200, 19, 13, true);
+    meio('ORÇAMENTO', 4.8, 204.5, 15.6, 15, true);
     doc.setLineWidth(0.4); doc.line(4.8, 22.3, 204.5, 22.3);
     // data e responsável
     fonte(9.5); T('Data:', 6.6, 30.6);
@@ -11089,7 +11086,7 @@
     // validade e assinaturas
     fonte(9); T('Obs: Valores válidos por ' + d.validade + ' dias, contados a partir da assinatura do Orçamento.', 13, 197.2);
     T('Após este período, os reajustes nos valores dos itens serão repassados ao produtor.', 13, 201.6);
-    meio(maiusc(d.responsavel), 20, 94, 227.4, 9.5, true); meio('Cooperativa Regional Auriverde', 20, 94, 232, 9.5);
+    meio(maiusc(d.responsavel), 20, 94, 227.4, 9.5, true); meio('Responsável', 20, 94, 232, 9.5);
     meio(maiusc(d.produtor), 100, 175, 227.4, 9.5, true); meio('Produtor', 100, 175, 232, 9.5);
     return doc.output('blob');
   }
@@ -11111,7 +11108,7 @@
         try {
           const f = new File([blob], base + '.pdf', { type: 'application/pdf' });
           if (navigator.canShare && navigator.share && navigator.canShare({ files: [f] })) {
-            await navigator.share({ files: [f], title: 'Orçamento ' + d.produtor, text: 'Segue o orçamento da Auriverde: ' + fmt(totalOm()) + '.' });
+            await navigator.share({ files: [f], title: 'Orçamento ' + d.produtor, text: 'Segue o orçamento: ' + fmt(totalOm()) + '.' });
             return;
           }
         } catch (e) { if (e && e.name === 'AbortError') return; }
@@ -11145,8 +11142,8 @@
     ['INSTALAÇÃO', /instala[cç][aã]o/i]
   ];
   const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' }, lero: { nome: 'Lero Solar', url: 'tabelas/lero-solar.json', origem: 'fora' }, feilfer: { nome: 'Feilfer', url: 'tabelas/feilfer-2026-04.json', origem: 'dentro' },
-    // kit montado pela Auriverde: os preços já são de venda (sem margem nem ICMS) e o kit já vem com as quantidades
-    kit: { nome: 'Kit aspersão Auriverde', rotulo: 'Kit aspersão', url: 'tabelas/kit-aspersao-auriverde.json', origem: 'dentro', precoFinal: true } };
+    // kit de tabela própria: os preços já são de venda (sem margem nem ICMS) e o kit já vem com as quantidades
+    kit: { nome: 'Kit aspersão', rotulo: 'Kit aspersão', url: 'tabelas/kit-aspersao.json', origem: 'dentro', precoFinal: true } };
   let ccForn = 'ordemax', ccFonte = '';
   const ccTabelas = {};
   let ccTabela = null, ccTipo = 'freestall', ccQtd = {}, ccGrupoSel = '', ccBusca = '', ccTamAtivo = {};
@@ -11427,8 +11424,8 @@
     }
     const total = fmt(totalConforto());
     const final = !!FORNECEDORES_CONFORTO[ccForn].precoFinal;
-    $('cz-tot-rot').textContent = final ? 'Total (preço de venda Auriverde)' : 'Total (custo do fornecedor)';
-    $('cz-tot-dica').textContent = final ? 'Preços de venda da Auriverde: o orçamento não soma margem nem ICMS.' : 'A margem e o ICMS entram no próximo passo.';
+    $('cz-tot-rot').textContent = final ? 'Total (preço de venda, tabela própria)' : 'Total (custo do fornecedor)';
+    $('cz-tot-dica').textContent = final ? 'Preços de venda (tabela própria): o orçamento não soma margem nem ICMS.' : 'A margem e o ICMS entram no próximo passo.';
     $('cc-total').textContent = total;
     $('cz-barra-total').textContent = total;
     $('cz-barra-qtd').textContent = sel.length ? plural(sel.length, 'item', 'itens') + ' · ver resumo' : 'Nenhum item escolhido';
@@ -11686,7 +11683,7 @@
       selectedBrandId = null;   // não fica a marca de um item escolhido antes
       renderBrands();
       calcular();
-      avisar('Este preço já é de venda da Auriverde (' + fmt(c.preco) + '). Ele não entra como custo: preencha o custo, se souber.');
+      avisar('Este preço já é de venda, da tabela própria (' + fmt(c.preco) + '). Ele não entra como custo: preencha o custo, se souber.');
       return;
     }
     custoEl.value = c.preco > 0 ? fmtMoedaCampo(c.preco) : '';
@@ -11904,7 +11901,7 @@
           { titulo: 'Início', key: 'inicio' }, { titulo: 'Fim', key: 'fim' }, { titulo: 'Horas', key: 'horas', fmt: '0.00', soma: true }, { titulo: 'Km', key: 'km', fmt: '#,##0.0', soma: true },
           { titulo: 'Peças (R$)', key: 'pecas', fmt: XLSX_MOEDA, soma: true }, { titulo: 'Mão de obra (R$)', key: 'maoDeObra', fmt: XLSX_MOEDA, soma: true }, { titulo: 'Total (R$)', key: 'total', fmt: XLSX_MOEDA, soma: true }] }
       ]);
-      await baixarArquivo('auriverde-manutencao-' + mes + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o relatório');
+      await baixarArquivo('ordenha360-manutencao-' + mes + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o relatório');
     } finally {
       btn.disabled = false; btn.textContent = texto;
     }
@@ -11931,14 +11928,14 @@
       }
       const doc = registrarFontePdf(new JsPDF({ unit: 'mm', format: 'a4' }));
       const W = 210, H = 297, M = 14, LARG = W - 2 * M;
-      const VERDE = [0, 122, 61], VERDE_ESC = [11, 94, 54], OURO = [242, 211, 0], TINTA = [22, 34, 27], SUAVE = [90, 106, 96],
-        LINHA = [225, 231, 226], FUNDO = [243, 245, 242], BRANCO = [255, 255, 255], VERMELHO = [181, 65, 43];
+      const VERDE = [14, 59, 92], VERDE_ESC = [8, 42, 66], OURO = [242, 184, 75], TINTA = [20, 34, 44], SUAVE = [86, 102, 115],
+        LINHA = [223, 230, 235], FUNDO = [242, 246, 248], ACENTO = [21, 122, 110], BRANCO = [255, 255, 255], VERMELHO = [181, 65, 43];
       const iconeTitulo = await prepararIconesPdf(VERDE);
       const cT = c => doc.setTextColor(c[0], c[1], c[2]), cF = c => doc.setFillColor(c[0], c[1], c[2]), cL = c => doc.setDrawColor(c[0], c[1], c[2]);
       const fonte = (t, e) => { doc.setFont(doc.__fonte || 'helvetica', e || 'normal'); doc.setFontSize(t); };
       const num = numOS(v.numero);
       let y = 0;
-      const cabPeq = () => { cF(VERDE); doc.rect(0, 0, W, 11, 'F'); cF(OURO); doc.rect(0, 11, W, 0.9, 'F'); fonte(9, 'bold'); cT(BRANCO); doc.text(pdfTxt('Auriverde  ·  ' + num + '  ·  ' + (p.nome || '')), M, 7.3); y = 20; };
+      const cabPeq = () => { cF(VERDE); doc.rect(0, 0, W, 11, 'F'); cF(OURO); doc.rect(0, 11, W, 0.9, 'F'); fonte(9, 'bold'); cT(BRANCO); doc.text(pdfTxt('Ordenha360  ·  ' + num + '  ·  ' + (p.nome || '')), M, 7.3); y = 20; };
       const garantir = h => { if (y + h > H - 16) { doc.addPage(); cabPeq(); } };
       const titulo = t => { garantir(16); y += 2; const ic = iconeTitulo(t); if (ic) { try { doc.addImage(ic, 'PNG', M, y - 3.7, 4.5, 4.5); } catch (e) {} } fonte(11.5, 'bold'); cT(VERDE_ESC); doc.text(pdfTxt(t), ic ? M + 6.3 : M, y); cL(OURO); doc.setLineWidth(0.8); doc.line(M, y + 2, M + 14, y + 2); y += 7.5; };
       const paragrafo = (t, o = {}) => { const tam = o.tam || 10; fonte(tam, o.estilo); cT(o.cor || TINTA); doc.splitTextToSize(pdfTxt(t), o.largura || LARG).forEach(l => { garantir(tam * 0.45); doc.text(l, o.x || M, y); y += tam * 0.43; }); y += o.depois == null ? 1.5 : o.depois; };
@@ -11979,10 +11976,10 @@
       cF(VERDE); doc.rect(0, 0, W, 34, 'F');
       cF(VERDE_ESC); doc.rect(0, 28, W, 6, 'F');
       cF(OURO); doc.rect(0, 34, W, 1.6, 'F');
-      cF(BRANCO); doc.roundedRect(M, 6, 31, 21, 3, 3, 'F');
-      try { doc.addImage(logoParaPdf(), 'PNG', M + 2, 7.6, 27, 18.2, 'logo', 'FAST'); } catch (e) {}
-      fonte(18, 'bold'); cT(BRANCO); doc.text('Ordem de Serviço', M + 38, 15.5);
-      fonte(9); doc.text(pdfTxt('Manutenção · ordenha, resfriador e conforto animal'), M + 38, 21.5);
+      cF(BRANCO); doc.roundedRect(M, 8, 46, 17, 3, 3, 'F');
+      try { doc.addImage(logoParaPdf(), 'PNG', M + 2, 10.96, 42, 11.08, 'logo', 'FAST'); } catch (e) {}
+      fonte(18, 'bold'); cT(BRANCO); doc.text('Ordem de Serviço', M + 52, 15.5);
+      fonte(9); doc.text(pdfTxt('Manutenção · ordenha, resfriador e conforto animal'), M + 52, 21.5);
       fonte(17, 'bold'); doc.text(pdfTxt(num), W - M, 15.5, { align: 'right' });
       const st = statusOS(v);
       fonte(9, 'bold'); doc.text(pdfTxt(OS_STATUS[st].toUpperCase() + ' · ' + OS_TIPOS[tipoOS(v)].toUpperCase()), W - M, 21.5, { align: 'right' });
@@ -12019,7 +12016,7 @@
         if (feitos.length && osConcluida(v)) paragrafo('Próxima revisão: ' + fmtDate(addMonthsISO(v.data, MESES_ATE_REVISAO)) + '.', { tam: 9.3, estilo: 'bold', cor: VERDE_ESC });
       }
       await extrasPdf({ v, p, doc, titulo, paragrafo, grade, tabela, garantir, rot, fonte, cT, cF, cL, cabPeq, M, W, H, LARG,
-        CORES: { VERDE, VERDE_ESC, OURO, TINTA, SUAVE, LINHA, FUNDO, BRANCO, VERMELHO }, get y() { return y; }, set y(n) { y = n; } });
+        CORES: { VERDE, VERDE_ESC, OURO, TINTA, SUAVE, LINHA, FUNDO, BRANCO, VERMELHO, ACENTO }, get y() { return y; }, set y(n) { y = n; } });
       if ((v.pecas || []).length) {
         titulo('Peças usadas');
         tabela([{ t: 'Código', w: 18 }, { t: 'Descrição', w: 60 }, { t: 'Qtd', w: 12, dir: 1 }, { t: 'Un', w: 10 }, { t: 'Unitário', w: 20, dir: 1 }, { t: 'Valor', w: 20, dir: 1 }],
@@ -12053,7 +12050,7 @@
       cL(SUAVE); doc.setLineWidth(0.3); doc.line(M, ly, M + aw, ly); doc.line(M + aw + 12, ly, W - M, ly);
       fonte(8.5, 'bold'); cT(TINTA);
       doc.text(pdfTxt(v.assinadoPor || p.nome || 'Produtor'), M, ly + 4.5);
-      doc.text(pdfTxt(tecNome || 'Técnico Auriverde'), M + aw + 12, ly + 4.5);
+      doc.text(pdfTxt(tecNome || 'Técnico'), M + aw + 12, ly + 4.5);
       fonte(7.5); cT(SUAVE);
       doc.text(pdfTxt('Produtor' + (v.assinadaEm ? ' · assinado em ' + new Date(v.assinadaEm).toLocaleDateString('pt-BR') : '')), M, ly + 8.3);
       doc.text('Técnico responsável', M + aw + 12, ly + 8.3);
@@ -12063,10 +12060,10 @@
         doc.setPage(i);
         cL(LINHA); doc.setLineWidth(0.3); doc.line(M, H - 11, W - M, H - 11);
         fonte(8); cT(SUAVE);
-        doc.text(pdfTxt('Auriverde · ' + num + ' · gerado em ' + new Date().toLocaleDateString('pt-BR')), M, H - 6.5);
+        doc.text(pdfTxt('Ordenha360 · ' + num + ' · gerado em ' + new Date().toLocaleDateString('pt-BR')), M, H - 6.5);
         doc.text('Página ' + i + ' de ' + n, W - M, H - 6.5, { align: 'right' });
       }
-      const nome = 'auriverde-' + num.replace(' ', '-').toLowerCase() + '-' + slug(p.nome) + '.pdf';
+      const nome = 'ordenha360-' + num.replace(' ', '-').toLowerCase() + '-' + slug(p.nome) + '.pdf';
       const blob = doc.output('blob');
       osPdfAtual = { blob, nome, v, p };
       mostrarPdfOS();
@@ -12079,7 +12076,7 @@
   function mensagemWhatsOS(v, p) {
     const primeiro = (p.nome || '').trim().split(/\s+/)[0];
     const data = fmtDate(statusOS(v) === 'agendada' && v.agendadaPara ? v.agendadaPara : v.data);
-    return 'Olá' + (primeiro ? ' ' + primeiro : '') + '! Segue a ' + numOS(v.numero) + ' da Auriverde (' + OS_TIPOS[tipoOS(v)].toLowerCase() + ', ' + data + '). Qualquer dúvida, estou à disposição.';
+    return 'Olá' + (primeiro ? ' ' + primeiro : '') + '! Segue a ' + numOS(v.numero) + ' (' + OS_TIPOS[tipoOS(v)].toLowerCase() + ', ' + data + '). Qualquer dúvida, estou à disposição.';
   }
   // o celular deixa compartilhar o arquivo do PDF (Android e iPhone); no computador, em geral não
   function podeCompartilharPdf() {
@@ -14497,7 +14494,7 @@
       const v = ctx.v;
       if (!v.teste || !testeTemAlgo(v.teste)) return;
       const t = v.teste, faixas = faixasDoTeste(t), av = avaliarTeste(t, faixas);
-      const { VERDE, VERDE_ESC, VERMELHO, SUAVE } = ctx.CORES;
+      const { VERDE_ESC, VERMELHO, SUAVE } = ctx.CORES, VERDE = ctx.CORES.ACENTO || ctx.CORES.VERDE;
       const AMARELO = ctx.CORES.AMARELO || [154, 100, 16];
       const lista = ctx.p.id === currentProdutorId && visitasConfiavel ? visitas : await lerColecao('produtores/' + ctx.p.id + '/visitas').then(l => l.filter(naoArquivado)).catch(() => []);
       const ant = testeAnterior(lista, v);
@@ -14677,7 +14674,7 @@
     pdf(ctx) {
       const v = ctx.v, r = v.resfriador;
       if (!r && !(v.categoria === 'resfriador' && temValor(v.temperaturaLeite))) return;
-      const { VERDE, VERMELHO, AMARELO_PDF } = { ...ctx.CORES, AMARELO_PDF: [168, 107, 18] };
+      const { VERMELHO, AMARELO_PDF } = { ...ctx.CORES, AMARELO_PDF: [168, 107, 18] }, VERDE = ctx.CORES.ACENTO || ctx.CORES.VERDE;
       const lim = (r && Number(r.limiteMin)) || cfgPrev.resfriamentoMax;
       ctx.titulo('Resfriador: medições');
       const linhas = [];
@@ -14991,7 +14988,7 @@
   const CF_CAMA = { compost: 'Compost barn', areia: 'Areia', colchao: 'Colchão' };
   const CF_LISTAS = { ventCheck: CF_VENT_CHECK, ventServ: CF_VENT_SERV, aspLocal: CF_ASP_LOCAL, aspCheck: CF_ASP_CHECK, aspServ: CF_ASP_SERV };
   const ITU_FAIXAS = { verde: 'Sem estresse', amarelo: 'Estresse leve', laranja: 'Estresse moderado', vermelho: 'Estresse severo' };
-  const ITU_COR_PDF = { verde: [0, 129, 63], amarelo: [168, 128, 0], laranja: [204, 106, 18], vermelho: [181, 72, 47] };
+  const ITU_COR_PDF = { verde: [21, 122, 110], amarelo: [168, 128, 0], laranja: [204, 106, 18], vermelho: [181, 72, 47] };
   const rotuloDe = (lista, id) => (lista.find(x => x[0] === id) || [])[1] || id;
   // ITU = (1,8×T + 32) − (0,55 − 0,0055×UR) × (1,8×T − 26)
   function calcITU(t, ur) {
@@ -15272,7 +15269,7 @@
     pdf(ctx) {
       const c = ctx.v.conforto;
       if (!c || !(c.ventilacao || c.aspersao || c.ambiente || c.cama)) return;
-      const { VERDE, VERMELHO, SUAVE } = ctx.CORES;
+      const { VERMELHO, SUAVE } = ctx.CORES, VERDE = ctx.CORES.ACENTO || ctx.CORES.VERDE;
       const AMAR = [168, 107, 18];
       const cols = [{ t: 'Item', w: 42 }, { t: 'Resultado', w: 84 }];
       const checkLinhas = (lista, marcados) => {
@@ -16101,11 +16098,11 @@
     // Adriana Zanella: preventiva feita, avaliação de conforto e a próxima revisão marcada
     OS('dp1', 'do11', concluida(-150, 0, { tipo: 'preventiva', categoria: 'ordenha', motivo: 'Revisão semestral da ordenhadeira', equipamentos: ['edp1o', 'edp1b'],
       descricao: 'Revisão completa da ordenhadeira, troca de teteiras e dos reparos de pulsadores, regulagem do vácuo.', revisao: revisao(-150, ['teteiras', 'pulsadores', 'reguladoraVacuo', 'limpezaGeral']),
-      componentesTrocados: ['teteira-borracha', 'reparo-pulsador', 'mangueira-curta', 'filtro-reguladora'], teste: teste(true), pecas: pecasRev, _foto: ['wrench', 'Revisão da ordenhadeira', ['#1F6F54', '#0B3D26']], _assina: true }));
+      componentesTrocados: ['teteira-borracha', 'reparo-pulsador', 'mangueira-curta', 'filtro-reguladora'], teste: teste(true), pecas: pecasRev, _foto: ['wrench', 'Revisão da ordenhadeira', ['#1C5A82', '#0B2E47']], _assina: true }));
     OS('dp1', 'do12', concluida(-38, 1, { tipo: 'visita', categoria: 'conforto', motivo: 'Avaliação de conforto no compost barn', equipamentos: ['edp1v', 'edp1a'],
       descricao: 'Ventiladores e nebulização conferidos, cama revolvida duas vezes ao dia.',
       conforto: { ventilacao: { total: 6, funcionando: 6, equip: [] }, aspersao: { bicos: 24, entupidos: 0 }, ambiente: { temperatura: 25, umidade: 70, itu: 73.6, ituClasse: 'laranja', fr: 52 },
-        cama: { tipo: 'compost', area: 540, vacas: 42, m2Vaca: 12.9 } }, _foto: ['fan', 'Ventilação do compost barn', ['#2E7D5B', '#12402B']], _assina: true }));
+        cama: { tipo: 'compost', area: 540, vacas: 42, m2Vaca: 12.9 } }, _foto: ['fan', 'Ventilação do compost barn', ['#1F8577', '#0B3B37']], _assina: true }));
     OS('dp1', 'do13', { status: 'agendada', tipo: 'preventiva', categoria: 'ordenha', data: d(-4), agendadaPara: d(6), tecnicoId: tec(0),
       motivo: 'Revisão semestral e teste da ordenhadeira', equipamentos: ['edp1o'], historico: hist([['criou', 'agendada', -4]], eu), criadoPor: eu, criadoEm: em(-4) });
 
@@ -16123,7 +16120,7 @@
     // Rosane Bortolini: CCS alta, corretiva recente e teste marcado
     OS('dp3', 'do31', concluida(-95, 0, { tipo: 'preventiva', categoria: 'ordenha', motivo: 'Revisão da ordenhadeira', equipamentos: ['edp3o'],
       descricao: 'Troca de teteiras, limpeza geral e regulagem da máquina.', revisao: revisao(-95, ['teteiras', 'limpezaGeral', 'regulagemMaquina']),
-      componentesTrocados: ['teteira-borracha', 'mangueira-curta'], teste: teste(false), pecas: pecasRev.slice(0, 1), _foto: ['wrench', 'Troca das teteiras', ['#1F6F54', '#0B3D26']], _assina: true }));
+      componentesTrocados: ['teteira-borracha', 'mangueira-curta'], teste: teste(false), pecas: pecasRev.slice(0, 1), _foto: ['wrench', 'Troca das teteiras', ['#1C5A82', '#0B2E47']], _assina: true }));
     OS('dp3', 'do32', concluida(-21, 1, { tipo: 'corretiva', categoria: 'ordenha', motivo: 'Vazamento de leite no coletor', equipamentos: ['edp3o'], equipamentoProblema: 'edp3o',
       defeito: 'Borracha do coletor ressecada.', descricao: 'Troca da borracha do coletor e teste de vácuo.', vacuoKpa: 44,
       pecas: [{ descricao: 'Borracha do coletor', qtd: 4, unidade: 'un', precoUnit: 0, valor: 0 }], _assina: true }));
@@ -16146,7 +16143,7 @@
     OS('dp5', 'do52', concluida(-12, 1, { tipo: 'visita', categoria: 'conforto', motivo: 'Vacas ofegantes à tarde', equipamentos: ['edp5v', 'edp5a'],
       descricao: 'Dois ventiladores parados e dois bicos entupidos. Bicos limpos; ventiladores ficam para a próxima visita.',
       conforto: { ventilacao: { total: 10, funcionando: 8, equip: [] }, aspersao: { bicos: 24, entupidos: 2 }, ambiente: { temperatura: 27, umidade: 65, itu: 76.2, ituClasse: 'laranja', fr: 64 },
-        cama: { tipo: 'compost', area: 1080, vacas: 80, m2Vaca: 13.5 } }, _foto: ['fan', 'Ventiladores do compost barn', ['#2E7D5B', '#12402B']], _assina: true }));
+        cama: { tipo: 'compost', area: 1080, vacas: 80, m2Vaca: 13.5 } }, _foto: ['fan', 'Ventiladores do compost barn', ['#1F8577', '#0B3B37']], _assina: true }));
     OS('dp5', 'do53', { status: 'andamento', tipo: 'corretiva', categoria: 'conforto', data: d(0), agendadaPara: d(0), tecnicoId: tec(0), horaInicio: '09:10',
       motivo: 'Trocar os motores dos dois ventiladores parados', equipamentos: ['edp5v'], equipamentoProblema: 'edp5v',
       historico: hist([['criou', 'agendada', -5], ['iniciou', 'andamento', 0]], tec(0)), criadoPor: eu, criadoEm: em(-5) });
@@ -16503,7 +16500,7 @@
         'Teteira de borracha: a cada 6 meses ou 2.500 ordenhas.',
         'Teteira de silicone: a cada 12 meses ou 5.000 ordenhas.',
         'Mangueiras: 1 vez por ano.',
-        'Revisão completa: a cada 6 meses, com o técnico da Auriverde.']]
+        'Revisão completa: a cada 6 meses, com o técnico.']]
     ]]
   ];
   function pdRenderPraticas() {

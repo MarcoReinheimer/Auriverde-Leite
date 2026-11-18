@@ -1,5 +1,5 @@
 {
-  "name": "auriverde-leite",
+  "name": "ordenha360",
   "private": true,
   "description": "Gera as versões compactadas do app (css/app.min.css e js/app.min.js). Ver README.",
   "type": "module",
