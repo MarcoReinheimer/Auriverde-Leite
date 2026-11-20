@@ -97,19 +97,24 @@ no `config.js`, os botões mostram "Os avisos ainda não foram configurados".
    ```
    curl -X POST "https://<ref>.supabase.co/functions/v1/enviar-avisos" -H "Authorization: Bearer <senha longa>" -H "Content-Type: application/json" -d "{\"modo\":\"diario\"}"
    ```
-6. Agende todo dia às 8h de Brasília (11h no horário UTC; o Brasil não tem mais horário de verão).
-   Supabase → **Database → Extensions**: ligue **pg_cron** e **pg_net**. Depois, no **SQL Editor**:
+6. Guarde a mesma senha no **Vault** (Supabase → Project Settings → Vault → Add new secret), com o nome `avisos_segredo`.
+   Agende todo dia às 8h de Brasília (11h no horário UTC; o Brasil não tem mais horário de verão). No **SQL Editor**:
    ```sql
+   create extension if not exists pg_cron;
+   create extension if not exists pg_net with schema extensions;
    select cron.schedule('enviar-avisos-8h', '0 11 * * *', $$
      select net.http_post(
        url := 'https://<ref>.supabase.co/functions/v1/enviar-avisos',
-       headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer <senha longa>'),
-       body := '{"modo":"diario"}'::jsonb
-     );
+       headers := jsonb_build_object('Content-Type', 'application/json',
+         'Authorization', 'Bearer ' || coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'avisos_segredo'), '')),
+       body := '{"modo":"diario"}'::jsonb,
+       timeout_milliseconds := 60000
+     ) as request_id;
    $$);
    ```
-   Para conferir: `select * from cron.job;` · para cancelar: `select cron.unschedule('enviar-avisos-8h');`
-   Este comando com a senha fica só no Supabase: não cole ele em arquivo do GitHub.
+   A senha é lida do Vault na hora: ela não fica escrita no comando. Para conferir: `select * from cron.job;` ·
+   para ver a última resposta: `select status_code, content from net._http_response order by id desc limit 1;` ·
+   para cancelar: `select cron.unschedule('enviar-avisos-8h');`
 7. Coloque a Public Key no `config.js` (`vapidPublicKey: '...'`) e suba no GitHub.
 
 ## Nunca coloque no config.js
