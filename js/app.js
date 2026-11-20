@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.18.5';
+  const APP_VERSAO = '2026.11.20.1';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -10400,6 +10400,9 @@
   // Quem manda os avisos é a Edge Function "enviar-avisos" do Supabase (veja o README): o app só inscreve.
   // A chave pública VAPID fica no config.js (vapidPublicKey); a privada fica só nos segredos da função.
   // =====================================================================
+  // DESLIGADO a pedido do dono: os cartões de avisos ficam escondidos e o aviso de chamado não sai.
+  // Para ligar de novo: true aqui (e criar a tarefa das 8h no Supabase, como no README).
+  const AVISOS_LIGADOS = false;
   const avChavePublica = () => String((window.AURIVERDE_CONFIG || {}).vapidPublicKey || '').trim();
   const avEhIPhone = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const avInstalado = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
@@ -10477,7 +10480,8 @@
 
   // ---------- produtor: lembrete da revisão, da troca de peças e da visita ----------
   async function avPintarProdutor() {
-    if (!pdPid) return;
+    $('pd-avisos').hidden = !AVISOS_LIGADOS;
+    if (!AVISOS_LIGADOS || !pdPid) return;
     const pid = pdPid, col = 'avisos/' + pid + '/inscricoes';
     const ligado = await avLigadoEm(col).catch(() => false);
     if (pid !== pdPid) return;
@@ -10498,7 +10502,8 @@
 
   // ---------- técnico: aviso de chamado novo aberto pelo produtor ----------
   async function avPintarTecnico() {
-    if (!viewerId || !podeVer('visitas')) return;
+    $('mais-avisos').hidden = !AVISOS_LIGADOS;
+    if (!AVISOS_LIGADOS || !viewerId || !podeVer('visitas')) return;
     const ligado = await avLigadoEm('avisos-tecnicos/' + viewerId + '/inscricoes').catch(() => false);
     avPintarBotao($('mais-av-btn'), $('mais-av-txt'), $('mais-av-dica'), ligado, 'Ligar avisos de chamado',
       'Avisos ligados neste celular: chega um aviso quando um produtor abre um chamado.',
@@ -10517,7 +10522,7 @@
   // chamado aberto pelo produtor: pede à função do servidor que avise os técnicos (se a conexão estiver ok)
   function avisarChamadoAosTecnicos(pid, osId, r) {
     const sb = window.auriverdeSupabase;
-    if (DEMO_ATIVO || !sb || !sb.functions || !avChavePublica() || (r && (r.naFila || r.recusado))) return;
+    if (!AVISOS_LIGADOS || DEMO_ATIVO || !sb || !sb.functions || !avChavePublica() || (r && (r.naFila || r.recusado))) return;
     sb.functions.invoke('enviar-avisos', { body: { modo: 'chamado', pid, osId } }).catch(() => {});
   }
 
