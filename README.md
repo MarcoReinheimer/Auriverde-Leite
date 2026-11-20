@@ -58,6 +58,10 @@ uma consulta mínima ao banco com a chave publicável do `config.js`. Ela não l
 - Para rodar na hora: Actions → Manter o Supabase acordado → **Run workflow**.
 
 ## Avisos no celular (Web Push)
+> **Desligado** (pedido do dono, 20/11/2026): os botões estão escondidos no app (`AVISOS_LIGADOS = false` em `js/app.js`)
+> e a tarefa das 8h foi apagada no Supabase. Para ligar de novo: `AVISOS_LIGADOS = true`, gere as versões compactadas
+> e refaça os passos 3 a 6 abaixo.
+
 O app já tem os botões para ligar os avisos; quem manda os avisos é a função **enviar-avisos** do Supabase
 (`supabase/functions/enviar-avisos/index.ts`). Enquanto ela não estiver publicada e a chave pública não estiver
 no `config.js`, os botões mostram "Os avisos ainda não foram configurados".
