@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.20.1';
+  const APP_VERSAO = '2026.11.21.1';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -2667,6 +2667,19 @@
     if (!(custo > 0) || !(divisor > 0)) return 0;
     return (custo - custo * aliquotaDaOrigem(origem) / 100) / divisor;
   }
+  // categorias do catálogo de peças
+  const CATEGORIAS = { ordenha: 'Ordenha', resfriador: 'Resfriador', aguaquente: 'Água quente', conforto: 'Conforto animal', quimicos: 'Químicos', eletrica: 'Elétrica', outros: 'Outros' };
+  // preço de venda de um item (uma conta só no app todo):
+  //  · sem preço (semPreco): 0, o app mostra "preço a definir"
+  //  · tabela que já é de venda (precoFinal): o preço da tabela, sem conta
+  //  · senão: a fórmula da Calculadora, com a margem do item (ou a padrão das configurações)
+  function precoVendaDoItem(item, margem) {
+    if (!item || item.semPreco) return 0;
+    const custo = Number(item.custo != null ? item.custo : item.custoUnit) || 0;
+    if (item.precoFinal) return r2(custo);
+    const m = Number(margem) > 0 && Number(margem) < 80 ? Number(margem) : Number(config.margemPadrao);
+    return r2(precoPelaFormula(custo, item.origem, m));
+  }
   function totaisDosItens(itens) {
     let custo = 0, venda = 0;
     itens.forEach(i => {
@@ -2892,7 +2905,7 @@
     };
     pintarOrigem();
 
-    q('.it-produto').addEventListener('input', e => { it.produto = e.target.value; });
+    q('.it-produto').addEventListener('input', e => { it.produto = e.target.value; it.pecaId = null; it.catId = null; it.codigo = ''; });
     q('.it-marca').addEventListener('change', e => {
       it.marcaId = e.target.value;
       const marca = brands.find(b => b.id === it.marcaId);
@@ -2916,14 +2929,16 @@
     });
     q('.it-preco').addEventListener('blur', e => { if (it.precoUnit) e.target.value = fmtMoedaCampo(it.precoUnit); });
     q('.it-recalc').addEventListener('click', () => { it.precoManual = false; atualizar(); });
-    // catálogo geral: produto, marca, origem e custo da tabela; o preço sai pela fórmula da margem
-    q('.it-catalogo').addEventListener('click', () => abrirCatalogo(c => {
+    // catálogo único: produto, marca, origem e custo da tabela; o preço sai pela fórmula da margem
+    q('.it-catalogo').addEventListener('click', () => abrirCatalogo({ onde: 'venda', aoEscolher: c => {
+      if (c.avulsa) { if (c.texto) { it.produto = c.texto; q('.it-produto').value = it.produto; } return; }
       it.produto = nomeItemCatalogo(c);
+      it.pecaId = c.pecaId || null; it.catId = c.id; it.codigo = c.codigo || ''; it.categoria = c.categoria || 'outros';
       q('.it-produto').value = it.produto;
       if (c.precoFinal) {
         // kit próprio: o preço da tabela já é o de venda; o custo fica em branco
         it.custoUnit = 0;
-        it.precoUnit = r2(c.preco);
+        it.precoUnit = r2(c.custo);
         it.precoManual = true;
         it.marcaId = '';   // não fica a marca de um item escolhido antes
         opcoesMarcas(q('.it-marca'), '');
@@ -2931,25 +2946,25 @@
         q('.it-preco').value = fmtMoedaCampo(it.precoUnit);
         avisoRapido('Preço de venda (tabela própria): o custo fica em branco.');
       } else {
-        let marca = marcaComNome(c.fornecedor), id = marca ? marca.id : '';
-        if (!marca && c.fornecedor && nivel('calc') >= 2) id = criarMarca(c.fornecedor, c.origem);
+        let marca = marcaComNome(c.marca), id = marca ? marca.id : '';
+        if (!marca && c.marca && nivel('calc') >= 2) id = criarMarca(c.marca, c.origem);
         it.marcaId = id;
         opcoesMarcas(q('.it-marca'), id);
         // marca acabada de criar: ainda não chegou na lista, entra na hora
         if (id && q('.it-marca').value !== id) {
           const o = document.createElement('option');
-          o.value = id; o.textContent = c.fornecedor + (c.origem === 'fora' ? ' · fora de SC' : ' · dentro de SC');
+          o.value = id; o.textContent = c.marca + (c.origem === 'fora' ? ' · fora de SC' : ' · dentro de SC');
           q('.it-marca').appendChild(o); q('.it-marca').value = id;
         }
         it.origem = c.origem === 'fora' ? 'fora' : 'dentro';
         pintarOrigem();
-        it.custoUnit = c.preco > 0 ? r2(c.preco) : 0;
+        it.custoUnit = c.custo > 0 && !c.precoManual ? r2(c.custo) : 0;
         q('.it-custo').value = it.custoUnit ? fmtMoedaCampo(it.custoUnit) : '';
-        it.precoManual = false;
-        if (!(c.preco > 0)) avisoRapido('Este item está sem preço na tabela: preencha o custo.');
+        it.precoManual = !!c.precoManual;
+        if (c.precoManual) { it.precoUnit = r2(c.precoVenda); q('.it-preco').value = fmtMoedaCampo(it.precoUnit); }
       }
       atualizar();
-    }));
+    } }));
     q('.item-remover').addEventListener('click', () => {
       if (formItens.length === 1) { formItens = [novoItem()]; } else { formItens.splice(i, 1); }
       renderItensVenda();
@@ -2991,6 +3006,7 @@
     const itensSalvos = itens.map(i => {
       const marca = brands.find(b => b.id === i.marcaId);
       return {
+        pecaId: i.pecaId || null, catId: i.catId || null, codigo: i.codigo || '', categoria: i.categoria || categoriaPorPalavra(i.produto),
         produto: i.produto.trim(), marcaId: i.marcaId || '', marcaNome: marca ? marca.name : '',
         origem: i.origem === 'fora' ? 'fora' : 'dentro', aliquota: aliquotaDaOrigem(i.origem),
         quantidade: Number(i.quantidade), custoUnit: r2(i.custoUnit), margem: Number(i.margem) || 0,
@@ -9210,7 +9226,8 @@
     assinar('pecas', l => {
       pecasCatalogo = l.filter(naoArquivado).sort((a, b) => (a.descricao || '').localeCompare(b.descricao || ''));
       if (!$('view-admin').hidden) renderPecasAdmin();
-      if (!$('modal-peca-escolher').hidden) renderEscolherPeca();
+      catVer++;
+      if (!$('modal-cat').hidden) carregarCatalogo().then(() => { if (!$('modal-cat').hidden) renderCatalogo(); });
       if (document.body.dataset.view === 'estoque') renderEstoque();
     });
   }
@@ -9362,7 +9379,7 @@
   }
 
   // ---------- catálogo de peças (Administração) ----------
-  var pecaEditandoId = null;
+  var pecaEditandoId = null, pcOrigem = 'dentro';
   function renderPecasAdmin() {
     const box = $('adm-pecas');
     if (!box) return;
@@ -9392,10 +9409,28 @@
     $('pc-descricao').value = p ? (p.descricao || '') : '';
     $('pc-unidade').value = p ? (p.unidade || '') : 'un';
     $('pc-preco').value = p && Number(p.preco) ? numTxt(r2(p.preco)) : '';
+    const fk = p ? fornDaPeca(p) : null;
+    pintarPcCategoria(p && CATEGORIAS[p.categoria] ? p.categoria : '');
+    $('pc-marca').value = p ? (p.marca || '') : '';
+    $('pc-marca').placeholder = fk ? marcaDoForn(fk) : 'Opcional';
+    pcOrigem = p && (p.origemICMS === 'fora' || p.origemICMS === 'dentro') ? p.origemICMS : (fk ? fornInfo(fk).origem : 'dentro');
+    pintarPcOrigem();
     $('pc-excluir').hidden = !p;
     $('modal-peca').hidden = false;
     setTimeout(() => (p ? $('pc-preco') : $('pc-codigo')).focus(), 60);
   }
+  // categoria: "Automática" segue a regra do fornecedor ou as palavras da descrição
+  function pintarPcCategoria(valor) {
+    const p = pecasCatalogo.find(x => x.id === pecaEditandoId) || null;
+    const auto = categoriaPorRegra((p && fornDaPeca(p)) || '', $('pc-descricao').value);
+    const sel = $('pc-categoria');
+    sel.innerHTML = '';
+    [['', 'Automática (' + CATEGORIAS[auto] + ')']].concat(Object.entries(CATEGORIAS)).forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); });
+    sel.value = valor;
+  }
+  function pintarPcOrigem() { $('pc-origem').querySelectorAll('button').forEach(b => { const on = b.dataset.o === pcOrigem; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
+  $('pc-origem').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { pcOrigem = b.dataset.o; pintarPcOrigem(); }));
+  $('pc-descricao').addEventListener('input', () => pintarPcCategoria($('pc-categoria').value));
   $('adm-peca-nova').addEventListener('click', () => abrirPeca(null));
   // catálogo da Ordemax: o listaProdutos.xml da pasta do Configmax (código e descrição abertos; o preço vem
   // protegido no arquivo, então entra em branco). Códigos que já estão no catálogo ficam como estão.
@@ -9463,7 +9498,8 @@
       const outra = pecasCatalogo.find(p => p.id !== pecaEditandoId && (p.codigo || '').trim().toLowerCase() === codigo.toLowerCase());
       if (outra && !(await confirmar('O código ' + codigo + ' já é de "' + (outra.descricao || '') + '". Salvar assim mesmo?', 'Salvar assim mesmo'))) return;
     }
-    const dados = { codigo, descricao, unidade: $('pc-unidade').value.trim() || 'un', preco: r2(parseMoney($('pc-preco').value)) };
+    const dados = { codigo, descricao, unidade: $('pc-unidade').value.trim() || 'un', preco: r2(parseMoney($('pc-preco').value)),
+      categoria: $('pc-categoria').value || null, marca: $('pc-marca').value.trim() || null, origemICMS: pcOrigem };
     if (pecaEditandoId) {
       gravar('update', 'pecas/' + pecaEditandoId, { ...dados, atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
       registrarAtividade('editou', 'peca', pecaEditandoId, descricao);
@@ -10003,51 +10039,25 @@
     });
     pintarTotaisOS();
   }
-  function renderEscolherPeca() {
-    const box = $('pe-lista');
-    box.innerHTML = '';
-    const texto = $('pe-busca').value.trim();
-    const termo = normalizarBusca(texto);
-    const lista = pecasCatalogo.filter(p => !termo || normalizarBusca((p.codigo || '') + ' ' + (p.descricao || '')).includes(termo)).slice(0, 80);
-    lista.forEach(p => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'pe-item';
-      b.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod"></span></span><span class="pe-item-preco"></span>';
-      b.querySelector('.pe-item-desc').textContent = p.descricao || '';
-      b.querySelector('.pe-item-cod').textContent = [p.codigo, p.unidade].filter(Boolean).join(' · ');
-      b.querySelector('.pe-item-preco').textContent = fmt(Number(p.preco) || 0);
-      b.addEventListener('click', () => {
-        if (pecaEscolherCb) { const cb = pecaEscolherCb; pecaEscolherCb = null; $('modal-peca-escolher').hidden = true; cb(p); return; }
-        const ja = osPecas.find(x => x.pecaId === p.id);
-        if (ja) { ja.qtd = (Number(ja.qtd) || 0) + 1; if (!ja.valorManual) ja.valor = r2(ja.qtd * (Number(ja.precoUnit) || 0)); }
-        else osPecas.push({ pecaId: p.id, codigo: p.codigo || '', descricao: p.descricao || '', unidade: p.unidade || 'un', qtd: 1, precoUnit: Number(p.preco) || 0, valor: r2(Number(p.preco) || 0), valorManual: false });
-        $('modal-peca-escolher').hidden = true;
+  // "+ Adicionar peça": o catálogo único, com as sugestões do checklist e a marca da ordenhadeira do produtor
+  function abrirCatalogoOS() {
+    const eq = (equipPid === currentProdutorId ? equipamentos : []).find(e => e.tipo === 'ordenhadeira' && String(e.marca || '').trim());
+    abrirCatalogo({ onde: 'os', checklist: novaVisitaCategoria === 'ordenha' ? readRevisaoItens() : null, marcaEquip: eq ? eq.marca : '', aoEscolher: x => {
+      if (x.avulsa) {
+        osPecas.push({ pecaId: null, catId: null, codigo: '', descricao: x.texto || '', unidade: 'un', qtd: 1, precoUnit: 0, valor: 0, valorManual: false, avulsa: true });
         renderPecasOS();
-      });
-      box.appendChild(b);
-    });
-    if (!lista.length) {
-      const v = document.createElement('div'); v.className = 'picker-vazio';
-      v.textContent = pecasCatalogo.length ? 'Nenhuma peça do catálogo com essa busca.' : 'O catálogo de peças ainda está vazio' + (ehAdmin() ? ' (cadastre em Administração).' : '. O Administrador cadastra em Administração.');
-      box.appendChild(v);
-    }
-    const av = document.createElement('button');
-    av.type = 'button';
-    av.className = 'pe-item avulsa';
-    av.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod">Peça fora do catálogo: você digita a descrição e o valor</span></span>';
-    av.querySelector('.pe-item-desc').textContent = '+ Peça avulsa' + (texto ? ': "' + texto + '"' : '');
-    av.addEventListener('click', () => {
-      if (pecaEscolherCb) { const cb = pecaEscolherCb; pecaEscolherCb = null; $('modal-peca-escolher').hidden = true; cb({ avulsa: true, texto }); return; }
-      osPecas.push({ pecaId: null, codigo: '', descricao: texto, unidade: 'un', qtd: 1, precoUnit: 0, valor: 0, valorManual: false, avulsa: true });
-      $('modal-peca-escolher').hidden = true;
+        return;
+      }
+      const ja = osPecas.find(p => !p.avulsa && ((p.catId && p.catId === x.id) || (x.pecaId && p.pecaId === x.pecaId)));
+      if (ja) { ja.qtd = (Number(ja.qtd) || 0) + 1; if (!ja.valorManual) ja.valor = r2(ja.qtd * (Number(ja.precoUnit) || 0)); }
+      else {
+        const pu = x.precoManual ? r2(x.precoVenda) : r2(x.custo);
+        osPecas.push({ pecaId: x.pecaId || null, catId: x.id, codigo: x.codigo || '', descricao: x.descricao || '', unidade: x.unidade || 'un', qtd: 1, precoUnit: pu, valor: pu, valorManual: false });
+      }
       renderPecasOS();
-    });
-    box.appendChild(av);
+    } });
   }
-  $('os-add-peca').addEventListener('click', () => { pecaEscolherCb = null; $('pe-busca').value = ''; renderEscolherPeca(); $('modal-peca-escolher').hidden = false; setTimeout(() => $('pe-busca').focus(), 60); });
-  $('pe-busca').addEventListener('input', renderEscolherPeca);
-  $('pe-fechar').addEventListener('click', () => { pecaEscolherCb = null; $('modal-peca-escolher').hidden = true; });
+  $('os-add-peca').addEventListener('click', abrirCatalogoOS);
 
   // =====================================================================
   // PAINEL DA DIRETORIA: números da manutenção e das vendas no período
@@ -10551,8 +10561,9 @@
   // Na OS fica guardado o que já foi baixado (estoqueBaixa): editar ou reabrir lança só a diferença.
   // =====================================================================
   const ES_TIPOS = { entrada: 'Recebi da filial', saida: 'Devolvi sobra', ajuste: 'Ajuste da contagem', os: 'OS' };
-  var esTec = null, esItens = [], esMovs = [], esUnsub = [], esVoltar = 'setor', esItemAberto = null, esMovModo = null, esMovItem = null, pecaEscolherCb = null;
+  var esTec = null, esItens = [], esMovs = [], esUnsub = [], esVoltar = 'setor', esItemAberto = null, esMovModo = null, esMovItem = null;
   const esIdPeca = pecaId => 'p_' + pecaId;
+  const esIdDoCat = x => x.pecaId ? esIdPeca(x.pecaId) : 'c_' + x.id;   // peça de tabela (sem cadastro no banco): pelo id do catálogo
   const r3 = x => Math.round((Number(x) || 0) * 1000) / 1000;
   const qtdTxt = (q, un) => numTxt(r3(q)) + (un ? ' ' + un : '');
   function esTecnicos() {
@@ -10577,7 +10588,7 @@
       let it = map.get(m.itemId);
       if (!it) {
         const pc = m.pecaId ? pecasCatalogo.find(p => p.id === m.pecaId) : null;
-        it = { id: m.itemId, pecaId: m.pecaId || null, descricao: (pc && pc.descricao) || m.descricao || 'Peça', codigo: (pc && pc.codigo) || m.codigo || '', unidade: (pc && pc.unidade) || m.unidade || 'un', min: null, saldo: 0, movs: [], soMov: true };
+        it = { id: m.itemId, pecaId: m.pecaId || null, catId: m.catId || null, descricao: (pc && pc.descricao) || m.descricao || 'Peça', codigo: (pc && pc.codigo) || m.codigo || '', unidade: (pc && pc.unidade) || m.unidade || 'un', min: null, saldo: 0, movs: [], soMov: true };
         map.set(m.itemId, it);
       }
       it.saldo = r3(it.saldo + (Number(m.delta) || 0));
@@ -10592,7 +10603,7 @@
   }
   function esGravarMov(tec, it, delta, tipo, extra = {}) {
     return gravar('set', 'estoque/' + tec + '/movs/' + novoId(), {
-      itemId: it.id, pecaId: it.pecaId || null, descricao: it.descricao || '', codigo: it.codigo || '', unidade: it.unidade || 'un',
+      itemId: it.id, pecaId: it.pecaId || null, catId: it.catId || null, descricao: it.descricao || '', codigo: it.codigo || '', unidade: it.unidade || 'un',
       delta: r3(delta), tipo, data: extra.data || todayISO(), obs: extra.obs || '', motivo: extra.motivo || '',
       osId: extra.osId || null, osNum: extra.osNum || null, produtor: extra.produtor || '', por: viewerId || null, em: Date.now()
     });
@@ -10601,7 +10612,7 @@
   function esGravarItem(tec, it, campos) {
     if (esTec === tec && esItens.some(x => x.id === it.id)) return campos ? gravar('update', 'estoque/' + tec + '/itens/' + it.id, { ...campos, atualizadoPor: viewerId || null, atualizadoEm: Date.now() }) : null;
     return gravar('set', 'estoque/' + tec + '/itens/' + it.id, {
-      pecaId: it.pecaId || null, descricao: it.descricao || '', codigo: it.codigo || '', unidade: it.unidade || 'un',
+      pecaId: it.pecaId || null, catId: it.catId || null, descricao: it.descricao || '', codigo: it.codigo || '', unidade: it.unidade || 'un',
       min: it.min != null ? it.min : null, conferidoEm: null, criadoPor: viewerId || null, criadoEm: Date.now(), ...(campos || {})
     });
   }
@@ -10611,7 +10622,7 @@
   function estoqueBaixaDaOS(os) {
     if (!os || os.arquivado || statusOS(os) !== 'concluida' || !os.tecnicoId) return null;
     const itens = {};
-    (os.pecas || []).forEach(p => { const q = Number(p.qtd) || 0; if (p.pecaId && q > 0) itens[p.pecaId] = r3((itens[p.pecaId] || 0) + q); });
+    (os.pecas || []).forEach(p => { const q = Number(p.qtd) || 0, k = p.pecaId || (p.catId ? 'c_' + p.catId : ''); if (k && q > 0) itens[k] = r3((itens[k] || 0) + q); });
     return Object.keys(itens).length ? { tecnicoId: os.tecnicoId, itens } : null;
   }
   // compara com o que já foi baixado (os.estoqueBaixa) e lança só a diferença; estorna quando a OS sai de concluída
@@ -10627,9 +10638,11 @@
       const num = numOS(os.numero);
       Object.entries(dif).forEach(([k, d]) => {
         if (!d) return;
-        const [tec, pecaId] = k.split('|');
-        const pc = pecasCatalogo.find(p => p.id === pecaId) || (os.pecas || []).find(p => p.pecaId === pecaId) || {};
-        esGravarMov(tec, { id: esIdPeca(pecaId), pecaId, descricao: pc.descricao || '', codigo: pc.codigo || '', unidade: pc.unidade || 'un' }, d, 'os', {
+        const [tec, ch] = k.split('|');
+        // chave da peça: o id do banco ou "c_" + o id do catálogo (peça de tabela)
+        const catId = ch.startsWith('c_') ? ch.slice(2) : null, pecaId = catId ? null : ch;
+        const pc = (pecaId && pecasCatalogo.find(p => p.id === pecaId)) || (os.pecas || []).find(p => catId ? p.catId === catId && !p.pecaId : p.pecaId === pecaId) || {};
+        esGravarMov(tec, { id: catId ? ch : esIdPeca(pecaId), pecaId, catId, descricao: pc.descricao || '', codigo: pc.codigo || '', unidade: pc.unidade || 'un' }, d, 'os', {
           data: os.data || todayISO(), osId: id, osNum: os.numero || null, produtor: (prod && prod.nome) || '',
           obs: d < 0 ? 'Baixa da ' + num : 'Volta ao estoque: ' + num + (apagando ? ' apagada' : novo ? ' editada' : ' reaberta ou cancelada')
         });
@@ -10789,23 +10802,18 @@
     avisoRapido(modo === 'ajuste' ? 'Contagem corrigida: ' + qtdTxt(q, it.unidade) + '.' : ES_TIPOS[modo] + ': ' + qtdTxt(q, it.unidade) + '.');
   });
   // "Recebi da filial" de uma peça nova: escolhe no catálogo (ou digita uma avulsa) e abre o lançamento
-  $('es-receber').addEventListener('click', () => {
-    pecaEscolherCb = p => {
-      if (p.avulsa) {
-        const desc = (p.texto || '').trim();
-        if (!desc) { avisar('Digite a descrição da peça avulsa na busca e toque em "+ Peça avulsa".'); return; }
-        const ja = esLista().find(i => !i.pecaId && normalizarBusca(i.descricao) === normalizarBusca(desc));
-        abrirEsMov('entrada', ja || { id: novoId(), pecaId: null, descricao: maiusc(desc), codigo: '', unidade: 'un', saldo: 0, min: null });
-        return;
-      }
-      const ja = esLista().find(i => i.id === esIdPeca(p.id));
-      abrirEsMov('entrada', ja || { id: esIdPeca(p.id), pecaId: p.id, descricao: p.descricao || '', codigo: p.codigo || '', unidade: p.unidade || 'un', saldo: 0, min: null });
-    };
-    $('pe-busca').value = '';
-    renderEscolherPeca();
-    $('modal-peca-escolher').hidden = false;
-    setTimeout(() => $('pe-busca').focus(), 60);
-  });
+  $('es-receber').addEventListener('click', () => abrirCatalogo({ onde: 'estoque', titulo: 'Recebi da filial', aoEscolher: p => {
+    if (p.avulsa) {
+      const desc = (p.texto || '').trim();
+      if (!desc) { avisar('Digite a descrição da peça avulsa na busca e toque em "+ Peça avulsa".'); return; }
+      const ja = esLista().find(i => !i.pecaId && !i.catId && normalizarBusca(i.descricao) === normalizarBusca(desc));
+      abrirEsMov('entrada', ja || { id: novoId(), pecaId: null, descricao: maiusc(desc), codigo: '', unidade: 'un', saldo: 0, min: null });
+      return;
+    }
+    const id = esIdDoCat(p);
+    const ja = esLista().find(i => i.id === id);
+    abrirEsMov('entrada', ja || { id, pecaId: p.pecaId || null, catId: p.pecaId ? null : p.id, descricao: p.descricao || '', codigo: p.codigo || '', unidade: p.unidade || 'un', saldo: 0, min: null });
+  } }));
 
   // ---------- pedido para a filial ----------
   function textoPedidoFilial() {
@@ -11999,7 +12007,7 @@
     if (!ccTabelas[f]) {
       const r = await fetch(FORNECEDORES_CONFORTO[f].url); if (!r.ok) throw new Error('HTTP ' + r.status);
       const tab = await r.json();
-      ccTabelas[f] = { fonte: tab.fonte, fornecedor: tab.fornecedor || '', itens: tab.itens.map((i, n) => ({ ...i, id: f + n,
+      ccTabelas[f] = { fonte: tab.fonte, fornecedor: tab.fornecedor || '', data: tab.data || '', itens: tab.itens.map((i, n) => ({ ...i, id: f + n,
         grupo: i.grupo || (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0],
         busca: normalizarBusca(i.descricao + ' ' + (i.codigo || '')) })) };
       const chaves = {};
@@ -12532,46 +12540,107 @@
     abrirOrdemax(o, ccFonte);
   });
 
-  // =====================================================
-  // CATÁLOGO GERAL: peças do banco + tabelas dos fornecedores em tabelas/
-  // Só lê: abrir o catálogo não grava nada no banco. As tabelas carregam na primeira vez e ficam na memória (ccTabelas).
-  // =====================================================
-  const CAT_FORN = ['ordemax', 'mx', 'lero', 'feilfer', 'kit'];   // chaves de FORNECEDORES_CONFORTO; o resto vai para "Outros"
+  // =====================================================================
+  // CATÁLOGO ÚNICO: peças do banco (pecas/) + tabelas dos fornecedores (tabelas/)
+  // Uma janela só serve a OS, o Meu estoque, a venda, a Calculadora e o orçamento:
+  //   carregarCatalogo()                  → { itens, falhou } (fica na memória; refaz quando pecas/ muda)
+  //   buscarCatalogo(filtros)             → itens que batem com { texto, categoria, marca, semPreco }
+  //   abrirCatalogo({ onde, aoEscolher }) → a janela; aoEscolher(item) recebe o item (ou { avulsa: true, texto })
+  // Cada item: id, codigo, descricao, unidade, fornecedor, marca, categoria, origem (dentro/fora de SC),
+  // custo (preço da tabela do fornecedor), precoFinal, semPreco, dataTabela e pecaId (se veio do banco).
+  // Abrir o catálogo não grava nada: só o Administrador grava, ao salvar o preço de uma peça que estava sem.
+  // =====================================================================
+  const CAT_FORN = ['ordemax', 'mx', 'lero', 'feilfer', 'kit'];   // chaves de FORNECEDORES_CONFORTO
+  // peças do Configmax (listaProdutos.xml): ficam no banco com origem "ordemax" e sem data de tabela
+  const FORN_CONFIGMAX = { nome: 'Ordemax Configmax', origem: 'fora' };
+  const fornInfo = k => k === 'configmax' ? FORN_CONFIGMAX : FORNECEDORES_CONFORTO[k] || null;
+  const marcaDoForn = k => k === 'configmax' ? 'Ordemax' : (FORNECEDORES_CONFORTO[k] || {}).nome || '';
   const nomeFornCat = s => normalizarBusca(s).replace(/-conforto$/, '').replace(/\s+/g, ' ').trim();
-  // a peça do banco guarda no campo origem o fornecedor da tabela de onde veio (ex.: "MX do Brasil", "ordemax")
-  function fornDaPeca(origem) {
-    const n = nomeFornCat(origem);
+  // fornecedor da peça do banco: o campo origem guarda o nome do fornecedor da tabela de onde ela veio
+  function fornDaPeca(p) {
+    const n = nomeFornCat(p.origem);
     if (!n) return null;
+    if (n === 'ordemax' && !p.tabela) return 'configmax';
     return CAT_FORN.find(k => n === nomeFornCat(FORNECEDORES_CONFORTO[k].nome) || (ccTabelas[k] && ccTabelas[k].fornecedor && n === nomeFornCat(ccTabelas[k].fornecedor))) || null;
   }
-  async function catalogoGeral() {
-    const lidas = await Promise.allSettled(CAT_FORN.map(carregarTabelaConforto));
-    const falhou = CAT_FORN.filter((k, n) => lidas[n].status !== 'fulfilled').map(k => FORNECEDORES_CONFORTO[k].nome);
-    const out = [], vistos = new Set();
-    // repetido = mesmo fornecedor e mesmo código; sem código (ou código que se repete na mesma lista), a mesma descrição
-    const vezesCod = lista => { const v = {}; lista.forEach(([k, x]) => { const c = (x.codigo || '').trim().toLowerCase(); if (c) v[k + '|' + c] = (v[k + '|' + c] || 0) + 1; }); return v; };
-    const chave = (k, x, vezes) => { const c = (x.codigo || '').trim().toLowerCase(); return k + '|' + (c && vezes[k + '|' + c] === 1 ? 'c:' + c : 'd:' + normalizarBusca(x.descricao).replace(/\s+/g, ' ').trim()); };
-    const incluir = (k, x, vezes, extra) => {
-      const ch = chave(k, x, vezes);
-      if (vistos.has(ch)) return;
-      vistos.add(ch);
-      const f = FORNECEDORES_CONFORTO[k];
-      out.push({ descricao: x.descricao || '', codigo: (x.codigo || '').trim(), unidade: x.unidade || 'un', preco: Number(x.preco) || 0,
-        fornecedor: f ? f.nome : (extra || ''), grupo: f ? k : 'outros', origem: f ? f.origem : 'fora', precoFinal: !!(f && f.precoFinal) });
-    };
-    // 1º as peças do banco: num repetido, fica a do banco
-    const banco = pecasCatalogo.filter(p => (p.descricao || '').trim()).map(p => [fornDaPeca(p.origem) || 'outros', p]);
-    const vb = vezesCod(banco);
-    banco.forEach(([k, p]) => incluir(k, p, vb, (p.origem || '').trim()));
-    // depois as tabelas que ainda não estão no banco
-    CAT_FORN.forEach((k, n) => {
-      if (lidas[n].status !== 'fulfilled') return;
-      const lista = ccTabelas[k].itens.map(i => [k, i]), vt = vezesCod(lista);
-      lista.forEach(([, i]) => incluir(k, i, vt));
-    });
-    out.forEach(x => { x.busca = normalizarBusca(x.descricao + ' ' + x.codigo); });
-    out.sort((a, b) => a.descricao.localeCompare(b.descricao, 'pt-BR'));
-    return { itens: out, falhou };
+  // categoria: 1º a que o Administrador escolheu na peça; 2º a regra do fornecedor; 3º palavras da descrição
+  const CAT_PALAVRAS = [
+    ['ordenha', /teteira|mangueira|pulsador|coletor|medidor|regulador|unidade final/],
+    ['resfriador', /resfriador|compressor|tanque/],
+    ['quimicos', /detergente|sanitizante|dipping|acido|alcalino/],
+    ['eletrica', /\bmotor|contator|disjuntor|\bcabo/]
+  ];
+  function categoriaPorPalavra(desc) {
+    const d = normalizarBusca(desc);
+    const r = CAT_PALAVRAS.find(([, re]) => re.test(d));
+    return r ? r[0] : 'outros';
+  }
+  function categoriaPorRegra(k, desc) {
+    if (k === 'ordemax' || k === 'mx' || k === 'feilfer' || k === 'kit') return 'conforto';
+    if (k === 'configmax') return 'ordenha';
+    // Lero Solar: bezerreiras (e ventiladores/climatizadores) no conforto; aquecedores, boilers, misturadores e acessórios na água quente
+    if (k === 'lero') return /bezerr|portao|grade para|divisoria|telhado|ventilador|climatizador/.test(normalizarBusca(desc)) ? 'conforto' : 'aguaquente';
+    return categoriaPorPalavra(desc);
+  }
+  function hashTxt(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+
+  var catCache = null, catVer = 0, catCacheVer = -1, catCarregando = null;
+  function carregarCatalogo() {
+    if (catCache && catCacheVer === catVer && !catCache.falhou.length) return Promise.resolve(catCache);
+    if (catCarregando) return catCarregando;
+    catCarregando = (async () => {
+      const ver = catVer;
+      const lidas = await Promise.allSettled(CAT_FORN.map(carregarTabelaConforto));
+      const falhou = CAT_FORN.filter((k, n) => lidas[n].status !== 'fulfilled').map(k => FORNECEDORES_CONFORTO[k].nome);
+      const out = [], vistos = new Set();
+      // repetido = mesmo fornecedor e mesmo código; sem código (ou código que se repete na mesma lista), a mesma descrição
+      const vezesCod = lista => { const v = {}; lista.forEach(([k, x]) => { const c = (x.codigo || '').trim().toLowerCase(); if (c) v[k + '|' + c] = (v[k + '|' + c] || 0) + 1; }); return v; };
+      const unico = (k, x, vezes) => { const c = (x.codigo || '').trim().toLowerCase(); return c && vezes[k + '|' + c] === 1 ? c : ''; };
+      const chave = (k, x, vezes) => k + '|' + (unico(k, x, vezes) ? 'c:' + unico(k, x, vezes) : 'd:' + normalizarBusca(x.descricao).replace(/\s+/g, ' ').trim());
+      // id fixo do item de tabela (vai junto na OS, na venda e no estoque)
+      const idTab = (k, x, vezes) => 't_' + k + '_' + (unico(k, x, vezes) ? 'c' + x.codigo.trim().replace(/[^A-Za-z0-9-]/g, '-') : 'd' + hashTxt(normalizarBusca(x.descricao).replace(/\s+/g, ' ').trim()));
+      const incluir = (k, x, vezes, peca, tab) => {
+        const ch = chave(k, x, vezes);
+        if (vistos.has(ch)) return;
+        vistos.add(ch);
+        const f = fornInfo(k);
+        const preco = Number(x.preco) || 0;
+        const origemTxt = (x.origem || '').trim();
+        const it = {
+          id: peca ? peca.id : idTab(k, x, vezes), pecaId: peca ? peca.id : null,
+          codigo: (x.codigo || '').trim(), descricao: (x.descricao || '').trim(), unidade: x.unidade || 'un',
+          fornecedor: f ? f.nome : origemTxt, marca: (peca && (peca.marca || '').trim()) || (f ? marcaDoForn(k) : origemTxt),
+          grupo: f ? k : 'outros',
+          categoria: peca && CATEGORIAS[peca.categoria] ? peca.categoria : categoriaPorRegra(f ? k : '', x.descricao),
+          origem: peca && (peca.origemICMS === 'fora' || peca.origemICMS === 'dentro') ? peca.origemICMS : f ? f.origem : 'dentro',
+          custo: r2(preco), precoFinal: !!(f && f.precoFinal), semPreco: !(preco > 0),
+          dataTabela: peca ? (peca.tabela || '') : ((tab && tab.data) || ''), vigencia: x.vigencia || ''
+        };
+        it.busca = normalizarBusca(it.descricao + ' ' + it.codigo + ' ' + it.marca);
+        out.push(it);
+      };
+      // 1º as peças do banco: num repetido, fica a do banco
+      const banco = pecasCatalogo.filter(p => (p.descricao || '').trim()).map(p => [fornDaPeca(p) || 'outros', p]);
+      const vb = vezesCod(banco);
+      banco.forEach(([k, p]) => incluir(k, p, vb, p));
+      // depois as tabelas que ainda não estão no banco
+      CAT_FORN.forEach((k, n) => {
+        if (lidas[n].status !== 'fulfilled') return;
+        const lista = ccTabelas[k].itens.map(i => [k, i]), vt = vezesCod(lista);
+        lista.forEach(([, i]) => incluir(k, i, vt, null, ccTabelas[k]));
+      });
+      out.sort((a, b) => a.descricao.localeCompare(b.descricao, 'pt-BR'));
+      catCache = { itens: out, falhou, porId: new Map(out.map(x => [x.id, x])), porNome: null };
+      catCacheVer = ver;
+      return catCache;
+    })().finally(() => { catCarregando = null; });
+    return catCarregando;
+  }
+  function buscarCatalogo(f = {}) {
+    const itens = (catCache && catCache.itens) || [];
+    const termos = normalizarBusca(String(f.texto || '').trim()).split(/\s+/).filter(Boolean);
+    return itens.filter(x => (!f.categoria || x.categoria === f.categoria) && (!f.marca || x.marca === f.marca) &&
+      (!f.semPreco || x.semPreco) && termos.every(t => x.busca.includes(t)));
   }
   // o que vai no campo Produto: a descrição, com o código entre parênteses
   function nomeItemCatalogo(c) { return c.descricao + (c.codigo ? ' (' + c.codigo + ')' : ''); }
@@ -12580,84 +12649,232 @@
     const n = nomeFornCat(nome);
     return n ? brands.find(b => nomeFornCat(b.name || '') === n) || null : null;
   }
+  // item do catálogo de um item já lançado (OS ou venda): pelo id e, nos antigos, pelo nome
+  function catPorNome(nome) {
+    const n = normalizarBusca(String(nome || '').trim());
+    if (!n || !catCache) return null;
+    if (!catCache.porNome) {
+      catCache.porNome = new Map();
+      catCache.itens.forEach(x => [x.descricao, nomeItemCatalogo(x)].forEach(s => { const k = normalizarBusca(s); if (!catCache.porNome.has(k)) catCache.porNome.set(k, x); }));
+    }
+    return catCache.porNome.get(n) || null;
+  }
+  const catDoLancado = (catId, pecaId, nome) => (catCache && ((catId && catCache.porId.get(catId)) || (pecaId && catCache.porId.get(pecaId)))) || catPorNome(nome);
+  // as 10 peças que a pessoa mais lançou em OS e vendas nos últimos 6 meses
+  function maisUsadasCatalogo() {
+    if (!catCache || !viewerId) return [];
+    const desde = addDaysISO(todayISO(), -183);
+    const cont = new Map();
+    const contar = (catId, pecaId, nome) => { const x = catDoLancado(catId, pecaId, nome); if (x) cont.set(x.id, (cont.get(x.id) || 0) + 1); };
+    ordensIndice.forEach(o => {
+      if (o.arquivado || String(o.data || '') < desde) return;
+      if (o.tecnicoId !== viewerId && !(!o.tecnicoId && o.criadoPor === viewerId)) return;
+      (o.pecas || []).forEach(p => contar(p.catId, p.pecaId, p.descricao));
+    });
+    vendasTodas.forEach(v => {
+      if (v.arquivado || v.cancelada || String(v.data || '') < desde || v.criadoPor !== viewerId) return;
+      (v.itens || []).forEach(i => { if (!ehItemEquip(i) && i.tipoItem !== 'servico') contar(i.catId, i.pecaId, i.produto); });
+    });
+    return [...cont.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id]) => catCache.porId.get(id)).filter(Boolean);
+  }
+  // OS: o que foi marcado no checklist puxa as peças de Ordenha com essas palavras (a marca da ordenhadeira do produtor primeiro)
+  const CHECK_PALAVRAS = {
+    teteiras: ['teteira'], pulsadores: ['pulsador', 'reparo'], regulagemPulsadores: ['pulsador'],
+    mangueiraCurta: ['mangueira curta', 'mangueira de pulsa', 'mangueira pulsa'], coletor: ['coletor'], medidores: ['medidor'],
+    membranaCorte: ['membrana'], extracao: ['cilindro', 'extrat'], mangueiraLeite: ['mangueira do leite', 'mangueira de leite', 'mangueira leite'],
+    unidadeFinal: ['unidade final'], reguladoraVacuo: ['reguladora', 'regulador de vacuo'], kitReguladorServo: ['servo'],
+    mangueiraVacuoPrincipal: ['mangueira de vacuo', 'mangueira do vacuo', 'mangueira vacuo'], mangueiraVacuoDupla: ['mangueira dupla', 'vacuo dupla'],
+    oleoBomba: ['oleo'], correias: ['correia'], lubrificador: ['lubrificador'], dosadoras: ['dosadora']
+  };
+  function sugeridasChecklist(marcados, marcaEquip) {
+    if (!catCache || !marcados) return [];
+    const palavras = Object.keys(marcados).filter(k => marcados[k] && CHECK_PALAVRAS[k]).flatMap(k => CHECK_PALAVRAS[k]);
+    if (!palavras.length) return [];
+    const m = normalizarBusca(marcaEquip || '').trim();
+    const daMarca = x => m && normalizarBusca(x.marca + ' ' + x.descricao).includes(m) ? 0 : 1;
+    return catCache.itens.filter(x => x.categoria === 'ordenha' && palavras.some(p => x.busca.includes(p)))
+      .sort((a, b) => daMarca(a) - daMarca(b) || a.descricao.localeCompare(b.descricao, 'pt-BR')).slice(0, 12);
+  }
+
+  // ---------- a janela ----------
   const CAT_MAX = 80;
-  let catItens = [], catFalhou = [], catGrupo = '', catAoEscolher = null, catToken = 0;
-  async function abrirCatalogo(aoEscolher) {
-    catAoEscolher = aoEscolher;
-    catGrupo = '';
-    $('cat-busca').value = '';
-    $('cat-chips').innerHTML = '';
-    $('cat-info').hidden = true;
-    $('cat-lista').innerHTML = '';
-    const c = document.createElement('div'); c.className = 'picker-vazio'; c.textContent = 'Abrindo as tabelas…';
-    $('cat-lista').appendChild(c);
-    $('modal-catalogo').hidden = false;
-    const t = ++catToken;
-    const r = await catalogoGeral();
-    if (t !== catToken || $('modal-catalogo').hidden) return;
-    catItens = r.itens; catFalhou = r.falhou;
+  let ctOpts = {}, ctCat = '', ctMarca = '', ctToken = 0;
+  async function abrirCatalogo(opts) {
+    ctOpts = typeof opts === 'function' ? { aoEscolher: opts } : (opts || {});
+    ctCat = ctOpts.categoria || ''; ctMarca = '';
+    $('ct-titulo').textContent = ctOpts.titulo || (ctOpts.onde === 'os' || ctOpts.onde === 'estoque' ? 'Adicionar peça' : 'Catálogo de produtos');
+    $('ct-busca').value = '';
+    $('ct-cats').innerHTML = '';
+    $('ct-marca-campo').hidden = true;
+    $('ct-info').hidden = true;
+    $('ct-lista').innerHTML = '';
+    const c = document.createElement('div'); c.className = 'picker-vazio'; c.textContent = 'Abrindo o catálogo…';
+    $('ct-lista').appendChild(c);
+    $('modal-cat').hidden = false;
+    $('modal-cat').querySelector('.modal-sheet').scrollTop = 0;
+    const t = ++ctToken;
+    await carregarCatalogo();
+    if (t !== ctToken || $('modal-cat').hidden) return;
     renderCatalogo();
   }
+  function fecharCatalogo() { ctToken++; $('modal-cat').hidden = true; }
+  function linhaCatalogo(x) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pe-item';
+    b.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod"></span></span><span class="pe-item-preco"></span>';
+    b.querySelector('.pe-item-desc').textContent = x.descricao;
+    b.querySelector('.pe-item-cod').textContent = [x.codigo, x.unidade, x.marca].filter(Boolean).join(' · ');
+    const pr = b.querySelector('.pe-item-preco');
+    if (x.semPreco) { pr.textContent = 'preço a definir'; pr.classList.add('sem'); }
+    else {
+      pr.textContent = fmt(precoVendaDoItem(x));
+      const s = document.createElement('small');
+      s.textContent = x.precoFinal ? 'tabela de venda' : 'preço de venda';
+      pr.appendChild(s);
+    }
+    b.addEventListener('click', () => escolherDoCatalogo(x));
+    return b;
+  }
   function renderCatalogo() {
-    const termos = normalizarBusca($('cat-busca').value.trim()).split(/\s+/).filter(Boolean);
-    const achados = termos.length ? catItens.filter(x => termos.every(t => x.busca.includes(t))) : catItens;
-    // chips por fornecedor, com quantos itens a busca acha em cada um
-    const chips = $('cat-chips');
+    if (!catCache) return;
+    const texto = $('ct-busca').value.trim();
+    const achados = buscarCatalogo({ texto });
+    // chips por categoria, com quantos itens a busca acha em cada uma
+    const chips = $('ct-cats');
     chips.innerHTML = '';
-    [['', 'Todos'], ...CAT_FORN.map(k => [k, FORNECEDORES_CONFORTO[k].nome]), ['outros', 'Outros']].forEach(([k, nome]) => {
-      if (k && !catItens.some(x => x.grupo === k)) return;
-      const n = k ? achados.filter(x => x.grupo === k).length : achados.length;
+    [['', 'Todas']].concat(Object.entries(CATEGORIAS)).forEach(([k, nome]) => {
+      if (k && !catCache.itens.some(x => x.categoria === k)) return;
+      const n = k ? achados.filter(x => x.categoria === k).length : achados.length;
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'flt-chip' + (catGrupo === k ? ' on' : '');
-      b.setAttribute('aria-pressed', catGrupo === k ? 'true' : 'false');
+      b.type = 'button'; b.className = 'flt-chip' + (ctCat === k ? ' on' : '');
+      b.setAttribute('aria-pressed', ctCat === k ? 'true' : 'false');
       b.textContent = nome + ' (' + n + ')';
-      b.addEventListener('click', () => { catGrupo = k; renderCatalogo(); });
+      b.addEventListener('click', () => { ctCat = k; ctMarca = ''; renderCatalogo(); });
       chips.appendChild(b);
     });
-    const lista = catGrupo ? achados.filter(x => x.grupo === catGrupo) : achados;
-    const box = $('cat-lista');
+    // marcas: só as da categoria escolhida
+    const marcas = [...new Set(catCache.itens.filter(x => !ctCat || x.categoria === ctCat).map(x => x.marca).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    if (!marcas.includes(ctMarca)) ctMarca = '';
+    const sel = $('ct-marca');
+    sel.innerHTML = '';
+    [['', 'Todas as marcas']].concat(marcas.map(m => [m, m])).forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); });
+    sel.value = ctMarca;
+    $('ct-marca-campo').hidden = marcas.length < 2;
+    const lista = buscarCatalogo({ texto, categoria: ctCat, marca: ctMarca });
+    const box = $('ct-lista');
     box.innerHTML = '';
-    lista.slice(0, CAT_MAX).forEach(x => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'pe-item';
-      b.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod"></span></span><span class="pe-item-preco"></span>';
-      b.querySelector('.pe-item-desc').textContent = x.descricao;
-      b.querySelector('.pe-item-cod').textContent = [x.codigo, x.unidade, x.fornecedor || 'Outros'].filter(Boolean).join(' · ');
-      const pr = b.querySelector('.pe-item-preco');
-      pr.textContent = x.preco > 0 ? fmt(x.preco) : 'sem preço';
-      if (x.precoFinal) { const s = document.createElement('small'); s.textContent = 'preço de venda'; pr.appendChild(s); }
-      b.addEventListener('click', () => { $('modal-catalogo').hidden = true; if (catAoEscolher) catAoEscolher(x); });
-      box.appendChild(b);
-    });
-    if (!lista.length) { const v = document.createElement('div'); v.className = 'picker-vazio'; v.textContent = 'Nenhum produto com essa busca.'; box.appendChild(v); }
+    const secao = (titulo, itens) => {
+      if (!itens.length) return;
+      const h = document.createElement('div'); h.className = 'ct-sec'; h.textContent = titulo; box.appendChild(h);
+      itens.forEach(x => box.appendChild(linhaCatalogo(x)));
+    };
+    if (!texto) {
+      const filtro = x => (!ctCat || x.categoria === ctCat) && (!ctMarca || x.marca === ctMarca);
+      if (ctOpts.onde === 'os') secao('Sugeridas pelo checklist', sugeridasChecklist(ctOpts.checklist, ctOpts.marcaEquip).filter(filtro));
+      secao('Mais usadas por você', maisUsadasCatalogo().filter(filtro));
+      if (box.children.length && lista.length) { const h = document.createElement('div'); h.className = 'ct-sec'; h.textContent = ctCat ? CATEGORIAS[ctCat] : 'Todo o catálogo'; box.appendChild(h); }
+    }
+    lista.slice(0, CAT_MAX).forEach(x => box.appendChild(linhaCatalogo(x)));
+    if (!lista.length) { const v = document.createElement('div'); v.className = 'picker-vazio'; v.textContent = catCache.itens.length ? 'Nenhum item com essa busca.' : 'O catálogo ainda está vazio.'; box.appendChild(v); }
+    // peça fora do catálogo: a descrição vem da busca
+    const av = document.createElement('button');
+    av.type = 'button';
+    av.className = 'pe-item avulsa';
+    av.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod">Fora do catálogo: você digita a descrição e o valor</span></span>';
+    av.querySelector('.pe-item-desc').textContent = '+ Peça avulsa' + (texto ? ': "' + texto + '"' : '');
+    av.addEventListener('click', () => { const cb = ctOpts.aoEscolher; fecharCatalogo(); if (cb) cb({ avulsa: true, texto }); });
+    box.appendChild(av);
     const info = [];
     if (lista.length > CAT_MAX) info.push('Mostrando ' + CAT_MAX + ' de ' + lista.length + '. Refine a busca.');
-    if (catFalhou.length) info.push('Não consegui abrir a tabela de ' + listaE(catFalhou) + ' (sem internet?).');
-    $('cat-info').textContent = info.join(' ');
-    $('cat-info').hidden = !info.length;
+    if (catCache.falhou.length) info.push('Não consegui abrir a tabela de ' + listaE(catCache.falhou) + ' (sem internet?).');
+    $('ct-info').textContent = info.join(' ');
+    $('ct-info').hidden = !info.length;
   }
-  $('cat-busca').addEventListener('input', renderCatalogo);
-  $('cat-busca').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('cat-busca').blur(); });
-  $('cat-fechar').addEventListener('click', () => { $('modal-catalogo').hidden = true; });
+  $('ct-busca').addEventListener('input', renderCatalogo);
+  $('ct-busca').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('ct-busca').blur(); });
+  $('ct-marca').addEventListener('change', () => { ctMarca = $('ct-marca').value; renderCatalogo(); });
+  $('ct-fechar').addEventListener('click', fecharCatalogo);
+  async function escolherDoCatalogo(x) {
+    let item = { ...x };
+    if (x.semPreco) {
+      const r = await pedirPrecoCatalogo(x);
+      if (!r) return;
+      item = { ...item, ...r, semPreco: false };
+    }
+    const cb = ctOpts.aoEscolher;
+    fecharCatalogo();
+    if (cb) cb(item);
+  }
+
+  // ---------- peça sem preço: pede o custo (ou o preço de venda) antes de lançar ----------
+  let cpResolver = null, cpItem = null, cpTipo = 'custo';
+  function pedirPrecoCatalogo(x) {
+    cpItem = x;
+    const soCusto = ctOpts.onde === 'calc' || ctOpts.onde === 'estoque';
+    cpTipo = 'custo';
+    $('cp-sub').textContent = nomeItemCatalogo(x) + (x.marca ? ' · ' + x.marca : '');
+    $('cp-tipo').hidden = soCusto;
+    $('cp-valor').value = '';
+    $('cp-salvar').checked = false;
+    pintarCp();
+    $('modal-cat-preco').hidden = false;
+    setTimeout(() => $('cp-valor').focus(), 60);
+    return new Promise(res => { cpResolver = res; });
+  }
+  function pintarCp() {
+    $('cp-tipo').querySelectorAll('button').forEach(b => { const on = b.dataset.t === cpTipo; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    $('cp-rot').textContent = cpTipo === 'custo' ? 'Custo (R$)' : 'Preço de venda (R$)';
+    const v = parseMoney($('cp-valor').value);
+    $('cp-dica').textContent = cpTipo === 'custo'
+      ? (v > 0 ? 'Preço de venda pela fórmula: ' + fmt(precoVendaDoItem({ ...cpItem, custo: v, semPreco: false })) + ' (margem ' + numTxt(config.margemPadrao) + '%).' : 'O preço de venda sai pela fórmula da margem.')
+      : 'Este valor entra direto como preço de venda.';
+    // só o Administrador grava o custo no catálogo (no modo demonstração, não)
+    $('cp-salvar-campo').hidden = !(ehAdmin() && !DEMO_ATIVO && cpTipo === 'custo');
+  }
+  function fecharCp(r) {
+    $('modal-cat-preco').hidden = true;
+    const f = cpResolver; cpResolver = null;
+    if (f) f(r);
+  }
+  $('cp-tipo').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { cpTipo = b.dataset.t; pintarCp(); }));
+  $('cp-valor').addEventListener('input', pintarCp);
+  $('cp-cancelar').addEventListener('click', () => fecharCp(null));
+  $('cp-ok').addEventListener('click', () => {
+    const v = r2(parseMoney($('cp-valor').value));
+    if (!(v > 0)) { avisar(cpTipo === 'custo' ? 'Digite o custo da peça.' : 'Digite o preço de venda.'); return; }
+    if (cpTipo === 'custo') {
+      if ($('cp-salvar').checked && !$('cp-salvar-campo').hidden) salvarPrecoNoCatalogo(cpItem, v);
+      fecharCp({ custo: v });
+    } else fecharCp({ precoManual: true, precoVenda: v });
+  });
+  function salvarPrecoNoCatalogo(x, custo) {
+    const agora = Date.now();
+    if (x.pecaId) gravar('update', 'pecas/' + x.pecaId, { preco: custo, atualizadoPor: viewerId || null, atualizadoEm: agora });
+    else gravar('set', 'pecas/' + novoId(), { codigo: x.codigo, descricao: x.descricao, unidade: x.unidade || 'un', preco: custo, origem: x.fornecedor || '', tabela: x.dataTabela || null,
+      criadoPor: viewerId || null, criadoEm: agora });
+    registrarAtividade('editou', 'peca', x.pecaId || '', x.descricao, 'preço ' + fmt(custo));
+    avisoRapido('Custo salvo no catálogo.');
+  }
+
   // Calculadora de lucro: o item escolhido preenche produto, custo, marca e origem
-  $('calc-catalogo').addEventListener('click', () => abrirCatalogo(c => {
+  $('calc-catalogo').addEventListener('click', () => abrirCatalogo({ onde: 'calc', aoEscolher: c => {
+    if (c.avulsa) { if (c.texto) { produtoEl.value = c.texto; saveCalcState(); } return; }
     produtoEl.value = nomeItemCatalogo(c);
     if (c.precoFinal) {
       custoEl.value = '';
       selectedBrandId = null;   // não fica a marca de um item escolhido antes
       renderBrands();
       calcular();
-      avisar('Este preço já é de venda, da tabela própria (' + fmt(c.preco) + '). Ele não entra como custo: preencha o custo, se souber.');
+      avisar('Este preço já é de venda, da tabela própria (' + fmt(c.custo) + '). Ele não entra como custo: preencha o custo, se souber.');
       return;
     }
-    custoEl.value = c.preco > 0 ? fmtMoedaCampo(c.preco) : '';
-    const marca = marcaComNome(c.fornecedor);
+    custoEl.value = c.custo > 0 ? fmtMoedaCampo(c.custo) : '';
+    const marca = marcaComNome(c.marca);
     if (marca) { selectedBrandId = marca.id; renderBrands(); setOrigem(c.origem); }
-    else if (c.fornecedor && nivel('calc') >= 2) addBrand(c.fornecedor, c.origem);   // a mesma função do "+" das marcas
+    else if (c.marca && nivel('calc') >= 2) addBrand(c.marca, c.origem);   // a mesma função do "+" das marcas
     else { selectedBrandId = null; renderBrands(); setOrigem(c.origem); }
-    if (!(c.preco > 0)) avisoRapido('Este item está sem preço na tabela: preencha o custo.');
-  }));
+  } }));
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
   $('os-chamado').addEventListener('click', () => abrirChamado({}));
