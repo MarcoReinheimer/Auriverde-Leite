@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.21.4';
+  const APP_VERSAO = '2026.11.21.5';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -9460,31 +9460,147 @@
   }
 
   // ---------- catálogo de peças (Administração) ----------
-  var pecaEditandoId = null, pcOrigem = 'dentro';
+  var pecaEditandoId = null, pcOrigem = 'dentro', pcDaTabela = null;
   function renderPecasAdmin() {
-    const box = $('adm-pecas');
-    if (!box) return;
+    if ($('adm-sec-tabelas').open) renderTabelasAdmin();
+    if ($('adm-sec-pecas').open) renderListaPecasAdmin();
+  }
+  // ---------- seção "Tabelas de preço": um cartão por fornecedor ----------
+  const TABELAS_ADMIN = [['ordemax', 'Ordemax Conforto'], ['mx', 'MX do Brasil'], ['lero', 'Lero Solar'], ['feilfer', 'Feilfer'], ['kit', 'Kit aspersão'], ['configmax', 'Ordemax Configmax']];
+  const MESES_TAB = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  // as tabelas trazem a data de vários jeitos: 2025-06-02, 04/2026, abr/2025 ou só 2025 (vale até o fim do ano)
+  function dataDaTabela(s) {
+    s = String(s || '').trim().toLowerCase();
+    let m;
+    if ((m = s.match(/^(\d{4})-(\d{2})(?:-(\d{2}))?/))) return m[1] + '-' + m[2] + '-' + (m[3] || '01');
+    if ((m = s.match(/^(\d{1,2})\/(\d{4})$/))) return m[2] + '-' + m[1].padStart(2, '0') + '-01';
+    if ((m = s.match(/^([a-zç]{3})[a-zç]*\/(\d{4})$/)) && MESES_TAB.includes(m[1])) return m[2] + '-' + String(MESES_TAB.indexOf(m[1]) + 1).padStart(2, '0') + '-01';
+    if ((m = s.match(/^(\d{4})$/))) return m[1] + '-12-31';
+    return '';
+  }
+  function infoTabela(k) {
+    if (k === 'configmax') {
+      const em = pecasCatalogo.filter(p => fornDaPeca(p) === 'configmax').reduce((max, p) => Math.max(max, Number(p.criadoEm) || 0), 0);
+      if (!em) return { txt: 'Ainda não importada', iso: '' };
+      const d = new Date(em);
+      const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      return { txt: 'Importada em ' + fmtDate(iso), iso };
+    }
+    const t = ccTabelas[k];
+    if (!t) return { txt: 'Tabela não abriu (sem internet?)', iso: '' };
+    // a Lero tem duas vigências na mesma tabela: conta a mais antiga
+    const vig = [...new Set(t.itens.map(i => i.vigencia).filter(Boolean))].sort((a, b) => dataDaTabela(b).localeCompare(dataDaTabela(a)));
+    const isos = [t.data].concat(vig).map(dataDaTabela).filter(Boolean).sort();
+    const mostra = vig.length > 1 ? vig.join(' e ') : /^\d{4}-\d{2}-\d{2}$/.test(t.data) ? fmtDate(t.data) : t.data;
+    return { txt: 'Tabela de ' + mostra, iso: isos[0] || '' };
+  }
+  let admTabToken = 0;
+  async function renderTabelasAdmin() {
+    const t = ++admTabToken;
+    await carregarCatalogo();
+    if (t !== admTabToken) return;
+    const box = $('adm-tabelas');
     box.innerHTML = '';
-    const termo = normalizarBusca($('adm-pecas-busca').value.trim());
-    const lista = pecasCatalogo.filter(p => !termo || normalizarBusca((p.codigo || '') + ' ' + (p.descricao || '')).includes(termo));
-    lista.slice(0, 200).forEach(p => {
+    TABELAS_ADMIN.forEach(([k, nome]) => {
+      const n = catCache.itens.filter(x => x.grupo === k).length, info = infoTabela(k);
+      const velha = !!info.iso && addMonthsISO(info.iso, 12) < todayISO();
+      const c = document.createElement('div');
+      c.className = 'tp-card';
+      c.innerHTML = '<div class="tp-topo"><span class="tp-nome"></span><span class="tp-n"></span></div><div class="tp-data"></div><div class="tp-aviso" hidden>Tabela com mais de 12 meses</div><button type="button" class="bloco-editar tp-btn">Importar / atualizar</button>';
+      c.querySelector('.tp-nome').textContent = nome;
+      c.querySelector('.tp-n').textContent = plural(n, 'item', 'itens');
+      c.querySelector('.tp-data').textContent = info.txt;
+      c.querySelector('.tp-aviso').hidden = !velha;
+      c.querySelector('.tp-btn').setAttribute('aria-label', 'Importar ou atualizar a tabela ' + nome);
+      c.querySelector('.tp-btn').addEventListener('click', () => {
+        if (k === 'configmax') { $('adm-pecas-ordemax-arq').value = ''; $('adm-pecas-ordemax-arq').click(); }
+        else importarTabelaConforto(FORNECEDORES_CONFORTO[k].url);
+      });
+      box.appendChild(c);
+    });
+  }
+  // ---------- seção "Peças": busca, categorias, lista e peças sem preço ----------
+  var admCat = '', admSoSemPreco = false, admPecasToken = 0;
+  async function renderListaPecasAdmin() {
+    const t = ++admPecasToken;
+    await carregarCatalogo();
+    if (t !== admPecasToken) return;
+    const texto = $('adm-pecas-busca').value.trim();
+    const nSem = buscarCatalogo({ semPreco: true }).length;
+    if (!nSem) admSoSemPreco = false;
+    const bs = $('adm-sem-preco');
+    bs.textContent = 'Peças sem preço (' + nSem + ')';
+    bs.classList.toggle('on', admSoSemPreco);
+    bs.setAttribute('aria-pressed', admSoSemPreco ? 'true' : 'false');
+    const base = buscarCatalogo({ texto, semPreco: admSoSemPreco });
+    const chips = $('adm-pecas-cats');
+    chips.innerHTML = '';
+    [['', 'Todas']].concat(Object.entries(CATEGORIAS)).forEach(([k, nome]) => {
+      if (k && !catCache.itens.some(x => x.categoria === k)) return;
+      const n = k ? base.filter(x => x.categoria === k).length : base.length;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flt-chip' + (admCat === k ? ' on' : '');
+      b.setAttribute('aria-pressed', admCat === k ? 'true' : 'false');
+      b.textContent = nome + ' (' + n + ')';
+      b.addEventListener('click', () => { admCat = k; renderListaPecasAdmin(); });
+      chips.appendChild(b);
+    });
+    const lista = admCat ? base.filter(x => x.categoria === admCat) : base;
+    const box = $('adm-pecas');
+    box.innerHTML = '';
+    lista.slice(0, CAT_MAX).forEach(x => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'adm-peca';
       b.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod"></span></span><span class="pe-item-preco"></span>';
-      b.querySelector('.pe-item-desc').textContent = p.descricao || 'Sem descrição';
-      b.querySelector('.pe-item-cod').textContent = [p.codigo, p.unidade].filter(Boolean).join(' · ');
-      b.querySelector('.pe-item-preco').textContent = fmt(Number(p.preco) || 0);
-      b.addEventListener('click', () => abrirPeca(p));
+      b.querySelector('.pe-item-desc').textContent = x.descricao || 'Sem descrição';
+      b.querySelector('.pe-item-cod').textContent = [x.codigo, x.unidade, x.marca, CATEGORIAS[x.categoria]].filter(Boolean).join(' · ');
+      const pr = b.querySelector('.pe-item-preco');
+      if (x.semPreco) { pr.textContent = 'preço a definir'; pr.classList.add('sem'); }
+      else {
+        pr.textContent = fmt(precoVendaDoItem(x));
+        const s = document.createElement('small');
+        s.textContent = x.precoFinal ? 'tabela de venda' : 'custo ' + fmt(x.custo);
+        pr.appendChild(s);
+      }
+      b.addEventListener('click', () => abrirPecaDoCatalogo(x));
       box.appendChild(b);
     });
-    $('adm-pecas-vazio').hidden = pecasCatalogo.length > 0;
-    if (pecasCatalogo.length && !lista.length) { const v = document.createElement('div'); v.className = 'picker-vazio'; v.textContent = 'Nenhuma peça com essa busca.'; box.appendChild(v); }
+    $('adm-pecas-vazio').hidden = lista.length > 0;
+    $('adm-pecas-vazio').textContent = admSoSemPreco ? 'Nenhuma peça sem preço com essa busca.' : 'Nenhuma peça com essa busca.';
+    $('adm-pecas-info').textContent = lista.length > CAT_MAX ? 'Mostrando ' + CAT_MAX + ' de ' + lista.length + '. Refine a busca.' : '';
+    $('adm-pecas-info').hidden = lista.length <= CAT_MAX;
   }
-  $('adm-pecas-busca').addEventListener('input', renderPecasAdmin);
+  $('adm-pecas-busca').addEventListener('input', renderListaPecasAdmin);
+  $('adm-sem-preco').addEventListener('click', () => { admSoSemPreco = !admSoSemPreco; renderListaPecasAdmin(); });
+  $('adm-sec-tabelas').addEventListener('toggle', () => { if ($('adm-sec-tabelas').open) renderTabelasAdmin(); });
+  $('adm-sec-pecas').addEventListener('toggle', () => { if ($('adm-sec-pecas').open) renderListaPecasAdmin(); });
+  // o catálogo de peças não é separado na demonstração: lá ele fica só para ver
+  function catalogoSoLeitura() {
+    if (!DEMO_ATIVO) return false;
+    avisar('No modo demonstração o catálogo de peças não é alterado.');
+    return true;
+  }
+  // peça que só existe na tabela: ao salvar, entra no banco e passa a valer no lugar da linha da tabela
+  function abrirPecaDoCatalogo(x) {
+    if (x.pecaId) { const p = pecasCatalogo.find(y => y.id === x.pecaId); if (p) abrirPeca(p); return; }
+    abrirPeca(null);
+    pcDaTabela = x;
+    $('pc-titulo').textContent = 'Editar peça da tabela';
+    $('pc-codigo').value = x.codigo || '';
+    $('pc-descricao').value = x.descricao || '';
+    $('pc-unidade').value = x.unidade || 'un';
+    $('pc-preco').value = x.custo ? numTxt(r2(x.custo)) : '';
+    $('pc-marca').value = '';
+    $('pc-marca').placeholder = x.marca || 'Opcional';
+    pcOrigem = x.origem === 'fora' ? 'fora' : 'dentro';
+    pintarPcOrigem();
+    pintarPcCategoria('');
+  }
   function abrirPeca(p) {
     if (!ehAdmin()) return;
     pecaEditandoId = p ? p.id : null;
+    pcDaTabela = null;
     $('pc-titulo').textContent = p ? 'Editar peça' : 'Nova peça';
     $('pc-codigo').value = p ? (p.codigo || '') : '';
     $('pc-descricao').value = p ? (p.descricao || '') : '';
@@ -9503,7 +9619,7 @@
   // categoria: "Automática" segue a regra do fornecedor ou as palavras da descrição
   function pintarPcCategoria(valor) {
     const p = pecasCatalogo.find(x => x.id === pecaEditandoId) || null;
-    const auto = categoriaPorRegra((p && fornDaPeca(p)) || '', $('pc-descricao').value);
+    const auto = categoriaPorRegra(pcDaTabela ? pcDaTabela.grupo : (p && fornDaPeca(p)) || '', $('pc-descricao').value);
     const sel = $('pc-categoria');
     sel.innerHTML = '';
     [['', 'Automática (' + CATEGORIAS[auto] + ')']].concat(Object.entries(CATEGORIAS)).forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); });
@@ -9515,16 +9631,10 @@
   $('adm-peca-nova').addEventListener('click', () => abrirPeca(null));
   // catálogo da Ordemax: o listaProdutos.xml da pasta do Configmax (código e descrição abertos; o preço vem
   // protegido no arquivo, então entra em branco). Códigos que já estão no catálogo ficam como estão.
-  $('adm-pecas-ordemax').addEventListener('click', () => { $('adm-pecas-ordemax-arq').value = ''; $('adm-pecas-ordemax-arq').click(); });
   $('adm-pecas-ordemax-arq').addEventListener('change', () => { const f = $('adm-pecas-ordemax-arq').files[0]; if (f) importarCatalogoOrdemax(f); });
   // Tabela de Preço Conforto Animal da Ordemax (02/06/2025), já limpa em tabelas/: cadastra os itens novos
   // com preço e atualiza o preço dos que já estão no catálogo (pelo código; sem código, pela descrição)
   const TABELA_CONFORTO = 'tabelas/conforto-animal-2025-06-02.json';
-  const TABELA_MX = 'tabelas/mx-2025.json';
-  $('adm-pecas-conforto').addEventListener('click', () => importarTabelaConforto(TABELA_CONFORTO));
-  $('adm-pecas-mx').addEventListener('click', () => importarTabelaConforto(TABELA_MX));
-  $('adm-pecas-lero').addEventListener('click', () => importarTabelaConforto('tabelas/lero-solar.json'));
-  $('adm-pecas-feilfer').addEventListener('click', () => importarTabelaConforto('tabelas/feilfer-2026-04.json'));
   async function importarTabelaConforto(url) {
     let tab;
     try { const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); tab = await r.json(); }
@@ -9538,8 +9648,9 @@
     const novas = [], muda = [];
     tab.itens.forEach(i => { const p = cod(i) && vezes[cod(i)] === 1 ? porCod.get(cod(i)) : porDesc.get(normalizarBusca(i.descricao)); if (!p) novas.push(i); else if (Math.abs((Number(p.preco) || 0) - i.preco) > 0.004) muda.push([p, i]); });
     if (!novas.length && !muda.length) { avisar('Esta tabela já está no catálogo, com os mesmos preços.'); return; }
-    const resumo = [novas.length && plural(novas.length, 'item novo', 'itens novos'), muda.length && plural(muda.length, 'preço atualizado', 'preços atualizados')].filter(Boolean).join(' e ');
+    const resumo = plural(novas.length, 'novo', 'novos') + ', ' + plural(muda.length, 'preço mudou', 'preços mudaram');
     if (!(await confirmar(tab.fonte + ': ' + resumo + '. Importar para o catálogo?', 'Importar'))) return;
+    if (catalogoSoLeitura()) return;
     const agora = Date.now();
     novas.forEach(i => gravar('set', 'pecas/' + novoId(), { codigo: i.codigo, descricao: i.descricao, unidade: i.unidade, preco: i.preco, finame: i.finame || null, mda: i.mda || null,
       origem: tab.fornecedor || 'Ordemax', tabela: tab.data, criadoPor: viewerId || null, criadoEm: agora }));
@@ -9563,8 +9674,9 @@
     const novas = lidos.filter(p => { const k = p.codigo.toLowerCase(); if (!k) return true; if (ja.has(k) || vistos.has(k)) return false; vistos.add(k); return true; });
     if (!novas.length) { avisar('As ' + lidos.length + ' peças deste arquivo já estão no catálogo.'); return; }
     const pulou = lidos.length - novas.length;
-    if (!(await confirmar('Importar ' + plural(novas.length, 'peça', 'peças') + ' da Ordemax para o catálogo?' + (pulou ? ' (' + plural(pulou, 'já estava', 'já estavam') + ' no catálogo.)' : '') +
-      ' Os preços não vêm no arquivo: preencha na peça ou na OS.', 'Importar'))) return;
+    if (!(await confirmar('Ordemax Configmax: ' + plural(novas.length, 'novo', 'novos') + ', 0 preços mudaram.' + (pulou ? ' (' + plural(pulou, 'já estava', 'já estavam') + ' no catálogo.)' : '') +
+      ' O arquivo não traz preço: preencha depois em "Peças sem preço". Importar?', 'Importar'))) return;
+    if (catalogoSoLeitura()) return;
     const agora = Date.now();
     novas.forEach(p => gravar('set', 'pecas/' + novoId(), { codigo: p.codigo, descricao: p.descricao, unidade: 'un', preco: 0, origem: 'ordemax', criadoPor: viewerId || null, criadoEm: agora }));
     registrarAtividade('importou', 'peca', '', plural(novas.length, 'peça', 'peças') + ' da Ordemax');
@@ -9572,6 +9684,7 @@
   }
   $('pc-cancelar').addEventListener('click', () => { $('modal-peca').hidden = true; });
   $('pc-salvar').addEventListener('click', async () => {
+    if (catalogoSoLeitura()) return;
     const descricao = $('pc-descricao').value.trim();
     if (!descricao) { avisar('Escreva a descrição da peça.'); return; }
     const codigo = $('pc-codigo').value.trim();
@@ -9586,12 +9699,13 @@
       registrarAtividade('editou', 'peca', pecaEditandoId, descricao);
     } else {
       const id = novoId();
-      gravar('set', 'pecas/' + id, { ...dados, criadoPor: viewerId || null, criadoEm: Date.now() });
+      gravar('set', 'pecas/' + id, { ...dados, ...(pcDaTabela ? { origem: pcDaTabela.fornecedor || '', tabela: pcDaTabela.dataTabela || null } : {}), criadoPor: viewerId || null, criadoEm: Date.now() });
       registrarAtividade('criou', 'peca', id, descricao);
     }
     $('modal-peca').hidden = true;
   });
   $('pc-excluir').addEventListener('click', async () => {
+    if (catalogoSoLeitura()) return;
     const p = pecasCatalogo.find(x => x.id === pecaEditandoId);
     if (!p) return;
     if (!(await confirmar('Tirar "' + (p.descricao || '') + '" do catálogo? As OS que já usaram essa peça continuam com ela.', 'Tirar do catálogo'))) return;
