@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.21.2';
+  const APP_VERSAO = '2026.11.21.3';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -45,11 +45,11 @@
   }
 
   // ================= router =================
-  const VIEWS = ['entrada', 'p-login', 'p-inicio', 'p-prop', 'p-qual', 'p-prat', 'p-cham', 'admin', 'home', 'setor', 'mais', 'encaminhamentos', 'ordens', 'preventivas', 'calctec', 'estoque', 'painel', 'calc', 'historico', 'produtores', 'produtor', 'leite', 'medias', 'pmls', 'rota', 'vendas', 'venda-form', 'venda'];
+  const VIEWS = ['entrada', 'p-login', 'p-inicio', 'p-prop', 'p-qual', 'p-prat', 'p-cham', 'admin', 'home', 'setor', 'mais', 'encaminhamentos', 'ordens', 'preventivas', 'calctec', 'estoque', 'painel', 'calc', 'historico', 'produtores', 'produtor', 'leite', 'medias', 'pmls', 'rota', 'vendas', 'venda-form', 'venda', 'orcamento'];
   // qual aba da barra de baixo fica acesa em cada tela
   const TAB_DA_VIEW = {
     entrada: 'home', admin: 'mais', home: 'home', calc: 'mais', historico: 'mais', produtores: 'visitas', produtor: 'visitas', rota: 'visitas',
-    leite: 'home', medias: 'home', pmls: 'home', vendas: 'mais', 'venda-form': 'mais', venda: 'mais',
+    leite: 'home', medias: 'home', pmls: 'home', vendas: 'mais', 'venda-form': 'mais', venda: 'mais', orcamento: 'mais',
     encaminhamentos: 'mais', mais: 'mais', ordens: 'ordens', preventivas: 'ordens', calctec: 'home', estoque: 'home', painel: 'mais'
   };
   function showView(name) {
@@ -409,7 +409,7 @@
     renderAvisoFila();
   }
   // Os dados só começam a chegar depois que o acesso da pessoa foi liberado.
-  var produtoresTodos = [], vendasTodas = [], verArquivados = false;
+  var produtoresTodos = [], vendasTodas = [], orcamentosTodos = [], verArquivados = false;
   function escoparVendas(l) {
     if (!podeVer('vendas')) return [];
     let v = l.filter(naoArquivado);
@@ -423,6 +423,7 @@
     assinar('produtores', l => { produtoresTodos = l; produtores = verArquivados ? l : l.filter(naoArquivado); renderProdutoresList(); renderResumoHome(); });
     assinar('calculos', l => { calculos = l.filter(naoArquivado); renderHistorico(); }, (a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
     assinar('vendas', l => { vendasTodas = l; vendas = escoparVendas(l); aoMudarVendas(); renderResumoHome(); }, (a, b) => (b.data || '').localeCompare(a.data || ''));
+    assinar('orcamentos', l => { orcamentosTodos = l; aoMudarOrcamentos(); });
     assinar('config', l => aplicarConfig(l));
     iniciarEncaminhamentos();
     iniciarOrdens();
@@ -2634,6 +2635,7 @@
   let vendaAbertaId = null;
   let vdVoltarPara = 'vendas';
   let vendasRenderToken = 0;
+  var formModo = 'venda', orcEditandoId = null, vendaFormSalva = false;   // o formulário serve à venda e ao orçamento
   let perfisVendas = {};
 
   // ---- armazenamento ----
@@ -2786,6 +2788,7 @@
     });
   }
   function abrirFormVenda(venda, opcoes = {}) {
+    formModo = 'venda'; orcEditandoId = null; vendaFormSalva = false;
     editandoVendaId = venda ? venda.id : null;
     vendaVoltarPara = opcoes.voltarPara || (venda ? 'venda' : 'vendas');
     $('venda-form-titulo').textContent = venda ? 'Editar venda' : 'Registrar venda';
@@ -2804,6 +2807,7 @@
     $('venda-produtor-busca').value = p ? p.nome : (venda ? (venda.produtorNome || '') : '');
     atualizarSugestoesProdutos();
     renderItensVenda();
+    pintarModoForm();
     showView('venda-form');
   }
   function renderItensVenda() {
@@ -2991,6 +2995,19 @@
     if (ultimo) ultimo.focus();
   });
 
+  // os itens como vão para o banco: o mesmo formato na venda e no orçamento
+  function itensParaGravar(itens) {
+    return itens.map(i => {
+      const marca = brands.find(b => b.id === i.marcaId);
+      return {
+        pecaId: i.pecaId || null, catId: i.catId || null, codigo: i.codigo || '', categoria: i.categoria || categoriaPorPalavra(i.produto),
+        produto: i.produto.trim(), marcaId: i.marcaId || '', marcaNome: marca ? marca.name : (i.marcaNome || ''),
+        origem: i.origem === 'fora' ? 'fora' : 'dentro', aliquota: aliquotaDaOrigem(i.origem),
+        quantidade: Number(i.quantidade), custoUnit: r2(i.custoUnit), margem: Number(i.margem) || 0,
+        precoUnit: r2(i.precoUnit), precoManual: !!i.precoManual, ...(i.unidade ? { unidade: i.unidade } : {}), ...(i.grupo ? { grupo: i.grupo } : {}), ...integCamposItem(i)
+      };
+    });
+  }
   async function salvarVenda() {
     if (!integValidarItens(formItens)) return;
     if (!vendaProdutorId) { avisar('Escolha o produtor na lista (ou toque em "+ Novo produtor").'); return; }
@@ -3002,16 +3019,7 @@
     if (faltando >= 0) { avisar('Confira o item ' + (faltando + 1) + ': precisa ter produto, quantidade e preço de venda.'); return; }
 
     const p = produtores.find(x => x.id === vendaProdutorId);
-    const itensSalvos = itens.map(i => {
-      const marca = brands.find(b => b.id === i.marcaId);
-      return {
-        pecaId: i.pecaId || null, catId: i.catId || null, codigo: i.codigo || '', categoria: i.categoria || categoriaPorPalavra(i.produto),
-        produto: i.produto.trim(), marcaId: i.marcaId || '', marcaNome: marca ? marca.name : (i.marcaNome || ''),
-        origem: i.origem === 'fora' ? 'fora' : 'dentro', aliquota: aliquotaDaOrigem(i.origem),
-        quantidade: Number(i.quantidade), custoUnit: r2(i.custoUnit), margem: Number(i.margem) || 0,
-        precoUnit: r2(i.precoUnit), precoManual: !!i.precoManual, ...integCamposItem(i)
-      };
-    });
+    const itensSalvos = itensParaGravar(itens);
     const tot = totaisDosItens(itensSalvos);
     const pct = parseMoney($('venda-comissao-pct').value);
     const registro = {
@@ -3038,16 +3046,19 @@
     abrirVendaDetalhe(id, voltar);
     await integPerguntasDepois(id, registro, criadas);
   }
-  $('venda-salvar').addEventListener('click', salvarVenda);
+  $('venda-salvar').addEventListener('click', () => (formModo === 'orcamento' ? salvarOrcamentoForm() : salvarVenda()));
   $('back-venda-form').addEventListener('click', async () => {
     const temAlgo = formItens.some(i => (i.produto || '').trim() || i.custoUnit > 0);
-    if (temAlgo && !(await confirmar('Sair sem salvar esta venda?', 'Sair sem salvar'))) return;
+    if (temAlgo && !vendaFormSalva && !(await confirmar(formModo === 'orcamento' ? 'Sair sem salvar este orçamento?' : 'Sair sem salvar esta venda?', 'Sair sem salvar'))) return;
     const voltar = vendaVoltarPara;
     editandoVendaId = null;
+    formModo = 'venda'; orcEditandoId = null;
     irParaDestinoVendas(voltar);
   });
   function irParaDestinoVendas(destino) {
     if (destino === 'venda') { renderVendaDetalhe(); showView('venda'); }
+    else if (destino === 'orcamento') { renderOrcDetalhe(); showView('orcamento'); }
+    else if (destino === 'orcamentos') { vendasAba = 'orcamentos'; abrirVendas(); }
     else if (destino === 'produtor' && currentProdutorId) { renderProdutorCompras(); showView('produtor'); }
     else { renderResumoVendas(); showView('vendas'); }
   }
@@ -3484,7 +3495,7 @@
   });
 
   // ---- navegação ----
-  function abrirVendas() { renderResumoVendas(); showView('vendas'); }
+  function abrirVendas() { renderResumoVendas(); pintarAbaVendas(); showView('vendas'); }
 
   // ---- resumo do mês na tela inicial (cada bloco abre a tela dele) ----
   const MESES_NOME = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
@@ -6217,7 +6228,7 @@
     b.toggle('so-proprias', !!acesso.soProprias);
   }
   // tela aberta que a pessoa não pode mais ver → volta para o Início
-  const MODULO_DA_VIEW = { calc: 'calc', historico: 'calc', vendas: 'vendas', 'venda-form': 'vendas', venda: 'vendas',
+  const MODULO_DA_VIEW = { calc: 'calc', historico: 'calc', vendas: 'vendas', 'venda-form': 'vendas', venda: 'vendas', orcamento: 'vendas',
     produtores: 'produtores', produtor: 'produtores', rota: 'produtores', leite: 'leite', medias: 'leite', pmls: 'pmls', ordens: 'visitas', preventivas: 'visitas', painel: 'painel' };
   function conferirTelaAtual() {
     const v = document.body.dataset.view;
@@ -6758,7 +6769,7 @@
   const VERBOS = { criou: 'criou', editou: 'editou', arquivou: 'arquivou', restaurou: 'restaurou', excluiu: 'excluiu', importou: 'importou',
     aprovou: 'aprovou o acesso de', recusou: 'recusou o pedido de', bloqueou: 'bloqueou', desbloqueou: 'desbloqueou', alterou: 'alterou o acesso de',
     resolveu: 'resolveu', iniciou: 'começou a atender', reabriu: 'reabriu', concluiu: 'concluiu', agendou: 'agendou', cancelou: 'cancelou', abriu: 'abriu', migrou: 'converteu', mudou: 'mudou' };
-  const ALVOS = { produtor: 'o produtor', venda: 'a venda', visita: 'a visita', configuracoes: 'as configurações', planilha: 'uma planilha de produtores',
+  const ALVOS = { produtor: 'o produtor', venda: 'a venda', orcamento: 'o orçamento', visita: 'a visita', configuracoes: 'as configurações', planilha: 'uma planilha de produtores',
     encaminhamento: 'o encaminhamento', nutricao: 'a avaliação de nutrição', atendimento: 'o atendimento veterinário', animal: 'o animal', sanidade: 'o registro de sanidade', reproducao: 'o registro de reprodução', coleta: 'a coleta de qualidade', acao: 'a ação do plano',
     os: 'a OS', equipamento: 'o equipamento', peca: 'a peça do catálogo', modulos: 'os módulos ativos', visitasantigas: 'as visitas antigas em OS', lote: 'o lote', dieta: 'a dieta do lote', preventiva: 'o plano preventivo de', estoque: 'o estoque de' };
   let atividadesToken = 0;
@@ -11722,15 +11733,26 @@
   function margemGeral() { const m = pctLido($('om-margem').value); return margemValida(m) ? m : Number(config.margemPadrao); }
   function margemDoGrupo(g) { return margemValida(g.margem) ? g.margem : margemGeral(); }
   // grupo com preço final (kit de tabela própria): o valor já é o de venda, sem margem nem ICMS
-  function valorComMargem(g) { return precoVendaDoItem({ custo: g.valor, origem: omOrigem, precoFinal: g.precoFinal }, margemDoGrupo(g)); }
-  function totalOm() { return arredOm(ordemaxAtual.grupos.reduce((s, g) => s + valorComMargem(g), 0)); }
+  // grupo do Configurador: cada item tem preço e a soma bate com o orçamento salvo; grupo do PDF da Ordemax: só o valor do grupo
+  const grupoTemPrecos = g => g.itens.length > 0 && g.itens.every(i => Number.isFinite(i.preco));
+  const precoItemOm = (g, i) => precoVendaDoItem({ custo: i.preco, origem: omOrigem, precoFinal: g.precoFinal }, margemDoGrupo(g));
+  function brutoDoGrupo(g) {
+    return grupoTemPrecos(g) ? g.itens.reduce((s, i) => s + precoItemOm(g, i) * (parseMoney(i.qtd) || 0), 0)
+      : precoVendaDoItem({ custo: g.valor, origem: omOrigem, precoFinal: g.precoFinal }, margemDoGrupo(g));
+  }
+  function valorComMargem(g) { return arredOm(brutoDoGrupo(g)); }
+  function totalOm() { return arredOm(ordemaxAtual.grupos.reduce((s, g) => s + brutoDoGrupo(g), 0)); }
   function pintarOrigemOm() { $('om-origem').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.o === omOrigem)); }
   function pintarItensOm() {
+    const temPrecos = !!ordemaxAtual && ordemaxAtual.grupos.every(grupoTemPrecos);
+    if (omItens === 'itens' && !temPrecos) omItens = 'resumido';
+    $('om-itens').querySelector('[data-i="itens"]').hidden = !temPrecos;
     $('om-itens').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.i === omItens));
     $('om-resumo').hidden = omItens !== 'resumido';
     $('om-itens-dica').textContent = omItens === 'resumido'
       ? 'Uma linha com o valor total e, embaixo, as linhas de descrição sem valor (como no orçamento do Anselmo).'
-      : 'Uma linha para cada grupo da Ordemax, com o preço do grupo já com a margem.';
+      : omItens === 'itens' ? 'Uma linha para cada item, com quantidade e preço de venda (cabem ' + LINHAS_MODELO + ' linhas).'
+      : 'Uma linha para cada grupo, com o preço do grupo já com a margem.';
   }
   // descrição certeira, tirada das peças do PDF: "ORDENHA CANALIZADA ORDEMAX 2X4", "COM MEDIÇÃO E EXTRAÇÃO",
   // "8 CONJUNTOS", "COM PROGRAMADOR DE LIMPEZA" e os equipamentos principais (bomba, motor, boiler…)
@@ -11743,7 +11765,7 @@
         for (let j = 1; j < linhas.length - 1; j++) if (linhas[j].length + linhas[j + 1].length < linhas[k].length + linhas[k + 1].length) k = j;
         linhas.splice(k, 2, linhas[k] + ' + ' + linhas[k + 1]);
       }
-      return { produto: maiusc(o.titulo.replace(/^Configura[cç][aã]o de\s*/i, '') + ' ' + (o.fornecedor || 'Ordemax')), linhas };
+      return { produto: maiusc(o.titulo.replace(/^Configura[cç][aã]o de\s*/i, '') + ' ' + (o.fornecedor || (o._salvo ? '' : 'Ordemax'))), linhas };
     }
     const itens = o.grupos.flatMap(g => g.itens.map(i => ({ ...i, grupo: g.nome, n: parseMoney(i.qtd) || 0 })));
     const acha = re => itens.find(i => re.test(i.descricao));
@@ -11766,6 +11788,7 @@
   function itensDoOrcamento() {
     const o = ordemaxAtual;
     if (omItens === 'grupos') return o.grupos.filter(g => g.valor > 0).map(g => ({ produto: g.nome, qtd: 1, preco: valorComMargem(g) }));
+    if (omItens === 'itens') return o.grupos.flatMap(g => g.itens.map(i => ({ produto: i.descricao, qtd: parseMoney(i.qtd) || 0, preco: precoItemOm(g, i) })));
     const linhas = $('om-descricao').value.split('\n').map(s => s.trim()).filter(Boolean);
     return [{ produto: $('om-produto').value.trim() || produtoPadrao(o), qtd: 1, preco: totalOm() }].concat(linhas.map(l => ({ produto: l, qtd: null, preco: null })));
   }
@@ -11773,7 +11796,7 @@
     const v = id => $(id).value.trim();
     return { produtor: v('om-cliente'), ie: v('om-ie'), cpf: v('om-cpf'), endereco: v('om-endereco'), municipio: v('om-municipio'),
       pagamento: v('om-pagamento'), galpao: v('om-galpao'), obs: v('om-obs'), responsavel: v('om-responsavel'),
-      validade: Math.max(1, Math.round(parseMoney($('om-validade').value) || 30)), data: todayISO() };
+      validade: Math.max(1, Math.round(parseMoney($('om-validade').value) || ORC_VALIDADE)), data: (ordemaxAtual._salvo && ordemaxAtual._salvo.data) || todayISO() };
   }
   function renderOrdemax() {
     const o = ordemaxAtual;
@@ -11789,7 +11812,7 @@
       d.querySelector('.om-g-sub').textContent = (veCustos() ? (o.fornecedor || 'Ordemax') + ' ' + fmt(g.valor) + ' · ' : '') + (o.tipo === 'conforto' ? plural(g.itens.length, 'item', 'itens') : plural(g.itens.length, 'peça', 'peças'));
       if (g.precoFinal) {
         const pecas = g.itens.every(i => i.un === 'UN') ? g.itens.reduce((s, i) => s + (parseMoney(i.qtd) || 0), 0) : g.itens.length;
-        d.querySelector('.om-g-sub').textContent = 'Preço de venda (tabela própria) · ' + plural(pecas, 'peça', 'peças');
+        d.querySelector('.om-g-sub').textContent = (o._salvo ? 'Preço do orçamento · ' : 'Preço de venda (tabela própria) · ') + plural(pecas, 'peça', 'peças');
         d.querySelector('.om-g-margem').hidden = true;
         box.appendChild(d);
         return;
@@ -11808,9 +11831,9 @@
       div.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '. Margem padrão: ' + numTxt(config.margemPadrao) + '%.';
     $('om-totais').innerHTML = '<div><span></span><span></span></div><div><span>Diferença sobre o custo</span><span></span></div><div class="tot"><span>Total do orçamento</span><span></span></div>';
     const soFinal = o.grupos.length && o.grupos.every(g => g.precoFinal);
-    $('om-totais').querySelector('span').textContent = soFinal ? 'Preços de venda (tabela própria)' : 'Custo ' + (o.fornecedor || 'Ordemax');
+    $('om-totais').querySelector('span').textContent = soFinal ? (o._salvo ? 'Soma dos itens' : 'Preços de venda (tabela própria)') : 'Custo ' + (o.fornecedor || 'Ordemax');
     $('om-totais').children[1].hidden = !!soFinal;
-    if (soFinal) $('om-conta').textContent = 'Preços de venda (tabela própria): a margem e o ICMS não entram na conta.';
+    if (soFinal) $('om-conta').textContent = o._salvo ? 'Preços do orçamento salvo. Para mudar um preço, use "Editar itens".' : 'Preços de venda (tabela própria): a margem e o ICMS não entram na conta.';
     const v = $('om-totais').querySelectorAll('div span:last-child');
     v[0].textContent = fmt(custo);
     v[1].textContent = fmt(arredOm(total - custo)) + (custo ? ' (' + fmtPct((total / custo - 1) * 100) + ')' : '');
@@ -11828,18 +11851,29 @@
     if (o.total && Math.abs(soma - o.total) > 0.05) avisos.push(veCustos() ? 'A soma dos grupos (' + fmt(soma) + ') não bate com o total do PDF (' + fmt(o.total) + '). Confira antes de enviar.' : 'A soma dos grupos não bate com o total do PDF. Confira antes de enviar.');
     $('om-aviso').textContent = avisos.join(' ');
     $('om-aviso').hidden = !avisos.length;
+    // orçamento salvo: volta com os dados dele; novo: o que veio do PDF ou do Configurador
+    const L = (o._salvo && o._salvo.layout) || {};
+    const D = o._salvo ? dadosPdfDoOrc(o._salvo) : { ie: '', cpf: '', endereco: o.endereco || '', municipio: '', pagamento: o.pagamento || '', galpao: '', obs: o.obs || '', responsavel: cfg.responsavel || nomeReal(viewerId) || '', validade: ORC_VALIDADE };
     $('om-cliente').value = o.cliente || '';
-    $('om-endereco').value = o.endereco || '';
-    ['om-ie', 'om-cpf', 'om-municipio', 'om-galpao'].forEach(id => { $(id).value = ''; });
-    $('om-pagamento').value = o.pagamento || '';
-    $('om-obs').value = o.obs || '';
-    $('om-responsavel').value = cfg.responsavel || nomeReal(viewerId) || '';
+    $('om-endereco').value = D.endereco;
+    $('om-ie').value = D.ie; $('om-cpf').value = D.cpf; $('om-municipio').value = D.municipio; $('om-galpao').value = D.galpao;
+    $('om-pagamento').value = D.pagamento;
+    $('om-obs').value = D.obs;
+    $('om-responsavel').value = D.responsavel;
     $('om-margem').value = numTxt(config.margemPadrao);
-    $('om-validade').value = String(cfg.validade || 30);
-    $('om-produto').value = produtoPadrao(o);
-    $('om-descricao').value = descricaoPadrao(o);
+    $('om-validade').value = String(D.validade);
+    $('om-produto').value = L.produto || produtoPadrao(o);
+    $('om-descricao').value = L.descricao != null ? L.descricao : descricaoPadrao(o);
     omOrigem = o.origem || (cfg.origem === 'dentro' ? 'dentro' : 'fora');
-    omItens = cfg.itens === 'grupos' ? 'grupos' : 'resumido';
+    omItens = o._salvo ? (L.omItens || (o._salvo.itens.length <= LINHAS_MODELO ? 'itens' : 'resumido')) : (cfg.itens === 'grupos' ? 'grupos' : 'resumido');
+    $('modal-ordemax').querySelector('.om-form').classList.toggle('om-salvo', !!o._salvo);
+    // produtor do cadastro: o do orçamento salvo ou, no PDF, um com exatamente o mesmo nome
+    let pidOm = o._salvo ? o._salvo.produtorId : null;
+    if (!pidOm && o.cliente) { const m = produtores.filter(p => normalizarBusca(p.nome) === normalizarBusca(o.cliente)); if (m.length === 1) pidOm = m[0].id; }
+    omProdutorId = pidOm || null;
+    const pCad = produtoresTodos.find(p => p.id === omProdutorId);
+    $('om-prod-busca').value = pCad ? pCad.nome : '';
+    if (pCad && !o._salvo) preencherProdutorOm(pCad);
     pintarOrigemOm();
     pintarItensOm();
     renderOrdemax();
@@ -11849,16 +11883,18 @@
   $('om-margem').addEventListener('input', renderOrdemax);
   $('om-origem').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { omOrigem = b.dataset.o; pintarOrigemOm(); renderOrdemax(); }));
   $('om-itens').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { omItens = b.dataset.i; pintarItensOm(); }));
-  $('om-escolher').addEventListener('click', () => {
-    escolherProdutor('Orçamento para qual produtor?', pid => {
-      const p = produtoresTodos.find(x => x.id === pid) || produtores.find(x => x.id === pid);
-      if (!p) return;
-      $('om-cliente').value = p.nome || '';
-      $('om-ie').value = p.inscricaoEstadual || p.matricula || '';
-      $('om-cpf').value = p.cpfCnpj || '';
-      $('om-endereco').value = p.linha || p.propriedade || '';
-      $('om-municipio').value = p.cidade || '';
-    });
+  var omProdutorId = null;
+  function preencherProdutorOm(p) {
+    $('om-cliente').value = p.nome || '';
+    $('om-ie').value = p.inscricaoEstadual || p.matricula || '';
+    $('om-cpf').value = p.cpfCnpj || '';
+    $('om-endereco').value = p.linha || p.propriedade || '';
+    $('om-municipio').value = p.cidade || '';
+  }
+  // o mesmo seletor da venda, com "+ Novo produtor"
+  montarPickerProdutor({
+    inputId: 'om-prod-busca', listaId: 'om-prod-lista', get: () => omProdutorId,
+    set: id => { omProdutorId = id; const p = id ? (produtoresTodos.find(x => x.id === id) || produtores.find(x => x.id === id)) : null; if (p) preencherProdutorOm(p); }
   });
   $('om-fechar').addEventListener('click', () => { $('modal-ordemax').hidden = true; });
   $('nav-ordemax').addEventListener('click', () => { $('ordemax-arq').value = ''; $('ordemax-arq').click(); });
@@ -11980,13 +12016,12 @@
   async function saidaOrdemax(tipo) {
     if (!ordemaxAtual) return;
     const d = dadosOrcamento();
+    if (!omProdutorId) { avisar('Escolha o produtor na lista (ou toque em "+ Novo produtor").'); return; }
     if (!d.produtor) { avisar('Preencha o nome do produtor.'); return; }
     const itens = itensDoOrcamento();
     if (itens.length > LINHAS_MODELO) { avisar('O modelo tem ' + LINHAS_MODELO + ' linhas de itens e este orçamento tem ' + itens.length + '. Use "Resumido" ou junte algumas linhas da descrição.'); return; }
     gravarLS('auriverde_ordemax', { origem: omOrigem, validade: d.validade, responsavel: d.responsavel, itens: omItens });
-    if (!ordemaxAtual._regId) ordemaxAtual._regId = novoId();
-    gravar('set', 'orcamentos/' + ordemaxAtual._regId, { data: d.data || todayISO(), produtor: d.produtor || '', total: r2(totalOm()), tipo: ordemaxAtual.tipo || 'ordemax',
-      titulo: ordemaxAtual.titulo || '', fornecedor: ordemaxAtual.fornecedor || '', saida: tipo, por: viewerId || null, em: Date.now() });
+    gravarOrcamentoDoModal(d, tipo);
     const btn = $({ pdf: 'om-baixar', excel: 'om-excel', enviar: 'om-enviar' }[tipo]), txt = btn.textContent;
     btn.disabled = true; btn.textContent = 'Gerando…';
     try {
@@ -12012,6 +12047,427 @@
   $('om-baixar').addEventListener('click', () => saidaOrdemax('pdf'));
   $('om-excel').addEventListener('click', () => saidaOrdemax('excel'));
   $('om-enviar').addEventListener('click', () => saidaOrdemax('enviar'));
+  $('om-salvar').addEventListener('click', () => {
+    if (!ordemaxAtual) return;
+    const d = dadosOrcamento();
+    if (!omProdutorId) { avisar('Escolha o produtor na lista (ou toque em "+ Novo produtor").'); return; }
+    if (!d.produtor) { avisar('Preencha o nome do produtor.'); return; }
+    gravarOrcamentoDoModal(d, 'rascunho');
+    const id = ordemaxAtual._regId;
+    $('modal-ordemax').hidden = true;
+    avisoRapido('Orçamento salvo.');
+    abrirOrcamento(id, 'orcamentos');
+  });
+
+  // =====================================================================
+  // ORÇAMENTOS: registro completo em orcamentos/<id>, com os itens no mesmo formato da venda.
+  // Situação: rascunho, enviado, aprovado, perdido; "vencido" é calculado (enviado e passou da validade).
+  // Os antigos (só com data, nome e total) aparecem como "antigo, sem itens", só para consulta.
+  // Aprovar cria a venda com id fixo (orc_<id do orçamento>): aprovar em dois aparelhos sem sinal não duplica.
+  // =====================================================================
+  const ORC_VALIDADE = 40;
+  const ORC_SIT = { rascunho: 'Rascunho', enviado: 'Enviado', aprovado: 'Aprovado', perdido: 'Perdido', vencido: 'Vencido', antigo: 'Antigo, sem itens' };
+  const ORC_ABERTOS = ['rascunho', 'enviado', 'vencido'];
+  const ORC_FILTROS = [['abertos', 'Em aberto'], ['rascunho', 'Rascunho'], ['enviado', 'Enviado'], ['vencendo', 'Vencem em 5 dias'], ['vencido', 'Vencido'], ['aprovado', 'Aprovado'], ['perdido', 'Perdido'], ['antigo', 'Antigos'], ['', 'Todos']];
+  var orcFiltro = 'abertos', orcAbertoId = null, orcVoltar = 'orcamentos', vendasAba = 'vendas';
+  const orcAntigo = o => !Array.isArray(o.itens);
+  function situacaoOrc(o) {
+    if (orcAntigo(o)) return 'antigo';
+    const s = ['rascunho', 'enviado', 'aprovado', 'perdido'].includes(o.situacao) ? o.situacao : 'rascunho';
+    return s === 'enviado' && o.validoAte && o.validoAte < todayISO() ? 'vencido' : s;
+  }
+  const orcAutor = o => o.criadoPor || o.vendedor || o.por || null;
+  const numOrc = n => Number(n) > 0 ? 'Orçamento nº ' + Math.round(Number(n)) : 'Orçamento';
+  function nomeDoOrc(o) {
+    const p = produtoresTodos.find(x => x.id === o.produtorId);
+    return (p && p.nome) || o.produtorNome || o.produtor || 'Sem produtor';
+  }
+  function orcVisiveis() {
+    if (!podeVer('vendas')) return [];
+    let l = orcamentosTodos.filter(naoArquivado);
+    if (acesso.soProprias && !ehAdmin()) l = l.filter(o => orcAutor(o) === viewerId);
+    return l.slice().sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')) || (b.criadoEm || b.em || 0) - (a.criadoEm || a.em || 0));
+  }
+  function proximoNumeroOrc() {
+    let max = 0;
+    orcamentosTodos.forEach(o => { const n = Number(o.numero); if (n > max) max = n; });
+    return max + 1;
+  }
+  function camposTotaisOrc(itens) {
+    const t = totaisDosItens(itens);
+    return { total: r2(t.venda), custoTotal: r2(t.custo), lucro: r2(t.lucro), margem: Math.round(t.margem * 10000) / 10000 };
+  }
+  function orcVencendo(o) {
+    if (situacaoOrc(o) !== 'enviado' || !o.validoAte) return false;
+    const d = diasAte(o.validoAte);
+    return d >= 0 && d <= 5;
+  }
+  function orcPassaFiltro(o, f) {
+    const s = situacaoOrc(o);
+    return !f ? true : f === 'abertos' ? s === 'rascunho' || s === 'enviado' : f === 'vencendo' ? orcVencendo(o) : s === f;
+  }
+  function aoMudarOrcamentos() {
+    const v = document.body.dataset.view;
+    if (v === 'vendas' && vendasAba === 'orcamentos') renderOrcamentos();
+    if (v === 'orcamento') renderOrcDetalhe();
+    if (currentProdutorId) renderProdutorCompras();
+  }
+
+  // ---------- abas Vendas | Orçamentos ----------
+  function pintarAbaVendas() {
+    document.querySelectorAll('#vendas-seg .seg-btn').forEach(b => {
+      const on = b.dataset.vs === vendasAba;
+      b.classList.toggle('ativo', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $('vs-vendas').hidden = vendasAba !== 'vendas';
+    $('vs-orcamentos').hidden = vendasAba !== 'orcamentos';
+    if (vendasAba === 'orcamentos') renderOrcamentos();
+  }
+  document.querySelectorAll('#vendas-seg .seg-btn').forEach(b => b.addEventListener('click', () => { vendasAba = b.dataset.vs; pintarAbaVendas(); window.scrollTo(0, 0); }));
+
+  // ---------- lista ----------
+  function seloOrc(o) {
+    const s = situacaoOrc(o);
+    const e = document.createElement('span');
+    e.className = 'orc-sit s-' + s;
+    e.textContent = ORC_SIT[s];
+    return e;
+  }
+  function renderOrcamentos() {
+    const todos = orcVisiveis();
+    const chips = $('orc-filtros');
+    chips.innerHTML = '';
+    ORC_FILTROS.forEach(([k, nome]) => {
+      const n = todos.filter(o => orcPassaFiltro(o, k)).length;
+      if (!n && k && k !== 'abertos' && k !== orcFiltro) return;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flt-chip' + (orcFiltro === k ? ' on' : '');
+      b.setAttribute('aria-pressed', orcFiltro === k ? 'true' : 'false');
+      b.textContent = nome + ' (' + n + ')';
+      b.addEventListener('click', () => { orcFiltro = k; renderOrcamentos(); });
+      chips.appendChild(b);
+    });
+    const vencendo = todos.filter(orcVencendo);
+    $('orc-aviso').hidden = !vencendo.length;
+    $('orc-aviso').textContent = vencendo.length ? (vencendo.length === 1 ? '1 orçamento vence' : vencendo.length + ' orçamentos vencem') + ' nos próximos 5 dias. Toque para ver.' : '';
+    const lista = todos.filter(o => orcPassaFiltro(o, orcFiltro));
+    const box = $('orc-lista');
+    box.innerHTML = '';
+    lista.forEach(o => {
+      const row = document.createElement('div');
+      row.className = 'venda-row';
+      row.setAttribute('role', 'button');
+      row.tabIndex = 0;
+      row.innerHTML = '<div class="vr-nome"></div><div class="vr-valor"></div><div class="vr-info"></div><div class="vr-com"></div>';
+      row.querySelector('.vr-nome').textContent = nomeDoOrc(o);
+      row.querySelector('.vr-valor').textContent = fmt(Number(o.total) || 0);
+      const s = situacaoOrc(o);
+      row.querySelector('.vr-info').textContent = [Number(o.numero) > 0 ? 'nº ' + o.numero : '', fmtDate(o.data),
+        o.validoAte && (s === 'rascunho' || s === 'enviado' || s === 'vencido') ? 'válido até ' + fmtDate(o.validoAte) : ''].filter(Boolean).join(' · ');
+      row.querySelector('.vr-com').appendChild(seloOrc(o));
+      const abrir = () => abrirOrcamento(o.id, 'orcamentos');
+      row.addEventListener('click', abrir);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter') abrir(); });
+      box.appendChild(row);
+    });
+    $('orc-vazio').hidden = lista.length > 0;
+    $('orc-vazio').textContent = todos.length ? 'Nenhum orçamento nesse filtro.' : 'Nenhum orçamento ainda. Toque em "+ Novo orçamento" ou monte um no Configurador.';
+  }
+  $('orc-aviso').addEventListener('click', () => { orcFiltro = 'vencendo'; renderOrcamentos(); });
+  $('btn-novo-orc').addEventListener('click', () => abrirFormOrcamento(null, { voltarPara: 'orcamentos' }));
+
+  // ---------- formulário (o mesmo da venda, em modo orçamento) ----------
+  function pintarModoForm() {
+    const orc = formModo === 'orcamento';
+    $('view-venda-form').classList.toggle('modo-orc', orc);
+    $('venda-data-rot').textContent = orc ? 'Data do orçamento' : 'Data da venda';
+    $('venda-itens-rot').textContent = orc ? 'Itens do orçamento' : 'Itens vendidos';
+    $('vf-total-rot').textContent = orc ? 'Total do orçamento' : 'Valor total da venda';
+    $('venda-salvar').textContent = orc ? '💾 Salvar orçamento' : '💾 Salvar venda';
+    if (orc) pintarValidadeForm();
+  }
+  function pintarValidadeForm() {
+    const dias = Math.round(parseNum($('orc-form-validade').value)), data = $('venda-data').value;
+    $('orc-form-ate').textContent = dias > 0 && data ? 'Válido até ' + fmtDate(addDaysISO(data, dias)) + '.' : '';
+  }
+  $('orc-form-validade').addEventListener('input', pintarValidadeForm);
+  $('venda-data').addEventListener('change', () => { if (formModo === 'orcamento') pintarValidadeForm(); });
+  function abrirFormOrcamento(o, opcoes = {}) {
+    abrirFormVenda(o ? { ...o, id: null, comissaoPct: config.comissaoPct, comissaoBase: config.comissaoBase } : null, opcoes);
+    formModo = 'orcamento';
+    orcEditandoId = o ? o.id : null;
+    editandoVendaId = null;
+    vendaVoltarPara = opcoes.voltarPara || (o ? 'orcamento' : 'orcamentos');
+    $('venda-form-titulo').textContent = o ? 'Editar orçamento' : 'Novo orçamento';
+    $('orc-form-validade').value = String((o && o.validadeDias) || ORC_VALIDADE);
+    pintarModoForm();
+  }
+  function salvarOrcamentoForm() {
+    if (!integValidarItens(formItens)) return;
+    if (!vendaProdutorId) { avisar('Escolha o produtor na lista (ou toque em "+ Novo produtor").'); return; }
+    const data = $('venda-data').value;
+    if (!data) { avisar('Informe a data do orçamento.'); return; }
+    const dias = Math.round(parseNum($('orc-form-validade').value));
+    if (!(dias > 0)) { avisar('Informe a validade em dias.'); return; }
+    const itens = formItens.filter(i => (i.produto || '').trim() || i.custoUnit > 0 || i.precoUnit > 0);
+    if (!itens.length) { avisar('Adicione pelo menos um item com produto, quantidade e preço de venda.'); return; }
+    const faltando = itens.findIndex(i => !(i.produto || '').trim() || !(i.quantidade > 0) || !(i.precoUnit > 0));
+    if (faltando >= 0) { avisar('Confira o item ' + (faltando + 1) + ': precisa ter produto, quantidade e preço de venda.'); return; }
+    const p = produtores.find(x => x.id === vendaProdutorId);
+    const salvos = itensParaGravar(itens);
+    const campos = { produtorId: vendaProdutorId, produtorNome: p ? p.nome : '', produtor: p ? p.nome : '', data, validadeDias: dias, validoAte: addDaysISO(data, dias),
+      itens: salvos, observacao: $('venda-obs').value.trim(), ...camposTotaisOrc(salvos) };
+    let id = orcEditandoId;
+    const editou = !!id;
+    if (id) gravar('update', 'orcamentos/' + id, { ...campos, atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+    else {
+      id = novoId();
+      const agora = Date.now();
+      gravar('set', 'orcamentos/' + id, { ...campos, numero: proximoNumeroOrc(), situacao: 'rascunho', tipo: 'manual', titulo: '', fornecedor: '', vendedor: viewerId || null,
+        criadoPor: viewerId || null, criadoEm: agora, por: viewerId || null, em: agora, vendaId: null, perdidoMotivo: '' });
+    }
+    registrarAtividade(editou ? 'editou' : 'criou', 'orcamento', id, (p ? p.nome : '') + ' · ' + fmt(campos.total));
+    const voltar = vendaVoltarPara === 'produtor' ? 'produtor' : 'orcamentos';
+    formModo = 'venda'; orcEditandoId = null;
+    pintarModoForm();
+    abrirOrcamento(id, editou ? orcVoltar : voltar);
+  }
+
+  // ---------- detalhe ----------
+  function abrirOrcamento(id, voltar) {
+    orcAbertoId = id;
+    orcVoltar = voltar === 'produtor' ? 'produtor' : 'orcamentos';
+    renderOrcDetalhe();
+    showView('orcamento');
+  }
+  function renderOrcDetalhe() {
+    const o = orcamentosTodos.find(x => x.id === orcAbertoId);
+    const acoes = ['oc-aprovar', 'oc-editar', 'oc-pdf', 'oc-whats', 'oc-perdido', 'oc-reabrir', 'oc-ver-venda', 'oc-excluir'];
+    if (!o) {
+      $('oc-produtor').textContent = 'Orçamento não encontrado';
+      $('oc-sub').textContent = 'Ele pode ter sido excluído em outro aparelho.';
+      $('oc-sit').innerHTML = ''; $('oc-itens').innerHTML = ''; $('oc-aviso').hidden = true;
+      acoes.forEach(k => { $(k).hidden = true; });
+      return;
+    }
+    const s = situacaoOrc(o), antigo = s === 'antigo';
+    $('oc-produtor').textContent = nomeDoOrc(o);
+    $('oc-sub').textContent = [numOrc(o.numero), fmtDate(o.data), o.validoAte ? 'válido até ' + fmtDate(o.validoAte) : ''].filter(Boolean).join(' · ');
+    $('oc-sit').innerHTML = '';
+    $('oc-sit').appendChild(seloOrc(o));
+    const aviso = antigo ? 'Orçamento antigo: foi guardado só com o total, sem os itens. Fica aqui para consulta.'
+      : s === 'perdido' ? 'Perdido' + (o.perdidoMotivo ? ': ' + o.perdidoMotivo : '.')
+      : s === 'vencido' ? 'Passou da validade. Para continuar, edite e aumente a validade.'
+      : orcVencendo(o) ? 'Vence em ' + plural(diasAte(o.validoAte), 'dia', 'dias') + '.' : '';
+    $('oc-aviso').textContent = aviso;
+    $('oc-aviso').hidden = !aviso;
+    const box = $('oc-itens');
+    box.innerHTML = '';
+    (o.itens || []).forEach(i => {
+      const el = document.createElement('div');
+      el.className = 'vd-item';
+      el.innerHTML = '<div class="vd-item-nome"></div><div class="vd-item-sub"></div><div class="vd-item-valores"><span class="a"></span><span class="b"></span></div>';
+      el.querySelector('.vd-item-nome').textContent = i.produto;
+      el.querySelector('.vd-item-sub').textContent = [i.marcaNome, CATEGORIAS[i.categoria] || '',
+        veCustos() && !i.precoManual ? 'margem ' + fmtL(i.margem, 0) + '%' : ''].filter(Boolean).join(' · ');
+      el.querySelector('.a').textContent = fmtQtd(i.quantidade) + ' × ' + fmt(Number(i.precoUnit) || 0);
+      el.querySelector('.b').textContent = fmt((Number(i.quantidade) || 0) * (Number(i.precoUnit) || 0));
+      box.appendChild(el);
+    });
+    $('oc-itens-card').hidden = antigo;
+    $('oc-total').textContent = fmt(Number(o.total) || 0);
+    $('oc-custos').hidden = antigo;
+    $('oc-custo').textContent = fmt(Number(o.custoTotal) || 0);
+    $('oc-lucro').textContent = fmt(Number(o.lucro) || 0);
+    $('oc-margem').textContent = fmtPct1(o.margem);
+    $('oc-obs').hidden = !o.observacao;
+    $('oc-obs').textContent = o.observacao || '';
+    const autor = orcAutor(o);
+    $('oc-autor').textContent = autor ? 'Feito por ' + (nomeReal(autor) || 'alguém da equipe') : '';
+    const pode = !antigo && podeEditarRegistro('vendas', autor);
+    const aberto = ORC_ABERTOS.includes(s);
+    $('oc-aprovar').hidden = !(pode && aberto);
+    $('oc-editar').hidden = !(pode && aberto);
+    $('oc-pdf').hidden = antigo;
+    $('oc-whats').hidden = antigo;
+    $('oc-perdido').hidden = !(pode && aberto);
+    $('oc-reabrir').hidden = !(pode && s === 'perdido');
+    $('oc-ver-venda').hidden = !o.vendaId;
+    $('oc-excluir').hidden = !(pode && !o.vendaId);
+    $('oc-excluir').textContent = ehAdmin() ? 'Excluir este orçamento' : 'Arquivar este orçamento';
+  }
+  const orcAberto = () => orcamentosTodos.find(x => x.id === orcAbertoId) || null;
+  $('back-orc').addEventListener('click', () => {
+    if (orcVoltar === 'produtor' && currentProdutorId) { renderProdutorCompras(); showView('produtor'); return; }
+    vendasAba = 'orcamentos';
+    abrirVendas();
+  });
+  $('oc-editar').addEventListener('click', () => { const o = orcAberto(); if (o) abrirFormOrcamento(o, { voltarPara: 'orcamento' }); });
+  $('oc-pdf').addEventListener('click', () => { const o = orcAberto(); if (o) abrirPdfDoOrcamento(o); });
+  $('oc-whats').addEventListener('click', () => { const o = orcAberto(); if (o) whatsDoOrcamento(o, $('oc-whats')); });
+  $('oc-ver-venda').addEventListener('click', () => { const o = orcAberto(); if (o && o.vendaId) abrirVendaDetalhe(o.vendaId, 'vendas'); });
+  $('oc-reabrir').addEventListener('click', () => {
+    const o = orcAberto();
+    if (!o) return;
+    gravar('update', 'orcamentos/' + o.id, { situacao: 'enviado', perdidoMotivo: '', atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+    registrarAtividade('editou', 'orcamento', o.id, nomeDoOrc(o), 'reaberto');
+    renderOrcDetalhe();
+  });
+  $('oc-excluir').addEventListener('click', async () => {
+    const o = orcAberto();
+    if (!o) return;
+    const r = await removerRegistro({ modulo: 'vendas', caminho: 'orcamentos/' + o.id, criadoPor: orcAutor(o), rotulo: 'o orçamento de ' + fmtDate(o.data) + ' para ' + nomeDoOrc(o),
+      tipo: 'orcamento', alvoId: o.id, alvoNome: nomeDoOrc(o) + ' · ' + fmt(Number(o.total) || 0) });
+    if (!r) return;
+    orcAbertoId = null;
+    vendasAba = 'orcamentos';
+    abrirVendas();
+  });
+
+  // ---------- marcar como perdido ----------
+  $('oc-perdido').addEventListener('click', () => {
+    $('opd-motivo').value = '';
+    $('modal-orc-perdido').hidden = false;
+    setTimeout(() => $('opd-motivo').focus(), 60);
+  });
+  document.querySelectorAll('#opd-chips .flt-chip').forEach(b => b.addEventListener('click', () => { $('opd-motivo').value = b.textContent; }));
+  $('opd-cancelar').addEventListener('click', () => { $('modal-orc-perdido').hidden = true; });
+  $('opd-ok').addEventListener('click', () => {
+    const o = orcAberto(), motivo = $('opd-motivo').value.trim();
+    if (!o) return;
+    if (!motivo) { avisar('Escreva o motivo.'); return; }
+    gravar('update', 'orcamentos/' + o.id, { situacao: 'perdido', perdidoMotivo: motivo, perdidoEm: todayISO(), atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+    registrarAtividade('editou', 'orcamento', o.id, nomeDoOrc(o), 'perdido: ' + motivo);
+    $('modal-orc-perdido').hidden = true;
+    renderOrcDetalhe();
+  });
+
+  // ---------- aprovar: vira venda ----------
+  async function aprovarOrcamento(o) {
+    if (o.vendaId) { abrirVendaDetalhe(o.vendaId, 'vendas'); return; }
+    if (!produtores.some(p => p.id === o.produtorId)) { avisar('Este orçamento está sem um produtor do cadastro. Edite e escolha o produtor antes de aprovar.'); return; }
+    if (!(await confirmar('Aprovar este orçamento? Ele vira uma venda com os mesmos itens (' + fmt(Number(o.total) || 0) + ').', 'Aprovar e criar a venda'))) return;
+    const vid = 'orc_' + o.id;
+    const ja = vendasTodas.find(v => v.id === vid && !v.arquivado && !v.cancelada);
+    let registro;
+    if (ja) registro = ja;
+    else {
+      const itens = clonar(o.itens);
+      const tot = totaisDosItens(itens);
+      const pct = Number(config.comissaoPct) || 0, base = config.comissaoBase;
+      const autor = orcAutor(o) || viewerId || null;
+      registro = {
+        produtorId: o.produtorId, produtorNome: nomeDoOrc(o), data: todayISO(), itens, pagamento: 'avista', observacao: o.observacao || '',
+        custoTotal: r2(tot.custo), valorTotal: r2(tot.venda), lucro: r2(tot.lucro), margem: Math.round(tot.margem * 10000) / 10000,
+        comissaoPct: pct, comissaoBase: base, comissaoValor: r2(calcComissao(tot, pct, base)),
+        origem: 'orcamento', orcamentoId: o.id, orcamentoNumero: o.numero || null,
+        criadoPor: autor, criadoEm: Date.now(), comissaoRecebida: false, comissaoRecebidaEm: null
+      };
+      const integ = await integAntesDeGravar(registro, null);
+      gravar('set', 'vendas/' + vid, registro);
+      integDepoisDeGravar(vid, registro, integ);
+      registrarAtividade('criou', 'venda', vid, nomeDoOrc(o) + ' · ' + fmt(registro.valorTotal), 'do ' + numOrc(o.numero));
+    }
+    gravar('update', 'orcamentos/' + o.id, { situacao: 'aprovado', vendaId: vid, aprovadoEm: todayISO(), atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+    registrarAtividade('editou', 'orcamento', o.id, nomeDoOrc(o), 'aprovado');
+    vendaAbertaId = vid;
+    vdVoltarPara = 'vendas';
+    abrirFormVenda({ ...registro, id: vid }, { voltarPara: 'venda' });
+    vendaFormSalva = true;
+    avisoRapido('Orçamento aprovado. Confira o pagamento e a comissão.');
+  }
+  $('oc-aprovar').addEventListener('click', () => { const o = orcAberto(); if (o) aprovarOrcamento(o); });
+
+  // ---------- PDF, Excel e WhatsApp de um orçamento salvo ----------
+  function dadosPdfDoOrc(o) {
+    const L = o.layout || {}, p = produtoresTodos.find(x => x.id === o.produtorId) || {};
+    return { produtor: nomeDoOrc(o), ie: L.ie != null ? L.ie : (p.inscricaoEstadual || p.matricula || ''), cpf: L.cpf != null ? L.cpf : (p.cpfCnpj || ''),
+      endereco: L.endereco != null ? L.endereco : (p.linha || p.propriedade || ''), municipio: L.municipio != null ? L.municipio : (p.cidade || ''),
+      pagamento: L.pagamento || '', galpao: L.galpao || '', obs: L.obs != null ? L.obs : (o.observacao || ''),
+      responsavel: L.responsavel || nomeReal(orcAutor(o)) || '', validade: Number(o.validadeDias) || ORC_VALIDADE, data: o.data || todayISO() };
+  }
+  function linhasPdfDoOrc(o) {
+    const L = o.layout || {}, itens = o.itens || [];
+    if (L.omItens === 'resumido' && L.produto) {
+      const desc = String(L.descricao || '').split('\n').map(s => s.trim()).filter(Boolean);
+      return [{ produto: L.produto, qtd: 1, preco: Number(o.total) || 0 }].concat(desc.map(l => ({ produto: l, qtd: null, preco: null }))).slice(0, LINHAS_MODELO);
+    }
+    if (L.omItens !== 'grupos' && itens.length <= LINHAS_MODELO) return itens.map(i => ({ produto: i.produto, qtd: Number(i.quantidade) || 0, preco: Number(i.precoUnit) || 0 }));
+    const g = {};
+    itens.forEach(i => { const k = i.grupo || CATEGORIAS[i.categoria] || 'Itens'; g[k] = (g[k] || 0) + (Number(i.quantidade) || 0) * (Number(i.precoUnit) || 0); });
+    const grupos = Object.entries(g).map(([produto, v]) => ({ produto, qtd: 1, preco: r2(v) }));
+    return grupos.length <= LINHAS_MODELO ? grupos : [{ produto: o.titulo || 'Orçamento', qtd: 1, preco: Number(o.total) || 0 }];
+  }
+  function abrirPdfDoOrcamento(o) {
+    const grupos = [];
+    (o.itens || []).forEach(i => {
+      const nome = i.grupo || CATEGORIAS[i.categoria] || 'ITENS';
+      let g = grupos.find(x => x.nome === nome);
+      if (!g) grupos.push(g = { nome, valor: 0, margem: null, itens: [], precoFinal: true });
+      const q = Number(i.quantidade) || 0, pu = Number(i.precoUnit) || 0;
+      g.valor = r2(g.valor + q * pu);
+      g.itens.push({ codigo: '', descricao: i.produto, qtd: String(q).replace('.', ','), un: i.unidade === 'm' ? 'M' : i.unidade === 'm2' ? 'M²' : 'UN', preco: pu });
+    });
+    abrirOrdemax({ tipo: 'conforto', titulo: o.titulo || 'Orçamento', fornecedor: o.fornecedor || '', origem: 'dentro', cliente: nomeDoOrc(o), endereco: '', pagamento: '', obs: '',
+      grupos, total: Number(o.total) || 0, validade: 0, _salvo: o, _regId: o.id }, numOrc(o.numero));
+  }
+  async function whatsDoOrcamento(o, btn) {
+    const p = produtoresTodos.find(x => x.id === o.produtorId) || { nome: nomeDoOrc(o) };
+    const txt = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Gerando PDF…';
+    try {
+      const blob = await pdfOrdemax(dadosPdfDoOrc(o), linhasPdfDoOrc(o));
+      const primeiro = String(p.nome || '').trim().split(/\s+/)[0];
+      osPdfAtual = { blob, nome: nomeArquivoDemo('orcamento-' + slug(nomeDoOrc(o)) + '-' + o.data + '.pdf'), v: { numero: o.numero }, p, titulo: numOrc(o.numero), sub: nomeDoOrc(o) + ' · ' + fmt(Number(o.total) || 0),
+        msg: 'Olá' + (primeiro ? ' ' + primeiro : '') + '! Segue o orçamento, no valor de ' + fmt(Number(o.total) || 0) + (o.validoAte ? ', válido até ' + fmtDate(o.validoAte) : '') + '. Qualquer dúvida, estou à disposição.' };
+      if (o.situacao === 'rascunho') gravar('update', 'orcamentos/' + o.id, { situacao: 'enviado', atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+      mostrarPdfOS();
+    } catch (e) {
+      avisar('Não foi possível gerar o PDF: ' + (e && e.message ? e.message : e));
+    } finally {
+      btn.disabled = false; btn.textContent = txt;
+    }
+  }
+
+  // ---------- o orçamento do Configurador (e do PDF da Ordemax) vira registro ----------
+  function itensDoModalOm() {
+    const o = ordemaxAtual;
+    const marca = marcaComNome(o.fornecedor);
+    const comum = { marcaId: marca ? marca.id : '', marcaNome: (marca && marca.name) || o.fornecedor || '', origem: omOrigem, aliquota: aliquotaDaOrigem(omOrigem), tipoItem: 'produto' };
+    return o.grupos.filter(g => g.valor > 0).flatMap(g => {
+      const m = margemDoGrupo(g);
+      if (!grupoTemPrecos(g)) return [{ ...comum, pecaId: null, catId: null, codigo: '', produto: g.nome, unidade: 'un', categoria: 'ordenha', quantidade: 1,
+        custoUnit: g.precoFinal ? 0 : r2(g.valor), margem: m, precoUnit: valorComMargem(g), precoManual: !!g.precoFinal, grupo: g.nome }];
+      return g.itens.map(i => ({ ...comum, pecaId: i.pecaId || null, catId: i.catId || null, codigo: i.codigo || '', produto: (i.descricao || '') + (i.codigo ? ' (' + i.codigo + ')' : ''),
+        unidade: i.unidade || 'un', categoria: i.categoria || categoriaPorPalavra(i.descricao), quantidade: parseMoney(i.qtd) || 0,
+        custoUnit: g.precoFinal ? 0 : r2(i.preco), margem: m, precoUnit: precoItemOm(g, i), precoManual: !!g.precoFinal, grupo: g.nome }));
+    });
+  }
+  // saida: 'rascunho' só guarda; 'pdf', 'excel' e 'enviar' deixam o orçamento como Enviado
+  function gravarOrcamentoDoModal(d, saida) {
+    const o = ordemaxAtual;
+    const layout = { ie: d.ie, cpf: d.cpf, endereco: d.endereco, municipio: d.municipio, pagamento: d.pagamento, galpao: d.galpao, obs: d.obs, responsavel: d.responsavel,
+      omItens, produto: $('om-produto').value.trim(), descricao: $('om-descricao').value };
+    const atual = o._regId ? (orcamentosTodos.find(x => x.id === o._regId) || o._salvo || null) : null;
+    const situacao = saida === 'rascunho' ? ((atual && atual.situacao) || 'rascunho')
+      : atual && ['aprovado', 'perdido'].includes(atual.situacao) ? atual.situacao : 'enviado';
+    const base = { produtorId: omProdutorId, produtorNome: d.produtor, produtor: d.produtor, validadeDias: d.validade, validoAte: addDaysISO(d.data, d.validade),
+      observacao: d.obs, layout, situacao, saida, atualizadoPor: viewerId || null, atualizadoEm: Date.now() };
+    if (o._salvo) {
+      gravar('update', 'orcamentos/' + o._regId, base);
+      o._salvo = { ...o._salvo, ...base };
+      return;
+    }
+    const itens = itensParaGravar(itensDoModalOm());
+    const campos = { ...base, data: d.data, itens, ...camposTotaisOrc(itens), tipo: o.orcTipo || o.tipo || 'ordemax', titulo: o.titulo || '', fornecedor: o.fornecedor || '' };
+    if (o._regId) { gravar('update', 'orcamentos/' + o._regId, campos); return; }
+    o._regId = novoId();
+    const agora = Date.now();
+    gravar('set', 'orcamentos/' + o._regId, { ...campos, numero: proximoNumeroOrc(), vendedor: viewerId || null, criadoPor: viewerId || null, criadoEm: agora, por: viewerId || null, em: agora, vendaId: null, perdidoMotivo: '' });
+    registrarAtividade('criou', 'orcamento', o._regId, d.produtor + ' · ' + fmt(campos.total));
+  }
+
 
   // ---------- Configurador de Conforto Animal (tipo Configmax) ----------
   // Usa a tabela de preços de Conforto Animal da Ordemax (tabelas/): escolhe o tipo do galpão e a quantidade
@@ -12565,9 +13021,16 @@
   $('cz-barra-continuar').addEventListener('click', () => $('cc-continuar').click());
   $('cc-fechar').addEventListener('click', () => { $('modal-conforto').hidden = true; });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('modal-conforto').hidden && $('dialogo').hidden) $('modal-conforto').hidden = true; });
-  $('cc-continuar').addEventListener('click', () => {
+  // item da tabela no catálogo único (para a venda e o orçamento saberem a peça e a categoria)
+  function catDaTabela(k, i) {
+    if (!catCache) return null;
+    const d = normalizarBusca(i.descricao), c = String(i.codigo || '').trim().toLowerCase();
+    return catCache.itens.find(x => x.grupo === k && normalizarBusca(x.descricao) === d) || (c && catCache.itens.find(x => x.grupo === k && x.codigo.toLowerCase() === c)) || null;
+  }
+  $('cc-continuar').addEventListener('click', async () => {
     const sel = ccTabela.filter(i => ccQtd[i.id] > 0);
     if (!sel.length) { avisar('Escolha pelo menos um item.'); return; }
+    try { await carregarCatalogo(); } catch (e) {}
     const grupos = [];
     sel.forEach(i => {
       let g = grupos.find(x => x.nome === i.grupo);
@@ -12575,11 +13038,14 @@
       if (FORNECEDORES_CONFORTO[ccForn].precoFinal) g.precoFinal = true;
       const q = ccQtd[i.id];
       g.valor = arredOm(g.valor + i.preco * q);
-      g.itens.push({ codigo: i.codigo, descricao: i.descricao, qtd: String(q).replace('.', ','), un: i.unidade === 'm' ? 'M' : i.unidade === 'm2' ? 'M²' : 'UN' });
+      const cat = catDaTabela(ccForn, i);
+      g.itens.push({ codigo: i.codigo, descricao: i.descricao, qtd: String(q).replace('.', ','), un: i.unidade === 'm' ? 'M' : i.unidade === 'm2' ? 'M²' : 'UN',
+        preco: Number(i.preco) || 0, unidade: i.unidade || 'un', pecaId: cat ? cat.pecaId : null, catId: cat ? cat.id : null, categoria: cat ? cat.categoria : categoriaPorRegra(ccForn, i.descricao) });
     });
     const o = { tipo: 'conforto', titulo: 'Configuração de Conforto Animal ' + (ccTipo === 'compost' ? 'Compost Barn' : 'Free Stall'),
       fornecedor: FORNECEDORES_CONFORTO[ccForn].nome, origem: FORNECEDORES_CONFORTO[ccForn].origem,
-      cliente: '', endereco: '', pagamento: '', obs: ccRebanho.linha && ccForn !== 'kit' ? ccRebanho.linha + '.' : '', grupos, total: arredOm(grupos.reduce((s, g) => s + g.valor, 0)), validade: 0 };
+      cliente: '', endereco: '', pagamento: '', obs: ccRebanho.linha && ccForn !== 'kit' ? ccRebanho.linha + '.' : '', grupos, total: arredOm(grupos.reduce((s, g) => s + g.valor, 0)), validade: 0,
+      orcTipo: ccForn === 'kit' && ccPista.calculado ? 'pista' : ccRebanho.aplicado ? 'rebanho' : 'conforto' };
     $('modal-conforto').hidden = true;
     abrirOrdemax(o, ccFonte);
   });
@@ -13335,7 +13801,7 @@
   function mostrarPdfOS() {
     const { v, p } = osPdfAtual;
     $('op-titulo').textContent = osPdfAtual.titulo || 'PDF da ' + numOS(v.numero);
-    $('op-sub').textContent = (p.nome || '') + ' · ' + OS_STATUS[statusOS(v)];
+    $('op-sub').textContent = osPdfAtual.sub || (p.nome || '') + ' · ' + OS_STATUS[statusOS(v)];
     const compartilha = podeCompartilharPdf(), w = linkWhatsApp(p.telefone);
     $('op-dica').textContent = !w
       ? 'Cadastre o WhatsApp do produtor.' + (compartilha ? ' Enquanto isso, o botão verde abre o compartilhamento e você escolhe a conversa.' : '')
@@ -17010,7 +17476,7 @@
   const TITULO_TELA = {
     admin: 'Administração', setor: () => (SETOR[setorAberto] || {}).nome || 'Setor', preventivas: 'Plano preventivo', calctec: 'Calculadoras técnicas', estoque: 'Estoque', painel: 'Painel', ordens: 'Ordens de serviço',
     mais: 'Mais', encaminhamentos: 'Tarefas', calc: 'Calculadora de margem', historico: 'Histórico de cálculos', produtores: 'Produtores',
-    rota: 'Rota do dia', produtor: 'Produtor', vendas: 'Vendas', 'venda-form': 'Registrar venda', venda: 'Venda', leite: 'Média de leite',
+    rota: 'Rota do dia', produtor: 'Produtor', vendas: 'Vendas', 'venda-form': 'Registrar venda', venda: 'Venda', orcamento: 'Orçamento', leite: 'Média de leite',
     medias: 'Médias de leite', pmls: 'Mais Leite Saudável'
   };
   const ACAO_TELA = {
@@ -17791,6 +18257,17 @@
     // orçamentos gerados (contam no Painel da diretoria)
     [[-2, 'dp1', 18450.9, 'conforto'], [-9, 'dp3', 7320, 'ordemax'], [-17, 'dp5', 41516.04, 'conforto'], [-26, 'dp2', 3579.37, 'ordemax'], [-41, 'dp4', 12890.5, 'ordemax'], [-70, 'dp6', 5230, 'conforto']]
       .forEach(([dia, pid, total, tipo], i) => put('demo_orcamentos/dq' + (i + 1), { data: d(dia), produtor: prodDe[pid] ? prodDe[pid].nome : '', total, tipo, titulo: '', fornecedor: '', saida: 'pdf', por: eu, em: em(dia) }));
+    // orçamentos completos: um vencendo, um rascunho, um vencido e um perdido
+    const orcDemo = (id, numero, pid, dia, situacao, itens, extra) => {
+      const tot = totaisDosItens(itens);
+      put('demo_orcamentos/' + id, { numero, produtorId: pid, produtorNome: prodDe[pid].nome, produtor: prodDe[pid].nome, data: d(dia), validadeDias: 40, validoAte: addDaysISO(d(dia), 40), itens,
+        total: r2(tot.venda), custoTotal: r2(tot.custo), lucro: r2(tot.lucro), margem: Math.round(tot.margem * 10000) / 10000, observacao: '', situacao, tipo: 'manual', titulo: '', fornecedor: '',
+        vendedor: eu, criadoPor: eu, criadoEm: em(dia), por: eu, em: em(dia), vendaId: null, perdidoMotivo: '', ...(extra || {}) });
+    };
+    orcDemo('do1', 1, 'dp1', -37, 'enviado', [itemV('Ventilador de galpão 1,5 CV', 4, 2450, 17, { categoria: 'conforto' }), itemV('Quadro de comando', 1, 780, 17, { categoria: 'eletrica' })]);
+    orcDemo('do2', 2, 'dp2', -1, 'rascunho', [itemV('Jogo de teteiras de silicone', 4, 165, 17, { categoria: 'ordenha' })]);
+    orcDemo('do3', 3, 'dp3', -48, 'enviado', [itemV('Bebedouro 2 m', 3, 1320, 17, { categoria: 'conforto' })]);
+    orcDemo('do4', 4, 'dp4', -22, 'perdido', [itemV('Compressor do resfriador', 1, 3100, 17, { categoria: 'resfriador' })], { perdidoMotivo: 'Comprou de outro fornecedor' });
     // estoque do técnico (peças no carro): uma para repor e uma negativa
     if (eu) {
       let nm = 0;
@@ -18668,8 +19145,8 @@
       const pintarInst = () => {
         tg.querySelectorAll('button').forEach(b => { const on = (b.dataset.v === 'sim') === e.instalar; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
         dica.textContent = e.instalar
-          ? 'Ao salvar, o equipamento entra no cadastro do produtor como "Aguardando instalação" e abre uma OS de instalação para a Manutenção.'
-          : 'Ao salvar, o equipamento entra no cadastro do produtor como "Funcionando".';
+          ? (formModo === 'orcamento' ? 'Ao aprovar' : 'Ao salvar') + ', o equipamento entra no cadastro do produtor como "Aguardando instalação" e abre uma OS de instalação para a Manutenção.'
+          : (formModo === 'orcamento' ? 'Ao aprovar' : 'Ao salvar') + ', o equipamento entra no cadastro do produtor como "Funcionando".';
       };
       pintarInst();
       eqBox.appendChild(fi);

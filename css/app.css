@@ -1648,6 +1648,25 @@
   .cat-chips { gap: 6px; margin: -4px 0 10px; }
   .cat-chips .flt-chip { min-height: 36px; padding: 6px 12px; }
   #ct-info { margin: -4px 0 8px; }
+  /* orçamentos: abas, situação e ações */
+  .vendas-seg { margin-bottom: 14px; }
+  #btn-novo-orc { margin-bottom: 12px; }
+  #view-venda-form.modo-orc .so-venda { display: none !important; }
+  #view-venda-form:not(.modo-orc) .so-orc { display: none !important; }
+  .orc-filtros { margin: 0 0 12px; gap: 6px; }
+  .orc-filtros .flt-chip { min-height: 36px; padding: 6px 12px; }
+  .orc-aviso { display: block; width: 100%; min-height: 44px; margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--soon); border-radius: var(--raio-p); background: var(--soon-bg); color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 700; text-align: left; cursor: pointer; }
+  .orc-aviso[hidden] { display: none; }
+  .orc-sit { display: inline-block; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-soft); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .orc-sit.s-enviado { border-color: var(--info); background: var(--info-bg); color: var(--info-txt); }
+  .orc-sit.s-aprovado { border-color: var(--accent); background: var(--accent-suave); color: var(--accent-txt); }
+  .orc-sit.s-vencido { border-color: var(--soon); background: var(--soon-bg); color: var(--ink); }
+  .orc-sit.s-perdido { border-color: var(--os-cancelada); color: var(--ink); }
+  .oc-sit { margin: 0 0 10px; }
+  .oc-aviso { margin: 0 0 12px; }
+  .oc-acoes { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .oc-acoes > button { width: 100%; margin: 0; min-height: 48px; }
+  .oc-acoes > button[hidden] { display: none; }
   .flt-chips.ct-cats { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
   .ct-cats .flt-chip { flex: none; white-space: nowrap; }
   .ct-marca-campo { margin-bottom: 10px; }
@@ -3150,7 +3169,6 @@
   .om-aviso { margin: 0 0 12px; padding: 10px 12px; border-radius: var(--raio-p); background: var(--soon-bg); color: var(--soon); font-size: var(--fs-legenda); font-weight: 600; }
   .om-form .os-sec { margin: 0 0 var(--gap-bloco); padding: 12px var(--pad) 2px; border: 1px solid var(--line); border-radius: var(--raio); background: var(--surface); }
   .om-form .os-sec-tit { margin: 0 0 10px; font-size: var(--fs-legenda) !important; font-weight: 600 !important; color: var(--ink-soft) !important; }
-  .om-escolher { display: flex; margin: 0 0 12px; }
   .om-grupos { margin: 4px 0 12px; }
   .om-grupo { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; row-gap: 2px; align-items: center; padding: 10px 12px; }
   .om-g-nome { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
@@ -3323,7 +3341,8 @@
     .cz-continuar { display: block; }
     .cz-barra { display: none; }
   }
-  .om-form .om-acoes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .om-form .om-acoes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .om-form.om-salvo .om-so-calc { display: none !important; }
   .om-form .om-acoes button { padding-left: 4px; padding-right: 4px; }
   .om-form .modal-actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
     background: var(--bg); border-top: 1px solid var(--line); }
