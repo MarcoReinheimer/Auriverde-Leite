@@ -1651,6 +1651,16 @@
   /* orçamentos: abas, situação e ações */
   .vendas-seg { margin-bottom: 14px; }
   #btn-novo-orc { margin-bottom: 12px; }
+  #btn-calc-adicionar { margin-bottom: 10px; }
+  .vd-origem { display: inline-flex; align-items: center; min-height: 40px; margin: 0 0 10px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--accent-txt); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .vd-origem[hidden] { display: none; }
+  .vd-origem:disabled { color: var(--ink-soft); cursor: default; }
+  .vd-cancelada { margin: 0 0 12px; color: var(--soon); font-weight: 700; }
+  .venda-row.cancelada { opacity: 0.7; }
+  .venda-row.cancelada .vr-valor { text-decoration: line-through; }
+  .compra-de { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: var(--accent-txt); }
+  .compra-orc .compra-de { color: var(--soon); }
+  .pe-item:disabled { cursor: default; opacity: 0.6; }
   #view-venda-form.modo-orc .so-venda { display: none !important; }
   #view-venda-form:not(.modo-orc) .so-orc { display: none !important; }
   .orc-filtros { margin: 0 0 12px; gap: 6px; }

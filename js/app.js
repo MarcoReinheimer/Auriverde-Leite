@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.21.3';
+  const APP_VERSAO = '2026.11.21.4';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -412,9 +412,20 @@
   var produtoresTodos = [], vendasTodas = [], orcamentosTodos = [], verArquivados = false;
   function escoparVendas(l) {
     if (!podeVer('vendas')) return [];
-    let v = l.filter(naoArquivado);
+    let v = l.filter(x => naoArquivado(x) && !x.cancelada);
     if (acesso.soProprias && !ehAdmin()) v = v.filter(x => x.criadoPor && x.criadoPor === viewerId);
     return v;
+  }
+  // canceladas (a OS foi cancelada): aparecem na lista, riscadas, e não entram em nenhuma conta
+  function vendasCanceladas() {
+    if (!podeVer('vendas')) return [];
+    let v = vendasTodas.filter(x => x.cancelada && !x.arquivado);
+    if (acesso.soProprias && !ehAdmin()) v = v.filter(x => x.criadoPor === viewerId);
+    return v;
+  }
+  // de onde a venda veio (as antigas são manuais)
+  function rotuloOrigemVenda(v) {
+    return v.origem === 'os' ? numOS(v.osNumero) : v.origem === 'orcamento' ? 'Orçamento' + (Number(v.orcamentoNumero) > 0 ? ' nº ' + v.orcamentoNumero : '') : numVenda(v.numero);
   }
   function iniciarDados() {
     if (dadosIniciados) return;
@@ -437,7 +448,7 @@
   // Um documento só (config/geral) com ICMS, margem padrão, comissão e os limites do PMLS.
   // Todo mundo lê; só quem é Editor do app (no botão Compartilhar) consegue gravar —
   // a regra está no próprio banco, então não depende só da tela.
-  const CONFIG_PADRAO = { icmsDentro: 18, icmsFora: 12, margemPadrao: 17, comissaoPct: 5, comissaoBase: 'venda', limiteCCS: 500, limiteCPP: 300 };
+  const CONFIG_PADRAO = { icmsDentro: 18, icmsFora: 12, margemPadrao: 17, comissaoPct: 5, comissaoBase: 'venda', limiteCCS: 500, limiteCPP: 300, osViraVenda: true };
   let config = { ...CONFIG_PADRAO };
   let podeEditarConfig = null; // null = ainda não se sabe (o banco decide na hora de gravar)
   function aplicarConfig(docs) {
@@ -450,7 +461,7 @@
     if (antigo.comissaoBase) novo.comissaoBase = antigo.comissaoBase;
     Object.keys(CONFIG_PADRAO).forEach(k => {
       if (geral[k] == null || geral[k] === '') return;
-      novo[k] = k === 'comissaoBase' ? geral[k] : Number(geral[k]);
+      novo[k] = k === 'comissaoBase' ? geral[k] : k === 'osViraVenda' ? geral[k] !== false : Number(geral[k]);
     });
     novo.atualizadoPor = geral.atualizadoPor || null;
     novo.atualizadoEm = geral.atualizadoEm || null;
@@ -2635,7 +2646,7 @@
   let vendaAbertaId = null;
   let vdVoltarPara = 'vendas';
   let vendasRenderToken = 0;
-  var formModo = 'venda', orcEditandoId = null, vendaFormSalva = false;   // o formulário serve à venda e ao orçamento
+  var formModo = 'venda', orcEditandoId = null, vendaFormSalva = false, formOrigem = 'manual', formAberto = false;   // o formulário serve à venda e ao orçamento
   let perfisVendas = {};
 
   // ---- armazenamento ----
@@ -2788,7 +2799,10 @@
     });
   }
   function abrirFormVenda(venda, opcoes = {}) {
-    formModo = 'venda'; orcEditandoId = null; vendaFormSalva = false;
+    formModo = 'venda'; orcEditandoId = null; vendaFormSalva = false; formAberto = true;
+    formOrigem = opcoes.origem || 'manual';
+    $('venda-saiu-estoque').checked = !!(venda && venda.saiuEstoque);
+    $('venda-estoque-campo').hidden = !podeVer('visitas') || !!(venda && venda.origem === 'os');   // a OS já baixa as peças dela
     editandoVendaId = venda ? venda.id : null;
     vendaVoltarPara = opcoes.voltarPara || (venda ? 'venda' : 'vendas');
     $('venda-form-titulo').textContent = venda ? 'Editar venda' : 'Registrar venda';
@@ -3030,6 +3044,11 @@
       comissaoPct: pct, comissaoBase: formComissaoBase, comissaoValor: r2(calcComissao(tot, pct, formComissaoBase))
     };
 
+    const antesV = editandoVendaId ? (vendasTodas.find(x => x.id === editandoVendaId) || null) : null;
+    if (!antesV) registro.origem = formOrigem || 'manual';
+    const saiu = $('venda-estoque-campo').hidden ? !!(antesV && antesV.saiuEstoque) : $('venda-saiu-estoque').checked;
+    registro.saiuEstoque = saiu;
+    registro.estoqueTecnico = saiu ? ((antesV && antesV.estoqueTecnico) || viewerId || null) : null;
     const integ = await integAntesDeGravar(registro, editandoVendaId);
     let id = editandoVendaId;
     if (id) {
@@ -3041,6 +3060,8 @@
     }
     registrarAtividade(editandoVendaId ? 'editou' : 'criou', 'venda', id, (p ? p.nome : '') + ' · ' + fmt(registro.valorTotal));
     const criadas = integDepoisDeGravar(id, registro, integ);
+    estoqueAposGravarVenda(id, { ...(antesV || {}), ...registro });
+    formAberto = false;
     const voltar = vendaVoltarPara === 'venda' ? vdVoltarPara : vendaVoltarPara;
     editandoVendaId = null;
     abrirVendaDetalhe(id, voltar);
@@ -3052,7 +3073,7 @@
     if (temAlgo && !vendaFormSalva && !(await confirmar(formModo === 'orcamento' ? 'Sair sem salvar este orçamento?' : 'Sair sem salvar esta venda?', 'Sair sem salvar'))) return;
     const voltar = vendaVoltarPara;
     editandoVendaId = null;
-    formModo = 'venda'; orcEditandoId = null;
+    formModo = 'venda'; orcEditandoId = null; formAberto = false;
     irParaDestinoVendas(voltar);
   });
   function irParaDestinoVendas(destino) {
@@ -3071,7 +3092,9 @@
     showView('venda');
   }
   async function renderVendaDetalhe() {
-    const v = vendas.find(x => x.id === vendaAbertaId);
+    const v = vendas.find(x => x.id === vendaAbertaId) || vendasCanceladas().find(x => x.id === vendaAbertaId);
+    $('vd-origem').hidden = true;
+    $('vd-cancelada').hidden = true;
     if (!v) {
       $('vd-produtor').textContent = 'Venda não encontrada';
       $('vd-sub').textContent = 'Ela pode ter sido excluída em outro aparelho.';
@@ -3081,6 +3104,12 @@
     const p = produtores.find(x => x.id === v.produtorId);
     $('vd-produtor').textContent = nomeProdutorDaVenda(v);
     $('vd-sub').textContent = (Number(v.numero) > 0 ? numVenda(v.numero) + ' · ' : '') + fmtDate(v.data) + (localDoProdutor(p) ? ' · ' + localDoProdutor(p) : '');
+    const deOnde = v.origem === 'os' ? 'Veio da ' + numOS(v.osNumero) + ' ›' : v.origem === 'orcamento' ? 'Veio do ' + numOrc(v.orcamentoNumero) + ' ›' : v.origem === 'calculadora' ? 'Veio da Calculadora de lucro' : '';
+    $('vd-origem').textContent = deOnde;
+    $('vd-origem').hidden = !deOnde;
+    $('vd-origem').disabled = v.origem === 'calculadora';
+    $('vd-cancelada').textContent = v.cancelada ? 'Venda cancelada' + (v.canceladaMotivo ? ': ' + v.canceladaMotivo : '') + '. Não entra nos totais.' : '';
+    $('vd-cancelada').hidden = !v.cancelada;
 
     const box = $('vd-itens');
     box.innerHTML = '';
@@ -3120,8 +3149,8 @@
     const mexeComissao = nivel('comissoes') >= 3 || (nivel('comissoes') >= 2 && v.criadoPor === viewerId);
     $('vd-com-toggle').querySelectorAll('button').forEach(b => { b.disabled = !mexeComissao; });
     $('vd-com-data').disabled = !mexeComissao;
-    $('vd-editar').hidden = !podeEditarRegistro('vendas', v.criadoPor);
-    $('vd-excluir').hidden = !podeEditarRegistro('vendas', v.criadoPor);
+    $('vd-editar').hidden = !!v.cancelada || !podeEditarRegistro('vendas', v.criadoPor);
+    $('vd-excluir').hidden = !!v.cancelada || !podeEditarRegistro('vendas', v.criadoPor);
     $('vd-excluir').textContent = ehAdmin() ? 'Excluir esta venda' : 'Arquivar esta venda';
     if (document.activeElement !== $('vd-com-data')) $('vd-com-data').value = v.comissaoRecebidaEm || '';
 
@@ -3149,6 +3178,12 @@
     renderVendaDetalhe();
   });
   $('back-venda').addEventListener('click', () => irParaDestinoVendas(vdVoltarPara));
+  $('vd-origem').addEventListener('click', () => {
+    const v = vendasTodas.find(x => x.id === vendaAbertaId);
+    if (!v) return;
+    if (v.origem === 'orcamento' && v.orcamentoId) abrirOrcamento(v.orcamentoId, 'orcamentos');
+    else if (v.origem === 'os' && produtores.some(p => p.id === v.produtorId)) openProdutor(v.produtorId, { aba: 'visitas', voltar: 'venda' });
+  });
   $('vd-editar').addEventListener('click', () => {
     const v = vendas.find(x => x.id === vendaAbertaId);
     if (v) abrirFormVenda(v, { voltarPara: 'venda' });
@@ -3225,12 +3260,27 @@
       row.innerHTML = '<div class="vr-nome"></div><div class="vr-valor"></div><div class="vr-info"></div><div class="vr-com"></div>';
       row.querySelector('.vr-nome').textContent = nomeProdutorDaVenda(v);
       row.querySelector('.vr-valor').textContent = fmt(v.valorTotal);
-      row.querySelector('.vr-info').textContent = [fmtDate(v.data), PAGAMENTOS[v.pagamento] || '',
+      row.querySelector('.vr-info').textContent = [fmtDate(v.data), v.origem === 'os' || v.origem === 'orcamento' ? rotuloOrigemVenda(v) : '', PAGAMENTOS[v.pagamento] || '',
         v.criadoPor ? 'por ' + nomeVendedor(v.criadoPor) : ''].filter(Boolean).join(' · ');
       const com = row.querySelector('.vr-com');
       com.textContent = 'Comissão ' + fmt(v.comissaoValor) + (v.comissaoRecebida ? ' ✓' : '');
       com.dataset.perm = 'comissoes:1';
       com.classList.add(v.comissaoRecebida ? 'pago' : 'aberto');
+      const abrir = () => abrirVendaDetalhe(v.id, 'vendas');
+      row.addEventListener('click', abrir);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter') abrir(); });
+      box.appendChild(row);
+    });
+    const mesFiltro = $('vendas-mes').value, vendFiltro = $('vendas-vendedor').value;
+    vendasCanceladas().filter(v => (!mesFiltro || (v.data || '').startsWith(mesFiltro)) && (!vendFiltro || (vendFiltro === '__sem' ? !v.criadoPor : v.criadoPor === vendFiltro))).forEach(v => {
+      const row = document.createElement('div');
+      row.className = 'venda-row cancelada';
+      row.setAttribute('role', 'button');
+      row.tabIndex = 0;
+      row.innerHTML = '<div class="vr-nome"></div><div class="vr-valor"></div><div class="vr-info"></div>';
+      row.querySelector('.vr-nome').textContent = nomeProdutorDaVenda(v);
+      row.querySelector('.vr-valor').textContent = fmt(v.valorTotal);
+      row.querySelector('.vr-info').textContent = 'Cancelada · ' + fmtDate(v.data) + ' · ' + rotuloOrigemVenda(v);
       const abrir = () => abrirVendaDetalhe(v.id, 'vendas');
       row.addEventListener('click', abrir);
       row.addEventListener('keydown', e => { if (e.key === 'Enter') abrir(); });
@@ -3298,11 +3348,14 @@
     CFG_CAMPOS.forEach(([id, k]) => { $(id).value = numTxt(config[k]); });
     cfgBase = config.comissaoBase === 'lucro' ? 'lucro' : 'venda';
     pintarCfgBase();
+    cfgOsVenda = config.osViraVenda !== false;
+    pintarCfgOsVenda();
     // null = o app ainda não sabe: deixa tentar, e o banco recusa se não for Editor
     const pode = ehAdmin();
     $('cfg-aviso').hidden = pode;
     CFG_CAMPOS.forEach(([id]) => { $(id).disabled = !pode; });
     $('cfg-comissao-base').querySelectorAll('button').forEach(b => { b.disabled = !pode; });
+    $('cfg-os-venda').querySelectorAll('button').forEach(b => { b.disabled = !pode; });
     $('cfg-comissao-save').hidden = !pode;
     $('cfg-comissao-cancel').textContent = pode ? 'Cancelar' : 'Fechar';
     $('cfg-autor').textContent = '';
@@ -3322,6 +3375,9 @@
   document.querySelectorAll('.abrir-config').forEach(b => b.addEventListener('click', () => abrirConfig(b.dataset.foco)));
   $('btn-config-comissao').addEventListener('click', () => abrirConfig('cfg-comissao-pct'));
   $('cfg-comissao-base').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { cfgBase = b.dataset.base; pintarCfgBase(); }));
+  let cfgOsVenda = true;
+  function pintarCfgOsVenda() { $('cfg-os-venda').querySelectorAll('button').forEach(b => { const on = (b.dataset.v === 'sim') === cfgOsVenda; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
+  $('cfg-os-venda').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { cfgOsVenda = b.dataset.v === 'sim'; pintarCfgOsVenda(); }));
   $('cfg-comissao-cancel').addEventListener('click', () => { $('modal-comissao').hidden = true; });
   $('cfg-comissao-save').addEventListener('click', () => {
     const novo = {};
@@ -3333,6 +3389,7 @@
       novo[k] = n;
     }
     novo.comissaoBase = cfgBase;
+    novo.osViraVenda = cfgOsVenda;
     novo.atualizadoPor = viewerId || null;
     novo.atualizadoEm = Date.now();
     gravar('set', 'config/geral', novo);
@@ -3345,23 +3402,30 @@
   function renderProdutorCompras() {
     const pid = currentProdutorId;
     if (!pid) return;
-    const compras = vendas.filter(v => v.produtorId === pid).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-    const total = compras.reduce((s, v) => s + (Number(v.valorTotal) || 0), 0);
-    $('produtor-compras-resumo').textContent = compras.length
-      ? compras.length + (compras.length === 1 ? ' compra' : ' compras') + ' · total ' + fmt(total)
+    const compras = vendas.filter(v => v.produtorId === pid);
+    const ano = todayISO().slice(0, 4);
+    const totalAno = compras.filter(v => (v.data || '').startsWith(ano)).reduce((s, v) => s + (Number(v.valorTotal) || 0), 0);
+    const abertos = orcVisiveis().filter(o => o.produtorId === pid && ORC_ABERTOS.includes(situacaoOrc(o)));
+    $('produtor-compras-resumo').textContent = compras.length || abertos.length
+      ? 'Comprou ' + fmt(totalAno) + ' em ' + ano + ' · ' + (compras.length === 1 ? '1 compra' : compras.length + ' compras') + (abertos.length ? ' · ' + (abertos.length === 1 ? '1 orçamento em aberto' : abertos.length + ' orçamentos em aberto') : '')
       : 'Nenhuma compra registrada ainda.';
+    const linhas = compras.map(v => ({ data: v.data || '', valor: Number(v.valorTotal) || 0, de: rotuloOrigemVenda(v), itens: resumoItens(v.itens), abrir: () => abrirVendaDetalhe(v.id, 'produtor') }))
+      .concat(abertos.map(o => ({ data: o.data || '', valor: Number(o.total) || 0, de: numOrc(o.numero) + ' · ' + ORC_SIT[situacaoOrc(o)], itens: resumoItens(o.itens), orc: true, abrir: () => abrirOrcamento(o.id, 'produtor') })))
+      .sort((a, b) => b.data.localeCompare(a.data));
     const box = $('produtor-compras-lista');
     box.innerHTML = '';
-    compras.forEach(v => {
+    linhas.forEach(l => {
       const row = document.createElement('div');
-      row.className = 'compra-row';
+      row.className = 'compra-row' + (l.orc ? ' compra-orc' : '');
       row.setAttribute('role', 'button');
       row.tabIndex = 0;
-      row.innerHTML = '<span class="compra-data"></span><span class="compra-valor"></span><span class="compra-itens"></span>';
-      row.querySelector('.compra-data').textContent = fmtDate(v.data);
-      row.querySelector('.compra-valor').textContent = fmt(v.valorTotal);
-      row.querySelector('.compra-itens').textContent = resumoItens(v.itens);
-      row.addEventListener('click', () => abrirVendaDetalhe(v.id, 'produtor'));
+      row.innerHTML = '<span class="compra-data"></span><span class="compra-valor"></span><span class="compra-de"></span><span class="compra-itens"></span>';
+      row.querySelector('.compra-data').textContent = fmtDate(l.data);
+      row.querySelector('.compra-valor').textContent = fmt(l.valor);
+      row.querySelector('.compra-de').textContent = l.de;
+      row.querySelector('.compra-itens').textContent = l.itens;
+      row.addEventListener('click', l.abrir);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter') l.abrir(); });
       box.appendChild(row);
     });
   }
@@ -3388,7 +3452,7 @@
       const prod = v => produtores.find(x => x.id === v.produtorId) || {};
       const vendedor = v => v.criadoPor ? nomeVendedor(v.criadoPor) : '';
       const linhasVendas = lista.map(v => ({
-        numero: Number(v.numero) > 0 ? Number(v.numero) : null, data: v.data, produtor: nomeProdutorDaVenda(v), linha: prod(v).linha || '', cidade: prod(v).cidade || '',
+        numero: Number(v.numero) > 0 ? Number(v.numero) : null, deOnde: rotuloOrigemVenda(v), data: v.data, produtor: nomeProdutorDaVenda(v), linha: prod(v).linha || '', cidade: prod(v).cidade || '',
         itens: (v.itens || []).length, custo: r2(v.custoTotal), venda: r2(v.valorTotal), lucro: r2(v.lucro),
         margem: Number(v.margem) || 0, pagamento: PAGAMENTOS[v.pagamento] || '',
         comissao: r2(v.comissaoValor), recebida: v.comissaoRecebida ? 'Sim' : 'Não',
@@ -3422,6 +3486,7 @@
           nome: 'Vendas', total: true, linhas: linhasVendas,
           colunas: [
             { titulo: 'Venda nº', key: 'numero', fmt: '0' },
+            { titulo: 'Veio de', key: 'deOnde', max: 20 },
             { titulo: 'Data', key: 'data', fmt: XLSX_DATA },
             { titulo: 'Produtor', key: 'produtor', max: 30 },
             { titulo: 'Linha', key: 'linha', max: 25 },
@@ -5702,7 +5767,7 @@
 
   // ---- nomes que levam à ficha em Vendas e na Média de leite ----
   $('vd-produtor').addEventListener('click', () => {
-    const v = vendas.find(x => x.id === vendaAbertaId);
+    const v = vendasTodas.find(x => x.id === vendaAbertaId);
     if (v && podeVer('produtores') && produtores.some(p => p.id === v.produtorId)) openProdutor(v.produtorId, { aba: 'compras', voltar: 'venda' });
   });
   $('venda-ver-ficha').addEventListener('click', () => { if (vendaProdutorId) openProdutor(vendaProdutorId, { aba: 'compras', voltar: 'venda-form' }); });
@@ -6196,6 +6261,7 @@
   function ehAdmin() { return !!acesso.admin; }
   // custo, margem e lucro: só o Administrador e quem tem a permissão "custos"
   function veCustos() { return ehAdmin() || nivel('custos') >= 1; }
+  function semCustosOS(v) { return veCustos() || !v.pecas ? v : { ...v, pecas: v.pecas.map(({ custoUnit, margem, aliquota, ...x }) => x) }; }
   function permDoUsuario(u) {
     const base = (PAPEIS[u.papel] || PAPEIS.consulta).perm;
     const out = {};
@@ -6523,7 +6589,7 @@
     // c) configurações gerais
     $('adm-config-resumo').textContent =
       'ICMS dentro de SC ' + numTxt(config.icmsDentro) + '% · fora ' + numTxt(config.icmsFora) + '% · margem padrão ' + numTxt(config.margemPadrao) +
-      '% · comissão ' + numTxt(config.comissaoPct) + '% ' + textoBase(config.comissaoBase) + ' · limites CCS ' + numTxt(config.limiteCCS) + ' e CPP ' + numTxt(config.limiteCPP);
+      '% · comissão ' + numTxt(config.comissaoPct) + '% ' + textoBase(config.comissaoBase) + ' · limites CCS ' + numTxt(config.limiteCCS) + ' e CPP ' + numTxt(config.limiteCPP) + ' · OS concluída vira venda: ' + (config.osViraVenda !== false ? 'ligada' : 'desligada');
     renderModulosAdmin();
     renderPecasAdmin();
     renderPrevAdmin();
@@ -8594,7 +8660,7 @@
         abas.push(abaDe('Sanidade', sa.map(s => achatar(s)), ['data', 'tipo', 'nome', 'resultado', 'proxima']));
         abas.push(abaDe('Reprodução', rp.map(r => achatar(r)), ['animal', 'dataIA', 'touro', 'diagnostico', 'secagemPrevista', 'partoPrevisto', 'partoReal']));
       }
-      if (podeVer('visitas')) abas.push(abaDe('Visitas', vis.map(v => { const { fotos, ...r } = v; return achatar({ ...r, fotos: (fotos || []).length }); }), ['data', 'categoria', 'descricao']));
+      if (podeVer('visitas')) abas.push(abaDe('Visitas', vis.map(v => { const { fotos, ...r } = semCustosOS(v); return achatar({ ...r, fotos: (fotos || []).length }); }), ['data', 'categoria', 'descricao']));
       if (podeVer('visitas')) abasManutProdutor(abas, p, vis);
       if (podeVer('leite')) abas.push(abaDe('Médias de leite', med.map(m => achatar(m)), ['dataInicial', 'dataFinal', 'mediaDia']));
       if (podeVer('pmls')) {
@@ -8615,7 +8681,7 @@
         abas.push(abaDe('Histórico de dietas', die.map(d => { const { ingredientes, ...r } = d; return achatar({ ...r, ingredientes: (ingredientes || []).map(i => i.nome + ' ' + i.kg + ' kg').join('; ') }); }), ['data', 'loteNome', 'custoVacaDia', 'custoLitro']));
         abas.push(abaDe('Nutrição', nut.map(n => achatar(n)), ['data', 'tipo', 'escore', 'fezes', 'sobras', 'silagem', 'pastagem', 'avaliacao', 'recomendacao', 'proxima']));
       }
-      if (podeVer('vendas')) abas.push(abaDe('Compras', vendas.filter(v => v.produtorId === pid).map(v => { const { itens, ...r } = v; return achatar({ ...r, itens: (itens || []).map(i => fmtQtd(i.quantidade) + 'x ' + i.produto).join('; ') }); }), ['data', 'valorTotal', 'itens']));
+      if (podeVer('vendas')) abas.push(abaDe('Compras', vendas.filter(v => v.produtorId === pid).map(v => { const { itens, ...r } = v; if (!veCustos()) { delete r.custoTotal; delete r.lucro; delete r.margem; } return achatar({ ...r, itens: (itens || []).map(i => fmtQtd(i.quantidade) + 'x ' + i.produto).join('; ') }); }), ['data', 'valorTotal', 'itens']));
       abas.push(abaDe('Encaminhamentos', encaminhamentos.filter(e => e.produtorId === pid).map(e => { const { historico, origem, ...r } = e; return achatar({ ...r, setor: (SETOR[e.setor] || {}).nome || e.setor, origem: origem ? origem.resumo || '' : '' }); }), ['setor', 'status', 'prioridade', 'prazo', 'motivo']));
       const bytes = await gerarXlsx(ExcelJS, abas);
       await baixarArquivo('ordenha360-produtor-' + slug(p.nome) + '-' + todayISO() + '.xlsx', new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'o Excel');
@@ -9278,6 +9344,7 @@
     gravar('set', 'ordens/' + id, indiceDaOS(pid, id, completo));
     integAposGravarOS(pid, id, completo, mudancas);
     estoqueAposGravarOS(pid, id, completo);
+    vendaAposGravarOS(pid, id, completo, mudancas);
     return r;
   }
 
@@ -10146,10 +10213,10 @@
     const planos = ativos.map(p => ({ p, plano: planoDoProdutor(p, porPid[p.id] || []) }));
     const comReg = planos.filter(x => x.plano.itens.some(i => i.ultima));
     const emDia = comReg.filter(x => !x.plano.vencidas).length;
-    const vend = vendasTodas.filter(v => naoArquivado(v) && dentro(v.data) && (!tec || v.criadoPor === tec));
+    const vend = vendasTodas.filter(v => naoArquivado(v) && !v.cancelada && dentro(v.data) && (!tec || v.criadoPor === tec));
     const faturamento = r2(vend.reduce((s, v) => s + (Number(v.valorTotal) || 0), 0));
     const comissao = r2(vend.reduce((s, v) => s + (Number(v.comissaoValor) || 0), 0));
-    const orcs = pnOrc.filter(o => !o.arquivado && dentro(o.data) && (!tec || o.por === tec));
+    const orcs = pnOrc.filter(o => !o.arquivado && situacaoOrc(o) !== 'rascunho' && dentro(o.data) && (!tec || orcAutor(o) === tec));
     // gráficos
     const mesAt = hoje.slice(0, 7);
     const porMes = [];
@@ -10603,7 +10670,7 @@
   //   itemId. O saldo é a soma dos movimentos: duas pessoas lançando ao mesmo tempo não perdem nada.
   // Na OS fica guardado o que já foi baixado (estoqueBaixa): editar ou reabrir lança só a diferença.
   // =====================================================================
-  const ES_TIPOS = { entrada: 'Recebi da filial', saida: 'Devolvi sobra', ajuste: 'Ajuste da contagem', os: 'OS' };
+  const ES_TIPOS = { entrada: 'Recebi da filial', saida: 'Devolvi sobra', ajuste: 'Ajuste da contagem', os: 'OS', venda: 'Venda' };
   var esTec = null, esItens = [], esMovs = [], esUnsub = [], esVoltar = 'setor', esItemAberto = null, esMovModo = null, esMovItem = null;
   const esIdPeca = pecaId => 'p_' + pecaId;
   const esIdDoCat = x => x.pecaId ? esIdPeca(x.pecaId) : 'c_' + x.id;   // peça de tabela (sem cadastro no banco): pelo id do catálogo
@@ -10648,7 +10715,7 @@
     return gravar('set', 'estoque/' + tec + '/movs/' + novoId(), {
       itemId: it.id, pecaId: it.pecaId || null, catId: it.catId || null, descricao: it.descricao || '', codigo: it.codigo || '', unidade: it.unidade || 'un',
       delta: r3(delta), tipo, data: extra.data || todayISO(), obs: extra.obs || '', motivo: extra.motivo || '',
-      osId: extra.osId || null, osNum: extra.osNum || null, produtor: extra.produtor || '', por: viewerId || null, em: Date.now()
+      osId: extra.osId || null, osNum: extra.osNum || null, vendaId: extra.vendaId || null, produtor: extra.produtor || '', por: viewerId || null, em: Date.now()
     });
   }
   // grava o item na primeira vez (set) ou só os campos que mudaram (update)
@@ -11301,6 +11368,7 @@
         tipo: 'os', alvoId: v.id, alvoNome: ((prod && prod.nome) || '') + ' · ' + numOS(v.numero), aoExcluir: () => deleteVisita(pid, v.id)
       });
       if (r === 'arquivado') gravar('update', 'ordens/' + v.id, { arquivado: true });
+      if (r) vendaAoApagarOS(v.id, v);
     });
     onKey(card.querySelector('.record-enc'), () => abrirNovoEncaminhamento({
       produtorId: currentProdutorId,
@@ -12224,12 +12292,12 @@
     else {
       id = novoId();
       const agora = Date.now();
-      gravar('set', 'orcamentos/' + id, { ...campos, numero: proximoNumeroOrc(), situacao: 'rascunho', tipo: 'manual', titulo: '', fornecedor: '', vendedor: viewerId || null,
+      gravar('set', 'orcamentos/' + id, { ...campos, numero: proximoNumeroOrc(), situacao: 'rascunho', tipo: formOrigem === 'calculadora' ? 'calculadora' : 'manual', titulo: '', fornecedor: '', vendedor: viewerId || null,
         criadoPor: viewerId || null, criadoEm: agora, por: viewerId || null, em: agora, vendaId: null, perdidoMotivo: '' });
     }
     registrarAtividade(editou ? 'editou' : 'criou', 'orcamento', id, (p ? p.nome : '') + ' · ' + fmt(campos.total));
     const voltar = vendaVoltarPara === 'produtor' ? 'produtor' : 'orcamentos';
-    formModo = 'venda'; orcEditandoId = null;
+    formModo = 'venda'; orcEditandoId = null; formAberto = false;
     pintarModoForm();
     abrirOrcamento(id, editou ? orcVoltar : voltar);
   }
@@ -13380,7 +13448,8 @@
 
   // Calculadora de lucro: o item escolhido preenche produto, custo, marca e origem
   $('calc-catalogo').addEventListener('click', () => abrirCatalogo({ onde: 'calc', aoEscolher: c => {
-    if (c.avulsa) { if (c.texto) { produtoEl.value = c.texto; saveCalcState(); } return; }
+    if (c.avulsa) { calcCat = null; if (c.texto) { produtoEl.value = c.texto; saveCalcState(); } return; }
+    calcCat = c;
     produtoEl.value = nomeItemCatalogo(c);
     if (!veCustos()) {
       // sem a permissão de custos: leva o nome e a origem e mostra só o preço de venda
@@ -13405,6 +13474,86 @@
     else if (c.marca && nivel('calc') >= 2) addBrand(c.marca, c.origem);   // a mesma função do "+" das marcas
     else { selectedBrandId = null; renderBrands(); setOrigem(c.origem); }
   } }));
+  // ---------- Calculadora: "Adicionar a…" leva o item calculado para um orçamento ou uma venda ----------
+  var calcProdutorId = null, calcCat = null, calcItemAdd = null;
+  montarPickerProdutor({ inputId: 'calc-produtor-busca', listaId: 'calc-produtor-lista', get: () => calcProdutorId, set: id => { calcProdutorId = id; } });
+  produtoEl.addEventListener('input', () => { if (calcCat && produtoEl.value.trim() !== nomeItemCatalogo(calcCat)) calcCat = null; });
+  function itemDaCalculadora() {
+    const produto = produtoEl.value.trim();
+    if (!produto) { avisar('Escreva o produto (ou escolha no catálogo) antes de adicionar.'); return null; }
+    const custo = r2(parseMoney(custoEl.value)), m = margemDoCalculo();
+    if (calcCat && !custo) {
+      if (calcCat.semPreco) { avisar('Este item está com o preço a definir. Abra a venda ou o orçamento e escolha ele no catálogo.'); return null; }
+      return itemDoCatalogo(calcCat, m);
+    }
+    if (!(custo > 0)) { avisar('Informe o custo antes de adicionar.'); return null; }
+    const marca = brands.find(b => b.id === selectedBrandId);
+    return { pecaId: calcCat ? calcCat.pecaId : null, catId: calcCat ? calcCat.id : null, codigo: calcCat ? calcCat.codigo : '', categoria: calcCat ? calcCat.categoria : categoriaPorPalavra(produto),
+      produto, unidade: calcCat ? calcCat.unidade : 'un', marcaId: marca ? marca.id : '', marcaNome: marca ? marca.name : '', origem, aliquota: aliquotaDaOrigem(origem),
+      quantidade: 1, custoUnit: custo, margem: m, precoUnit: precoVendaDoItem({ custo, origem }, m), precoManual: false, tipoItem: 'produto' };
+  }
+  function opcaoCalc(box, titulo, sub, acao) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pe-item';
+    b.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod"></span></span>';
+    b.querySelector('.pe-item-desc').textContent = titulo;
+    b.querySelector('.pe-item-cod').textContent = sub;
+    if (acao) b.addEventListener('click', acao); else b.disabled = true;
+    box.appendChild(b);
+  }
+  function orcamentosParaAdicionar() {
+    return orcVisiveis().filter(o => ORC_ABERTOS.includes(situacaoOrc(o)) && podeEditarRegistro('vendas', orcAutor(o)))
+      .sort((a, b) => (b.produtorId === calcProdutorId) - (a.produtorId === calcProdutorId));
+  }
+  function renderCalcAdd(modo) {
+    const box = $('ca-ops'), it = calcItemAdd;
+    box.innerHTML = '';
+    $('ca-sub').textContent = it.produto + ' · ' + fmt(it.precoUnit);
+    $('ca-voltar').hidden = modo !== 'orcamentos';
+    if (modo === 'orcamentos') {
+      const l = orcamentosParaAdicionar();
+      l.forEach(o => opcaoCalc(box, nomeDoOrc(o), [numOrc(o.numero), ORC_SIT[situacaoOrc(o)], fmt(Number(o.total) || 0)].join(' · '), () => adicionarAoOrcamento(o)));
+      if (!l.length) { const v = document.createElement('div'); v.className = 'picker-vazio'; v.textContent = 'Nenhum orçamento em aberto.'; box.appendChild(v); }
+      return;
+    }
+    const n = orcamentosParaAdicionar().length;
+    const fechar = () => { $('modal-calc-add').hidden = true; };
+    opcaoCalc(box, 'Novo orçamento', 'Começa um orçamento com este item', () => { fechar(); abrirFormOrcamento(null, { itens: [it], produtorId: calcProdutorId, voltarPara: 'orcamentos', origem: 'calculadora' }); });
+    opcaoCalc(box, 'Orçamento em aberto', n ? 'Escolher entre ' + plural(n, 'orçamento', 'orçamentos') : 'Nenhum orçamento em aberto', n ? () => renderCalcAdd('orcamentos') : null);
+    opcaoCalc(box, 'Nova venda', 'Começa uma venda com este item', () => { fechar(); abrirFormVenda(null, { itens: [it], produtorId: calcProdutorId, voltarPara: 'vendas', origem: 'calculadora' }); });
+    const emEdicao = formModo === 'orcamento' ? 'Orçamento em edição' : 'Venda em edição';
+    opcaoCalc(box, emEdicao, formAberto ? 'Volta para o formulário que você deixou aberto' : 'Nenhuma venda aberta agora', formAberto ? () => { fechar(); adicionarAoFormulario(it); } : null);
+  }
+  function adicionarAoOrcamento(o) {
+    const itens = (o.itens || []).concat(itensParaGravar([calcItemAdd]));
+    gravar('update', 'orcamentos/' + o.id, { itens, ...camposTotaisOrc(itens), atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+    registrarAtividade('editou', 'orcamento', o.id, nomeDoOrc(o), 'item da Calculadora');
+    $('modal-calc-add').hidden = true;
+    avisoRapido('Item adicionado ao orçamento.');
+    abrirOrcamento(o.id, 'orcamentos');
+  }
+  function adicionarAoFormulario(it) {
+    const vazio = formItens.length === 1 && !(formItens[0].produto || '').trim() && !(formItens[0].custoUnit > 0) && !(formItens[0].precoUnit > 0);
+    if (vazio) formItens = [{ ...novoItem(), ...it }]; else formItens.push({ ...novoItem(), ...it });
+    if (!vendaProdutorId && calcProdutorId) {
+      vendaProdutorId = calcProdutorId;
+      const p = produtores.find(x => x.id === calcProdutorId);
+      $('venda-produtor-busca').value = p ? p.nome : '';
+      $('venda-ver-ficha').hidden = false;
+    }
+    renderItensVenda();
+    showView('venda-form');
+  }
+  $('btn-calc-adicionar').addEventListener('click', () => {
+    const it = itemDaCalculadora();
+    if (!it) return;
+    calcItemAdd = it;
+    renderCalcAdd('menu');
+    $('modal-calc-add').hidden = false;
+  });
+  $('ca-voltar').addEventListener('click', () => renderCalcAdd('menu'));
+  $('ca-fechar').addEventListener('click', () => { $('modal-calc-add').hidden = true; });
   $('ficha-chamado').addEventListener('click', () => abrirChamado({ produtorId: currentProdutorId }));
   $('os-nova').addEventListener('click', () => novaOSEscolhendoProdutor('ordens'));
   $('os-chamado').addEventListener('click', () => abrirChamado({}));
@@ -19203,7 +19352,7 @@
   // campos a mais que cada item leva para o banco
   function integCamposItem(i) {
     if (!ehItemEquip(i)) {
-      const o = { tipoItem: 'produto' };
+      const o = { tipoItem: i.tipoItem === 'servico' ? 'servico' : 'produto' };
       if (i.trocaPerguntada) o.trocaPerguntada = true;
       if (Array.isArray(i.trocaComps) && i.trocaComps.length) o.trocaComps = i.trocaComps.slice();
       return o;
@@ -19392,6 +19541,8 @@
   }
   function integArquivarOS(pid, osId) {
     const agora = Date.now();
+    const osI = ordensIndice.find(x => x.id === osId);
+    if (osI) vendaAoApagarOS(osId, osI);
     gravar('update', 'produtores/' + pid + '/visitas/' + osId, { arquivado: true, arquivadoPor: viewerId || null, arquivadoEm: agora });
     gravar('update', 'ordens/' + osId, { arquivado: true });
   }
@@ -19508,6 +19659,13 @@
 
   // ---------- venda arquivada/excluída: e o equipamento? ----------
   async function integAoRemoverVenda(v) {
+    if (v.estoqueBaixa) estoqueAposGravarVenda(v.id, v, true);
+    if (v.orcamentoId) gravar('update', 'orcamentos/' + v.orcamentoId, { situacao: 'enviado', vendaId: null, atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+    if (v.osId) {
+      // quem tirou a venda decidiu: editar a OS depois não cria outra
+      const o = ordensIndice.find(x => x.id === v.osId);
+      if (o) { gravar('update', 'produtores/' + o.produtorId + '/visitas/' + o.id, { vendaId: null, vendaRemovida: true }); gravar('update', 'ordens/' + o.id, { vendaId: null, vendaRemovida: true }); }
+    }
     const itens = (v.itens || []).filter(i => ehItemEquip(i) && i.equipamentoId);
     if (!itens.length) return;
     const ok = await abrirDialogo('Arquivar também ' + itens.map(nomeDoItemEquip).join(', ') + ' no cadastro do produtor e a OS de instalação que ainda estiver aberta?', { ok: 'Arquivar também', cancelar: 'Manter' });
@@ -19529,6 +19687,108 @@
       if (g) Object.assign(mud, g);
       gravar('update', 'produtores/' + pid + '/equipamentos/' + eid, mud);
     }).catch(() => {});
+  }
+
+  // ---------- OS concluída vira venda (origem 'os') ----------
+  // O id da venda é fixo (os_<id da OS>): sem internet, em dois aparelhos, continua sendo uma venda só.
+  // Só nasce quando a OS passa para concluída; OS antiga editada não cria venda. Editar a OS atualiza a mesma venda;
+  // cancelar ou apagar a OS marca a venda como cancelada (ela sai dos totais).
+  const idVendaDaOS = (id, os) => (os && os.vendaId) || 'os_' + id;
+  function itensVendaDaOS(os) {
+    const itens = [];
+    (os.pecas || []).forEach(p => {
+      const valor = r2(p.valor), q = Number(p.qtd) || 0;
+      if (!(valor > 0)) return;
+      const desc = String(p.descricao || 'Peça').trim(), nome = desc + (p.codigo ? ' (' + p.codigo + ')' : '');
+      // valor digitado à mão que não fecha com qtd × preço: vai numa linha só, para o total bater com a OS
+      const fecha = q > 0 && Math.abs(r2(q * r2(p.precoUnit)) - valor) < 0.005;
+      const origem = p.origem === 'fora' ? 'fora' : 'dentro';
+      itens.push({ pecaId: p.pecaId || null, catId: p.catId || null, codigo: p.codigo || '', categoria: p.categoria || categoriaPorPalavra(desc),
+        produto: fecha ? nome : nome + ' (' + fmtQtd(q) + ' ' + (p.unidade || 'un') + ')', unidade: p.unidade || 'un', marcaId: p.marcaId || '', marcaNome: p.marcaNome || '',
+        origem, aliquota: aliquotaDaOrigem(origem), quantidade: fecha ? q : 1, custoUnit: r2((Number(p.custoUnit) || 0) * (fecha ? 1 : q)), margem: Number(p.margem) || 0,
+        precoUnit: fecha ? r2(p.precoUnit) : valor, precoManual: !!p.precoManual || !fecha, tipoItem: 'produto', trocaPerguntada: true });
+    });
+    const mo = r2(os.maoDeObra);
+    if (mo > 0) itens.push({ pecaId: null, catId: null, codigo: '', categoria: 'outros', produto: 'Mão de obra', unidade: 'un', marcaId: '', marcaNome: '', origem: 'dentro',
+      aliquota: aliquotaDaOrigem('dentro'), quantidade: 1, custoUnit: 0, margem: 0, precoUnit: mo, precoManual: true, tipoItem: 'servico' });
+    return itens;
+  }
+  function cancelarVendaDaOS(vid, os, motivo) {
+    gravar('update', 'vendas/' + vid, { cancelada: true, canceladaEm: todayISO(), canceladaMotivo: motivo || numOS(os.numero) + ' cancelada', atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+  }
+  function vendaAoApagarOS(id, os) {
+    const vid = idVendaDaOS(id, os), a = vendasTodas.find(x => x.id === vid);
+    if (a && !a.cancelada && !a.arquivado) cancelarVendaDaOS(vid, os, numOS(os.numero) + ' apagada');
+  }
+  function vendaAposGravarOS(pid, id, os, mudancas) {
+    try {
+      if (!os || os.vendaRemovida) return;
+      const vid = idVendaDaOS(id, os), atual = vendasTodas.find(v => v.id === vid) || null;
+      if (atual && atual.arquivado) return;
+      const st = statusOS(os);
+      if (os.arquivado || st === 'cancelada') { if (atual && !atual.cancelada) cancelarVendaDaOS(vid, os); return; }
+      const concluiuAgora = st === 'concluida' && !!(mudancas || os).concluidaEm;
+      if (!atual && !(concluiuAgora && config.osViraVenda !== false)) return;
+      if (atual && atual.cancelada && st !== 'concluida') return;
+      const itens = itensVendaDaOS(os);
+      if (!itens.length) { if (atual && !atual.cancelada) cancelarVendaDaOS(vid, os, numOS(os.numero) + ' sem valor cobrado'); return; }
+      const tot = totaisDosItens(itens);
+      const data = os.data || todayISO();
+      const chave = JSON.stringify([data, itens.map(i => [i.produto, i.quantidade, i.precoUnit, i.custoUnit])]);
+      const contas = { itens, custoTotal: r2(tot.custo), valorTotal: r2(tot.venda), lucro: r2(tot.lucro), margem: Math.round(tot.margem * 10000) / 10000, osChave: chave, osNumero: os.numero || null, data };
+      if (atual) {
+        const mud = {};
+        // a venda só muda quando a OS mudou: pagamento e comissão conferidos na venda ficam como estão
+        if (atual.osChave !== chave) Object.assign(mud, contas, { comissaoValor: r2(calcComissao(tot, atual.comissaoPct, atual.comissaoBase)) });
+        if (atual.cancelada) Object.assign(mud, { cancelada: false, canceladaEm: null, canceladaMotivo: '' });
+        if (Object.keys(mud).length) gravar('update', 'vendas/' + vid, { ...mud, atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
+      } else {
+        const pct = Number(config.comissaoPct) || 0, base = config.comissaoBase;
+        const nome = nomeProdutorPid(pid);
+        gravar('set', 'vendas/' + vid, { ...contas, numero: proximoNumeroVenda(), produtorId: pid, produtorNome: nome, pagamento: 'avista', observacao: '',
+          comissaoPct: pct, comissaoBase: base, comissaoValor: r2(calcComissao(tot, pct, base)), origem: 'os', osId: id,
+          criadoPor: os.tecnicoId || viewerId || null, criadoEm: Date.now(), comissaoRecebida: false, comissaoRecebidaEm: null });
+        registrarAtividade('criou', 'venda', vid, nome + ' · ' + fmt(r2(tot.venda)), 'da ' + numOS(os.numero));
+      }
+      if (os.vendaId !== vid) {
+        gravar('update', 'produtores/' + pid + '/visitas/' + id, { vendaId: vid });
+        gravar('update', 'ordens/' + id, { vendaId: vid });
+      }
+    } catch (e) { extraErro(e); }
+  }
+  // ---------- "Saiu do meu estoque": baixa as peças da venda, com a mesma proteção contra baixa dupla da OS ----------
+  function estoqueBaixaDaVenda(v) {
+    if (!v || v.arquivado || v.cancelada || !v.saiuEstoque || v.origem === 'os' || !v.estoqueTecnico) return null;
+    const itens = {};
+    (v.itens || []).forEach(i => {
+      if (ehItemEquip(i) || i.tipoItem === 'servico') return;
+      const q = Number(i.quantidade) || 0, k = i.pecaId || (i.catId ? 'c_' + i.catId : '');
+      if (k && q > 0) itens[k] = r3((itens[k] || 0) + q);
+    });
+    return Object.keys(itens).length ? { tecnicoId: v.estoqueTecnico, itens } : null;
+  }
+  function estoqueAposGravarVenda(id, v, apagando) {
+    try {
+      const novo = apagando ? null : estoqueBaixaDaVenda(v), feito = (v && v.estoqueBaixa) || null;
+      const chave = b => b ? b.tecnicoId + '|' + Object.keys(b.itens).sort().map(k => k + ':' + b.itens[k]).join(',') : '';
+      if (chave(novo) === chave(feito)) return;
+      const dif = {};
+      const somar = (b, sinal) => { if (b) Object.entries(b.itens).forEach(([pc, q]) => { const k = b.tecnicoId + '|' + pc; dif[k] = r3((dif[k] || 0) + sinal * q); }); };
+      somar(feito, 1); somar(novo, -1);
+      const num = numVenda(v.numero);
+      Object.entries(dif).forEach(([k, d]) => {
+        if (!d) return;
+        const [tec, ch] = k.split('|');
+        const catId = ch.startsWith('c_') ? ch.slice(2) : null, pecaId = catId ? null : ch;
+        const pc = (pecaId && pecasCatalogo.find(p => p.id === pecaId)) || null;
+        const it = (v.itens || []).find(i => catId ? i.catId === catId && !i.pecaId : i.pecaId === pecaId) || {};
+        esGravarMov(tec, { id: catId ? ch : esIdPeca(pecaId), pecaId, catId, descricao: (pc && pc.descricao) || it.produto || '', codigo: (pc && pc.codigo) || it.codigo || '', unidade: (pc && pc.unidade) || it.unidade || 'un' }, d, 'venda', {
+          data: v.data || todayISO(), vendaId: id, produtor: nomeProdutorPid(v.produtorId),
+          obs: d < 0 ? 'Baixa da ' + num : 'Volta ao estoque: ' + num + (apagando ? ' apagada' : ' editada')
+        });
+      });
+      if (!apagando) gravar('update', 'vendas/' + id, { estoqueBaixa: novo });
+    } catch (e) { extraErro(e); }
   }
 
   // ---------- vínculo venda ↔ equipamento ----------
