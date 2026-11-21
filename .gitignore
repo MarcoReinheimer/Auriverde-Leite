@@ -1,2 +1,4 @@
 # ferramenta do build (npm install): não vai para o GitHub Pages
 node_modules/
+# tabelas de preço dos fornecedores: ficam no Supabase, nunca no site público
+tabelas/

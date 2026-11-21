@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.21.5';
+  const APP_VERSAO = '2026.11.21.6';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -442,6 +442,7 @@
     enviarFila();
     iniciarPermissaoConfig();
     iniciarRota();
+    setTimeout(guardarTabelasNoAparelho, 4000);
   }
 
   // ================= configurações compartilhadas =================
@@ -9514,7 +9515,7 @@
       c.querySelector('.tp-btn').setAttribute('aria-label', 'Importar ou atualizar a tabela ' + nome);
       c.querySelector('.tp-btn').addEventListener('click', () => {
         if (k === 'configmax') { $('adm-pecas-ordemax-arq').value = ''; $('adm-pecas-ordemax-arq').click(); }
-        else importarTabelaConforto(FORNECEDORES_CONFORTO[k].url);
+        else importarTabelaConforto(k);
       });
       box.appendChild(c);
     });
@@ -9632,12 +9633,11 @@
   // catálogo da Ordemax: o listaProdutos.xml da pasta do Configmax (código e descrição abertos; o preço vem
   // protegido no arquivo, então entra em branco). Códigos que já estão no catálogo ficam como estão.
   $('adm-pecas-ordemax-arq').addEventListener('change', () => { const f = $('adm-pecas-ordemax-arq').files[0]; if (f) importarCatalogoOrdemax(f); });
-  // Tabela de Preço Conforto Animal da Ordemax (02/06/2025), já limpa em tabelas/: cadastra os itens novos
+  // Tabela de preço do fornecedor (fica no banco, em tabelas-preco/<fornecedor>): cadastra os itens novos
   // com preço e atualiza o preço dos que já estão no catálogo (pelo código; sem código, pela descrição)
-  const TABELA_CONFORTO = 'tabelas/conforto-animal-2025-06-02.json';
-  async function importarTabelaConforto(url) {
+  async function importarTabelaConforto(k) {
     let tab;
-    try { const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); tab = await r.json(); }
+    try { tab = await lerTabelaPreco(k); }
     catch (e) { avisar('Não consegui abrir a tabela de preços: ' + (e && e.message ? e.message : e)); return; }
     const forn = s => String(s || '').toLowerCase().replace(/-conforto$/, '');
     const fornTab = forn(tab.fornecedor || 'Ordemax');
@@ -12652,7 +12652,7 @@
 
 
   // ---------- Configurador de Conforto Animal (tipo Configmax) ----------
-  // Usa a tabela de preços de Conforto Animal da Ordemax (tabelas/): escolhe o tipo do galpão e a quantidade
+  // Usa a tabela de preços do fornecedor (do banco, em tabelas-preco/): escolhe o tipo do galpão e a quantidade
   // de cada item; o orçamento segue o mesmo caminho do Orçamento Ordemax (margem da Calculadora, modelo SAC-029).
   const GRUPOS_CONFORTO = [
     ['ACESSÓRIOS', /^(suporte|sapat|abra[cç]ad|luva|terminal|placa|haste|tubo galvanizado|trava|cantoneira|escada de fosso)/i],
@@ -12668,9 +12668,9 @@
     ['MANEJO', /scraper|trilho|co[cç]ador|comfort brush|brete|empurrador|rob[oô]|raspador|port[aã]o|port[oõ]es|saleiro|cocho|tronco|tracionador|escova|rodo de limpeza|feneiro|tanque para [aá]gua/i],
     ['INSTALAÇÃO', /instala[cç][aã]o/i]
   ];
-  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', url: TABELA_CONFORTO, origem: 'fora' }, mx: { nome: 'MX do Brasil', url: 'tabelas/mx-2025.json', origem: 'dentro' }, lero: { nome: 'Lero Solar', url: 'tabelas/lero-solar.json', origem: 'fora' }, feilfer: { nome: 'Feilfer', url: 'tabelas/feilfer-2026-04.json', origem: 'dentro' },
+  const FORNECEDORES_CONFORTO = { ordemax: { nome: 'Ordemax', origem: 'fora' }, mx: { nome: 'MX do Brasil', origem: 'dentro' }, lero: { nome: 'Lero Solar', origem: 'fora' }, feilfer: { nome: 'Feilfer', origem: 'dentro' },
     // kit de tabela própria: os preços já são de venda (sem margem nem ICMS) e o kit já vem com as quantidades
-    kit: { nome: 'Kit aspersão', rotulo: 'Kit aspersão', url: 'tabelas/kit-aspersao.json', origem: 'dentro', precoFinal: true } };
+    kit: { nome: 'Kit aspersão', rotulo: 'Kit aspersão', origem: 'dentro', precoFinal: true } };
   let ccForn = 'ordemax', ccFonte = '';
   const ccTabelas = {};
   let ccTabela = null, ccTipo = 'freestall', ccQtd = {}, ccGrupoSel = '', ccBusca = '', ccTamAtivo = {};
@@ -12679,10 +12679,27 @@
   const CC_ICONES = { 'VENTILAÇÃO': 'fan', 'BEZERREIRO': 'baby', 'FREE STALL': 'warehouse', 'BAIAS': 'bed-double', 'CONTENÇÃO': 'shield-check', 'BEBEDOUROS': 'droplets',
     'PISO': 'layout-grid', 'AQUECIMENTO': 'thermometer', 'ASPERSÃO': 'snowflake', 'MANEJO': 'tractor', 'INSTALAÇÃO': 'wrench', 'ACESSÓRIOS': 'package', 'OUTROS': 'circle-ellipsis' };
   const ORDEM_GRUPOS_CONFORTO = [...GRUPOS_CONFORTO.map(g => g[0]).filter(g => g !== 'ACESSÓRIOS'), 'ACESSÓRIOS', 'OUTROS'];
+  // As tabelas de preço ficam no banco (tabelas-preco/<fornecedor>): só quem tem acesso liberado lê.
+  // Nunca como arquivo do site, que é público. Sem internet, vale a última cópia guardada neste aparelho.
+  var tpLendo = null;
+  function lerTabelasPreco() {
+    if (!tpLendo) tpLendo = lerColecao('tabelas-preco').finally(() => { tpLendo = null; });
+    return tpLendo;
+  }
+  async function lerTabelaPreco(k) {
+    const t = (await lerTabelasPreco()).find(x => x.id === k);
+    if (!t || !Array.isArray(t.itens)) throw new Error('tabela não encontrada (sem internet?)');
+    return t;
+  }
+  // primeira vez neste aparelho: já guarda a cópia, para o catálogo abrir depois na propriedade, sem sinal
+  function guardarTabelasNoAparelho() {
+    if (!(podeLancar('visitas') || podeVer('vendas') || podeVer('calc'))) return;
+    if (lerLS(ESPELHO_PREFIXO + 'tabelas-preco', []).length) return;
+    lerTabelasPreco().catch(() => {});
+  }
   async function carregarTabelaConforto(f) {
     if (!ccTabelas[f]) {
-      const r = await fetch(FORNECEDORES_CONFORTO[f].url); if (!r.ok) throw new Error('HTTP ' + r.status);
-      const tab = await r.json();
+      const tab = await lerTabelaPreco(f);
       ccTabelas[f] = { fonte: tab.fonte, fornecedor: tab.fornecedor || '', data: tab.data || '', itens: tab.itens.map((i, n) => ({ ...i, id: f + n,
         grupo: i.grupo || (GRUPOS_CONFORTO.find(([, re]) => re.test(i.descricao)) || ['OUTROS'])[0],
         busca: normalizarBusca(i.descricao + ' ' + (i.codigo || '')) })) };
@@ -13233,7 +13250,7 @@
   });
 
   // =====================================================================
-  // CATÁLOGO ÚNICO: peças do banco (pecas/) + tabelas dos fornecedores (tabelas/)
+  // CATÁLOGO ÚNICO: peças do banco (pecas/) + tabelas dos fornecedores (tabelas-preco/)
   // Uma janela só serve a OS, o Meu estoque, a venda, a Calculadora e o orçamento:
   //   carregarCatalogo()                  → { itens, falhou } (fica na memória; refaz quando pecas/ muda)
   //   buscarCatalogo(filtros)             → itens que batem com { texto, categoria, marca, semPreco }

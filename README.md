@@ -57,6 +57,10 @@ uma consulta mínima ao banco com a chave publicável do `config.js`. Ela não l
 - O Supabase também avisa por e-mail uma semana antes de pausar.
 - Para rodar na hora: Actions → Manter o Supabase acordado → **Run workflow**.
 
+## Tabelas de preço dos fornecedores
+Ficam no Supabase, em `tabelas-preco/<fornecedor>` (`ordemax`, `mx`, `lero`, `feilfer` e `kit`): só quem tem acesso liberado lê.
+**Não coloque as tabelas neste repositório nem no site:** tudo aqui é público. A pasta `tabelas/` está no `.gitignore`.
+
 ## Avisos no celular (Web Push)
 > **Desligado** (pedido do dono, 20/11/2026): os botões estão escondidos no app (`AVISOS_LIGADOS = false` em `js/app.js`)
 > e a tarefa das 8h foi apagada no Supabase. Para ligar de novo: `AVISOS_LIGADOS = true`, gere as versões compactadas
