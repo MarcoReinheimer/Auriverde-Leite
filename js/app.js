@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.21.1';
+  const APP_VERSAO = '2026.11.21.2';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -643,7 +643,7 @@
 
     const valorIcms = custo * (aliquota / 100);
     const custoLiquido = custo - valorIcms;
-    const preco = divisor > 0 ? custoLiquido / divisor : 0;
+    const preco = precoVendaDoItem({ custo, origem }, margemAuriverde);
     const lucro = preco - custo;
     const margem = preco > 0 ? (lucro / preco) * 100 : 0;
     const markup = custo > 0 ? (lucro / custo) * 100 : 0;
@@ -710,10 +710,8 @@
     if (!custo) { avisar('Informe o custo antes de salvar no histórico.'); return; }
     const aliquota = aliquotaDaOrigem(origem);
     const margemAuriverde = margemDoCalculo();
-    const divisor = (80 - margemAuriverde) / 100;
     const valorIcms = custo * (aliquota / 100);
-    const custoLiquido = custo - valorIcms;
-    const preco = divisor > 0 ? custoLiquido / divisor : 0;
+    const preco = precoVendaDoItem({ custo, origem }, margemAuriverde);
     const registro = {
       produto: produtoEl.value.trim(), custo, origem, aliquota, valorIcms, margemAuriverde, preco,
       criadoPor: viewerId, criadoEm: Date.now(), data: todayISO()
@@ -731,8 +729,8 @@
     const precoTxt = $('out-preco').textContent;
     const custoTxt = fmt(parseMoney(custoEl.value));
     let msg = 'Preço calculado' + (produto ? (' — ' + produto) : '') + ':\n' +
-      precoTxt + ' (custo ' + custoTxt + ', margem ' + numTxt(margemDoCalculo()) + '%, ' +
-      (origem === 'dentro' ? 'dentro de SC' : 'fora de SC') + ')';
+      precoTxt + (veCustos() ? ' (custo ' + custoTxt + ', margem ' + numTxt(margemDoCalculo()) + '%, ' +
+      (origem === 'dentro' ? 'dentro de SC' : 'fora de SC') + ')' : '');
     // Se o quadro do Claude bloquear a nova janela, copia o texto (ou mostra para copiar).
     const janela = window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
     if (janela) { try { janela.opener = null; } catch (e) {} return; }
@@ -780,7 +778,7 @@
       `;
       card.querySelector('.record-date').textContent = fmtDate(c.data);
       card.querySelector('.hist-produto').textContent = c.produto ? (' · ' + c.produto) : '';
-      card.querySelector('.hist-detail').textContent =
+      card.querySelector('.hist-detail').textContent = !veCustos() ? 'Preço ' + fmt(c.preco) :
         'Custo ' + fmt(c.custo) + ' → Preço ' + fmt(c.preco) + ' (margem ' + fmtPct(c.margemAuriverde) + ', ' +
         (c.origem === 'dentro' ? 'dentro de SC' : 'fora de SC') + ')';
       if (autor) card.querySelector('.record-autor').textContent = 'Salvo por ' + autor;
@@ -927,7 +925,7 @@
           { titulo: 'Margem (%)', key: 'margem', fmt: '0%' },
           { titulo: 'Preço de venda', key: 'preco', fmt: XLSX_MOEDA, soma: true },
           { titulo: 'Salvo por', key: 'salvoPor' }
-        ]
+        ].filter(c => veCustos() || !['custo', 'icms', 'margem'].includes(c.key))
       },
       {
         nome: 'Ordens de serviço', total: false, linhas: vis,
@@ -2677,7 +2675,7 @@
     if (!item || item.semPreco) return 0;
     const custo = Number(item.custo != null ? item.custo : item.custoUnit) || 0;
     if (item.precoFinal) return r2(custo);
-    const m = Number(margem) > 0 && Number(margem) < 80 ? Number(margem) : Number(config.margemPadrao);
+    const m = margem == null || margem === '' ? Number(config.margemPadrao) : Number(margem);
     return r2(precoPelaFormula(custo, item.origem, m));
   }
   function totaisDosItens(itens) {
@@ -2858,13 +2856,13 @@
           <label for="${pre}qtd">Quantidade</label>
           <input type="text" inputmode="decimal" id="${pre}qtd" class="it-qtd mono-input">
         </div>
-        <div class="field">
+        <div class="field" data-perm="custos:1">
           <label for="${pre}custo">Custo unit. (R$)</label>
           <input type="text" inputmode="decimal" id="${pre}custo" class="it-custo mono-input" placeholder="0,00">
         </div>
       </div>
       <div class="rate-row">
-        <div class="field">
+        <div class="field" data-perm="custos:1">
           <label for="${pre}margem">Margem (%)</label>
           <input type="text" inputmode="decimal" id="${pre}margem" class="it-margem mono-input">
         </div>
@@ -2874,7 +2872,7 @@
           <div class="preco-manual" hidden><span>editado à mão</span><button type="button" class="it-recalc">usar a fórmula</button></div>
         </div>
       </div>
-      <div class="item-resumo"><span>Subtotal <strong class="it-subtotal"></strong></span><span class="ir-lucro"></span></div>`;
+      <div class="item-resumo"><span>Subtotal <strong class="it-subtotal"></strong></span><span class="ir-lucro" data-perm="custos:1"></span></div>`;
     const q = s => card.querySelector(s);
     q('.item-titulo').textContent = 'Item ' + (i + 1);
     q('.it-produto').value = it.produto || '';
@@ -2890,7 +2888,7 @@
     // recalcular=false na abertura: numa venda salva o preço fica como foi gravado
     const atualizar = (recalcular = true) => {
       if (recalcular && !it.precoManual) {
-        it.precoUnit = r2(precoPelaFormula(it.custoUnit, it.origem, it.margem));
+        it.precoUnit = precoVendaDoItem({ custo: it.custoUnit, origem: it.origem }, it.margem);
         if (document.activeElement !== q('.it-preco')) q('.it-preco').value = it.precoUnit ? fmtMoedaCampo(it.precoUnit) : '';
       }
       q('.preco-manual').hidden = !it.precoManual;
@@ -2909,6 +2907,7 @@
     q('.it-marca').addEventListener('change', e => {
       it.marcaId = e.target.value;
       const marca = brands.find(b => b.id === it.marcaId);
+      it.marcaNome = marca ? marca.name : '';
       if (marca) { it.origem = marca.origem === 'fora' ? 'fora' : 'dentro'; pintarOrigem(); }
       atualizar();
     });
@@ -2933,7 +2932,7 @@
     q('.it-catalogo').addEventListener('click', () => abrirCatalogo({ onde: 'venda', aoEscolher: c => {
       if (c.avulsa) { if (c.texto) { it.produto = c.texto; q('.it-produto').value = it.produto; } return; }
       it.produto = nomeItemCatalogo(c);
-      it.pecaId = c.pecaId || null; it.catId = c.id; it.codigo = c.codigo || ''; it.categoria = c.categoria || 'outros';
+      it.pecaId = c.pecaId || null; it.catId = c.id; it.codigo = c.codigo || ''; it.categoria = c.categoria || 'outros'; it.marcaNome = c.marca || '';
       q('.it-produto').value = it.produto;
       if (c.precoFinal) {
         // kit próprio: o preço da tabela já é o de venda; o custo fica em branco
@@ -3007,7 +3006,7 @@
       const marca = brands.find(b => b.id === i.marcaId);
       return {
         pecaId: i.pecaId || null, catId: i.catId || null, codigo: i.codigo || '', categoria: i.categoria || categoriaPorPalavra(i.produto),
-        produto: i.produto.trim(), marcaId: i.marcaId || '', marcaNome: marca ? marca.name : '',
+        produto: i.produto.trim(), marcaId: i.marcaId || '', marcaNome: marca ? marca.name : (i.marcaNome || ''),
         origem: i.origem === 'fora' ? 'fora' : 'dentro', aliquota: aliquotaDaOrigem(i.origem),
         quantidade: Number(i.quantidade), custoUnit: r2(i.custoUnit), margem: Number(i.margem) || 0,
         precoUnit: r2(i.precoUnit), precoManual: !!i.precoManual, ...integCamposItem(i)
@@ -3082,8 +3081,8 @@
       el.querySelector('.vd-item-sub').textContent = [
         i.marcaNome || 'Sem marca',
         i.origem === 'fora' ? 'fora de SC' : 'dentro de SC',
-        i.precoManual ? 'preço editado à mão' : 'margem ' + fmtL(i.margem, 0) + '%'
-      ].join(' · ');
+        i.precoManual ? 'preço editado à mão' : veCustos() ? 'margem ' + fmtL(i.margem, 0) + '%' : ''
+      ].filter(Boolean).join(' · ');
       el.querySelector('.a').textContent = fmtQtd(i.quantidade) + ' × ' + fmt(i.precoUnit);
       el.querySelector('.b').textContent = fmt((Number(i.quantidade) || 0) * (Number(i.precoUnit) || 0));
       integItemDetalhe(el, v, i);
@@ -3462,7 +3461,8 @@
             { titulo: 'Registrado por', key: 'vendedor' }
           ]
         }
-      ].filter(a => a.nome !== 'Comissões' || podeVer('comissoes')));
+      ].filter(a => a.nome !== 'Comissões' || podeVer('comissoes'))
+        .map(a => veCustos() ? a : { ...a, colunas: a.colunas.filter(c => !['custo', 'custoUnit', 'lucro', 'margem'].includes(c.key)) }));
       const arquivo = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const mes = $('vendas-mes').value;
       try {
@@ -6142,12 +6142,12 @@
   ];
   const SETOR = Object.fromEntries(SETORES.map(s => [s.id, s]));
   const TODOS_SETORES = SETORES.map(s => s.id);
-  const MODULOS_GERAIS = ['produtores', 'exportar', 'painel'];
+  const MODULOS_GERAIS = ['produtores', 'exportar', 'painel', 'custos'];
   const MODULOS = [
     ['produtores', 'Produtores'], ['exportar', 'Relatórios, Excel e PDF'],
     ['visitas', 'Visitas de manutenção'], ['veterinaria', 'Veterinária'],
     ['leite', 'Média de leite'], ['pmls', 'Análises, coletas e PMLS'], ['nutricao', 'Nutrição'],
-    ['calc', 'Calculadora de margem'], ['vendas', 'Vendas'], ['comissoes', 'Comissões'], ['painel', 'Painel da diretoria']
+    ['calc', 'Calculadora de margem'], ['vendas', 'Vendas'], ['comissoes', 'Comissões'], ['painel', 'Painel da diretoria'], ['custos', 'Custos, margem e lucro']
   ];
   const ROTULO_MODULO = Object.fromEntries(MODULOS);
   // marcas que juntam vários módulos (o maior nível entre eles vale)
@@ -6157,9 +6157,9 @@
   const TUDO = Object.fromEntries(MODULOS.map(([k]) => [k, 3]));
   const PAPEIS = {
     admin: { nome: 'Administrador', perm: { ...TUDO }, setores: TODOS_SETORES.slice(), nivelSetor: 3 },
-    tecnico: { nome: 'Técnico', perm: { calc: 0, vendas: 0, comissoes: 0, produtores: 2, visitas: 2, veterinaria: 0, leite: 2, pmls: 2, nutricao: 0, exportar: 1, painel: 0 }, setores: ['manutencao', 'qualidade'], nivelSetor: 2 },
-    vendedor: { nome: 'Vendedor', perm: { calc: 2, vendas: 2, comissoes: 1, produtores: 1, visitas: 0, veterinaria: 0, leite: 0, pmls: 0, nutricao: 0, exportar: 1, painel: 0 }, setores: ['comercial'], nivelSetor: 2, soProprias: true },
-    consulta: { nome: 'Consulta', perm: { calc: 0, vendas: 0, comissoes: 0, produtores: 1, visitas: 1, veterinaria: 0, leite: 1, pmls: 1, nutricao: 0, exportar: 0, painel: 0 }, setores: ['manutencao', 'qualidade'], nivelSetor: 1 }
+    tecnico: { nome: 'Técnico', perm: { calc: 0, vendas: 0, comissoes: 0, produtores: 2, visitas: 2, veterinaria: 0, leite: 2, pmls: 2, nutricao: 0, exportar: 1, painel: 0, custos: 0 }, setores: ['manutencao', 'qualidade'], nivelSetor: 2 },
+    vendedor: { nome: 'Vendedor', perm: { calc: 2, vendas: 2, comissoes: 1, produtores: 1, visitas: 0, veterinaria: 0, leite: 0, pmls: 0, nutricao: 0, exportar: 1, painel: 0, custos: 1 }, setores: ['comercial'], nivelSetor: 2, soProprias: true },
+    consulta: { nome: 'Consulta', perm: { calc: 0, vendas: 0, comissoes: 0, produtores: 1, visitas: 1, veterinaria: 0, leite: 1, pmls: 1, nutricao: 0, exportar: 0, painel: 0, custos: 0 }, setores: ['manutencao', 'qualidade'], nivelSetor: 1 }
   };
   const FUNCOES = { tecnico: 'Técnico', vendedor: 'Vendedor', outro: 'Outro' };
   const PAPEL_DA_FUNCAO = { tecnico: 'tecnico', vendedor: 'vendedor', outro: 'consulta' };
@@ -6183,6 +6183,8 @@
     return n >= 3 || (n >= 2 && !!criadoPor && criadoPor === viewerId);
   }
   function ehAdmin() { return !!acesso.admin; }
+  // custo, margem e lucro: só o Administrador e quem tem a permissão "custos"
+  function veCustos() { return ehAdmin() || nivel('custos') >= 1; }
   function permDoUsuario(u) {
     const base = (PAPEIS[u.papel] || PAPEIS.consulta).perm;
     const out = {};
@@ -6602,9 +6604,10 @@
         sel.dataset.modulo = k;
         sel.id = 'mu-perm-' + k;
         row.querySelector('label').htmlFor = sel.id;
-        // o painel só tem dois níveis: não vê ou vê
-        NIVEIS.forEach((t, n) => { if (k === 'painel' && n > 1) return; const o = document.createElement('option'); o.value = String(n); o.textContent = k === 'painel' ? ['Não vê', 'Vê o painel'][n] : t; sel.appendChild(o); });
-        sel.value = String(k === 'painel' ? Math.min(1, perm[k] || 0) : (perm[k] || 0));
+        // o painel e os custos só têm dois níveis: não vê ou vê
+        const doisNiveis = { painel: 'Vê o painel', custos: 'Vê custos e lucro' }[k];
+        NIVEIS.forEach((t, n) => { if (doisNiveis && n > 1) return; const o = document.createElement('option'); o.value = String(n); o.textContent = doisNiveis ? ['Não vê', doisNiveis][n] : t; sel.appendChild(o); });
+        sel.value = String(doisNiveis ? Math.min(1, perm[k] || 0) : (perm[k] || 0));
         sel.addEventListener('change', () => {
           // todos os módulos do setor em "Não vê" = a pessoa sai do setor
           const s = SETOR[id];
@@ -10006,13 +10009,18 @@
   function renderPecasOS() {
     const box = $('os-pecas-lista');
     box.innerHTML = '';
+    const verCusto = veCustos();
     osPecas.forEach((p, i) => {
       const d = document.createElement('div');
       d.className = 'os-peca';
       d.innerHTML = '<div class="os-peca-topo"><div class="os-peca-nome"></div><button type="button" class="os-peca-x" aria-label="Tirar peça">×</button></div>' +
         '<div class="os-peca-campos"><div><label>Qtd</label><input type="text" inputmode="decimal" class="mono-input pq"></div>' +
-        '<div><label>Unitário</label><input type="text" inputmode="decimal" class="mono-input pu"></div>' +
-        '<div><label>Valor</label><input type="text" inputmode="decimal" class="mono-input pv"></div></div>';
+        '<div><label>Preço unit.</label><input type="text" inputmode="decimal" class="mono-input pu"></div>' +
+        '<div><label>Valor</label><input type="text" inputmode="decimal" class="mono-input pv"></div></div>' +
+        (verCusto ? '<div class="os-peca-campos os-peca-custos"><div><label>Custo</label><input type="text" inputmode="decimal" class="mono-input pc"></div>' +
+          '<div><label>Margem %</label><input type="text" inputmode="decimal" class="mono-input pm"></div>' +
+          '<div><label>Origem</label><select class="po"><option value="dentro">Dentro de SC</option><option value="fora">Fora de SC</option></select></div></div>' : '') +
+        '<div class="preco-manual" hidden><span>editado à mão</span><button type="button" class="os-recalc">usar a fórmula</button></div>';
       const nome = d.querySelector('.os-peca-nome');
       if (p.avulsa) {
         const inp = document.createElement('input');
@@ -10021,19 +10029,42 @@
         nome.appendChild(inp);
       } else {
         nome.textContent = p.descricao || 'Peça';
-        const c = document.createElement('div'); c.className = 'os-peca-cod'; c.textContent = [p.codigo, p.unidade].filter(Boolean).join(' · '); nome.appendChild(c);
+        const c = document.createElement('div'); c.className = 'os-peca-cod'; c.textContent = [p.codigo, p.unidade, p.marcaNome].filter(Boolean).join(' · '); nome.appendChild(c);
       }
       const q = d.querySelector('.pq'), u = d.querySelector('.pu'), v = d.querySelector('.pv');
       q.value = numTxt(p.qtd);
       u.value = numTxt(r2(p.precoUnit));
       v.value = numTxt(r2(p.valor));
       q.setAttribute('aria-label', 'Quantidade de ' + (p.descricao || 'peça'));
-      u.setAttribute('aria-label', 'Preço unitário');
+      u.setAttribute('aria-label', 'Preço de venda unitário');
       v.setAttribute('aria-label', 'Valor da peça');
       const recalc = () => { if (!p.valorManual) { p.valor = r2((Number(p.qtd) || 0) * (Number(p.precoUnit) || 0)); v.value = numTxt(p.valor); } pintarTotaisOS(); };
+      const pintarManual = () => { d.querySelector('.preco-manual').hidden = !(p.precoManual && Number(p.custoUnit) > 0); };
+      // só refaz o preço quando alguém mexe no custo, na margem ou na origem: a OS salva fica como foi gravada
+      const formula = () => {
+        if (!p.precoManual && Number(p.custoUnit) > 0) { p.precoUnit = precoVendaDoItem({ custo: p.custoUnit, origem: p.origem }, p.margem); u.value = numTxt(r2(p.precoUnit)); }
+        p.aliquota = aliquotaDaOrigem(p.origem);
+        pintarManual();
+        recalc();
+      };
       q.addEventListener('input', () => { p.qtd = parseNum(q.value); recalc(); });
-      u.addEventListener('input', () => { p.precoUnit = parseMoney(u.value); p.valorManual = false; recalc(); });
+      u.addEventListener('input', () => { p.precoUnit = parseMoney(u.value); p.precoManual = true; p.valorManual = false; pintarManual(); recalc(); });
       v.addEventListener('input', () => { p.valor = parseMoney(v.value); p.valorManual = true; pintarTotaisOS(); });
+      d.querySelector('.os-recalc').addEventListener('click', () => { p.precoManual = false; p.valorManual = false; formula(); });
+      if (verCusto) {
+        const c = d.querySelector('.pc'), m = d.querySelector('.pm'), o = d.querySelector('.po');
+        c.value = Number(p.custoUnit) > 0 ? numTxt(r2(p.custoUnit)) : '';
+        m.value = p.margem != null ? numTxt(p.margem) : '';
+        m.placeholder = numTxt(config.margemPadrao);
+        o.value = p.origem === 'fora' ? 'fora' : 'dentro';
+        c.setAttribute('aria-label', 'Custo unitário');
+        m.setAttribute('aria-label', 'Margem');
+        o.setAttribute('aria-label', 'Origem da peça');
+        c.addEventListener('input', () => { p.custoUnit = parseMoney(c.value); formula(); });
+        m.addEventListener('input', () => { p.margem = m.value.trim() === '' ? null : parseNum(m.value); p.precoManual = false; p.valorManual = false; formula(); });
+        o.addEventListener('change', () => { p.origem = o.value; formula(); });
+      }
+      pintarManual();
       d.querySelector('.os-peca-x').addEventListener('click', () => { osPecas.splice(i, 1); renderPecasOS(); });
       box.appendChild(d);
     });
@@ -10044,15 +10075,16 @@
     const eq = (equipPid === currentProdutorId ? equipamentos : []).find(e => e.tipo === 'ordenhadeira' && String(e.marca || '').trim());
     abrirCatalogo({ onde: 'os', checklist: novaVisitaCategoria === 'ordenha' ? readRevisaoItens() : null, marcaEquip: eq ? eq.marca : '', aoEscolher: x => {
       if (x.avulsa) {
-        osPecas.push({ pecaId: null, catId: null, codigo: '', descricao: x.texto || '', unidade: 'un', qtd: 1, precoUnit: 0, valor: 0, valorManual: false, avulsa: true });
+        osPecas.push({ pecaId: null, catId: null, codigo: '', descricao: x.texto || '', unidade: 'un', marcaId: '', marcaNome: '', categoria: categoriaPorPalavra(x.texto), origem: 'dentro',
+          aliquota: aliquotaDaOrigem('dentro'), qtd: 1, custoUnit: 0, margem: Number(config.margemPadrao), precoUnit: 0, precoManual: false, valor: 0, valorManual: false, avulsa: true, tipoItem: 'produto' });
         renderPecasOS();
         return;
       }
       const ja = osPecas.find(p => !p.avulsa && ((p.catId && p.catId === x.id) || (x.pecaId && p.pecaId === x.pecaId)));
       if (ja) { ja.qtd = (Number(ja.qtd) || 0) + 1; if (!ja.valorManual) ja.valor = r2(ja.qtd * (Number(ja.precoUnit) || 0)); }
       else {
-        const pu = x.precoManual ? r2(x.precoVenda) : r2(x.custo);
-        osPecas.push({ pecaId: x.pecaId || null, catId: x.id, codigo: x.codigo || '', descricao: x.descricao || '', unidade: x.unidade || 'un', qtd: 1, precoUnit: pu, valor: pu, valorManual: false });
+        const it = itemDoCatalogo(x);
+        osPecas.push({ ...it, descricao: x.descricao || '', qtd: 1, valor: it.precoUnit, valorManual: false });
       }
       renderPecasOS();
     } });
@@ -11028,7 +11060,11 @@
     const tempTxt = $('visita-temp').value.trim();
     const temperaturaLeite = exec && categoria === 'resfriador' && tempTxt !== '' ? parseMoney(tempTxt) : (exec ? null : ((osBase && osBase.temperaturaLeite) ?? null));
     const vacuoKpa = exec && categoria === 'ordenha' && $('visita-kpa').value ? parseNum($('visita-kpa').value) : (exec ? null : ((osBase && osBase.vacuoKpa) ?? null));
-    const pecas = osPecas.filter(p => (p.descricao || '').trim() || Number(p.valor) > 0).map(p => ({ ...p, descricao: (p.descricao || '').trim(), qtd: Number(p.qtd) || 0, precoUnit: r2(p.precoUnit), valor: r2(p.valor) }));
+    // os campos do formato único (produto, quantidade) acompanham a peça; os valores ficam como estão
+    const pecas = osPecas.filter(p => (p.descricao || '').trim() || Number(p.valor) > 0).map(p => {
+      const desc = (p.descricao || '').trim();
+      return { ...p, descricao: desc, produto: desc + (p.codigo ? ' (' + p.codigo + ')' : ''), qtd: Number(p.qtd) || 0, quantidade: Number(p.qtd) || 0, precoUnit: r2(p.precoUnit), valor: r2(p.valor) };
+    });
     const extrasOS = extrasLer({ exec, categoria, st, base: osBase });
     if (st === 'aberta' && !motivo && !osEquipProblema) { avisar('Escreva o motivo do chamado.'); return; }
     if (st === 'agendada' && (!agendadaPara || !tecnicoId)) { avisar('Para agendar, informe a data e o técnico.'); return; }
@@ -11686,7 +11722,7 @@
   function margemGeral() { const m = pctLido($('om-margem').value); return margemValida(m) ? m : Number(config.margemPadrao); }
   function margemDoGrupo(g) { return margemValida(g.margem) ? g.margem : margemGeral(); }
   // grupo com preço final (kit de tabela própria): o valor já é o de venda, sem margem nem ICMS
-  function valorComMargem(g) { return g.precoFinal ? arredOm(g.valor) : arredOm(precoPelaFormula(g.valor, omOrigem, margemDoGrupo(g))); }
+  function valorComMargem(g) { return precoVendaDoItem({ custo: g.valor, origem: omOrigem, precoFinal: g.precoFinal }, margemDoGrupo(g)); }
   function totalOm() { return arredOm(ordemaxAtual.grupos.reduce((s, g) => s + valorComMargem(g), 0)); }
   function pintarOrigemOm() { $('om-origem').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.o === omOrigem)); }
   function pintarItensOm() {
@@ -11747,10 +11783,10 @@
       const d = document.createElement('div');
       d.className = 'om-grupo';
       d.innerHTML = '<span class="om-g-nome"></span><span class="om-g-final"></span>' +
-        '<span class="om-g-sub"></span><label class="om-g-margem"><input type="text" inputmode="decimal" class="mono-input" aria-label="Margem do grupo">%</label>';
+        '<span class="om-g-sub"></span><label class="om-g-margem" data-perm="custos:1"><input type="text" inputmode="decimal" class="mono-input" aria-label="Margem do grupo">%</label>';
       d.querySelector('.om-g-nome').textContent = g.nome;
       d.querySelector('.om-g-final').textContent = fmt(valorComMargem(g));
-      d.querySelector('.om-g-sub').textContent = (o.fornecedor || 'Ordemax') + ' ' + fmt(g.valor) + ' · ' + (o.tipo === 'conforto' ? plural(g.itens.length, 'item', 'itens') : plural(g.itens.length, 'peça', 'peças'));
+      d.querySelector('.om-g-sub').textContent = (veCustos() ? (o.fornecedor || 'Ordemax') + ' ' + fmt(g.valor) + ' · ' : '') + (o.tipo === 'conforto' ? plural(g.itens.length, 'item', 'itens') : plural(g.itens.length, 'peça', 'peças'));
       if (g.precoFinal) {
         const pecas = g.itens.every(i => i.un === 'UN') ? g.itens.reduce((s, i) => s + (parseMoney(i.qtd) || 0), 0) : g.itens.length;
         d.querySelector('.om-g-sub').textContent = 'Preço de venda (tabela própria) · ' + plural(pecas, 'peça', 'peças');
@@ -11779,15 +11815,17 @@
     v[0].textContent = fmt(custo);
     v[1].textContent = fmt(arredOm(total - custo)) + (custo ? ' (' + fmtPct((total / custo - 1) * 100) + ')' : '');
     v[2].textContent = fmt(total);
+    if (!veCustos()) { $('om-totais').children[0].hidden = true; $('om-totais').children[1].hidden = true; }
   }
   function abrirOrdemax(o, nomeArq) {
     ordemaxAtual = o;
     const cfg = lerLS('auriverde_ordemax', {});
     $('om-titulo').textContent = o.tipo === 'conforto' ? 'Orçamento Conforto Animal' : 'Orçamento Ordemax';
     $('om-sub').textContent = [o.titulo, nomeArq].filter(Boolean).join(' · ');
+    $('om-sec-valores').textContent = veCustos() ? 'Margem' : 'Valores';
     const soma = arredOm(o.grupos.reduce((s, g) => s + g.valor, 0));
     const avisos = [];
-    if (o.total && Math.abs(soma - o.total) > 0.05) avisos.push('A soma dos grupos (' + fmt(soma) + ') não bate com o total do PDF (' + fmt(o.total) + '). Confira antes de enviar.');
+    if (o.total && Math.abs(soma - o.total) > 0.05) avisos.push(veCustos() ? 'A soma dos grupos (' + fmt(soma) + ') não bate com o total do PDF (' + fmt(o.total) + '). Confira antes de enviar.' : 'A soma dos grupos não bate com o total do PDF. Confira antes de enviar.');
     $('om-aviso').textContent = avisos.join(' ');
     $('om-aviso').hidden = !avisos.length;
     $('om-cliente').value = o.cliente || '';
@@ -12064,7 +12102,13 @@
     // as outras tabelas carregam por trás, para os cartões mostrarem quantos itens cada fornecedor tem
     Promise.allSettled(Object.keys(FORNECEDORES_CONFORTO).map(carregarTabelaConforto)).then(() => { if (!$('modal-conforto').hidden) renderFornConforto(); });
   }
-  function totalConforto() { return arredOm(ccTabela.reduce((s, i) => s + i.preco * (ccQtd[i.id] || 0), 0)); }
+  // preço na tela do configurador: o da tabela para quem vê custos; o de venda para os demais
+  function ccPrecoTela(i) {
+    if (veCustos()) return i.preco;
+    const f = FORNECEDORES_CONFORTO[ccForn];
+    return precoVendaDoItem({ custo: i.preco, origem: f.origem, precoFinal: f.precoFinal });
+  }
+  function totalConforto() { return arredOm(ccTabela.reduce((s, i) => s + ccPrecoTela(i) * (ccQtd[i.id] || 0), 0)); }
   function renderConfigurador() {
     renderFornConforto();
     pintarPista();
@@ -12175,7 +12219,7 @@
     c.querySelector('.cz-f-nome').textContent = p.nome;
     const det = c.querySelector('.cz-f-det');
     det.textContent = p.det; det.hidden = !p.det;
-    const precos = membros.map(i => i.preco), min = Math.min(...precos), max = Math.max(...precos);
+    const precos = membros.map(ccPrecoTela), min = Math.min(...precos), max = Math.max(...precos);
     c.querySelector('.cz-f-faixa').textContent = membros.length + ' tamanhos · ' + (min === max ? fmt(min) : 'de ' + fmt(min) + ' a ' + fmt(max));
     const tams = c.querySelector('.cz-tams');
     tams.setAttribute('aria-label', 'Tamanhos de ' + p.nome);
@@ -12210,7 +12254,7 @@
     const det = d.querySelector('.cz-i-det');
     det.textContent = [p.det, i.codigo ? 'Cód. ' + i.codigo : ''].filter(Boolean).join(' · ');
     det.hidden = !det.textContent;
-    d.querySelector('.cz-i-preco b').textContent = fmt(i.preco);
+    d.querySelector('.cz-i-preco b').textContent = fmt(ccPrecoTela(i));
     d.querySelector('.cz-i-preco span').textContent = 'por ' + unConforto(i);
     const inp = d.querySelector('input'), sub = d.querySelector('.cz-i-sub'), [menos, mais] = d.querySelectorAll('button');
     inp.setAttribute('aria-label', 'Quantidade de ' + p.nome);
@@ -12219,7 +12263,7 @@
       inp.value = q ? String(q).replace('.', ',') : '';
       menos.disabled = !q;
       d.classList.toggle('on', q > 0);
-      sub.textContent = q ? fmt(arredOm(i.preco * q)) : '';
+      sub.textContent = q ? fmt(arredOm(ccPrecoTela(i) * q)) : '';
     };
     const por = (q) => {
       q = Math.max(0, Math.round(q * 100) / 100);
@@ -12248,7 +12292,7 @@
         h.className = 'cz-s-g';
         h.innerHTML = iconeHtml(CC_ICONES[g] || 'package') + '<b></b><span></span>';
         h.querySelector('b').textContent = nomeGrupoConforto(g);
-        h.querySelector('span').textContent = fmt(arredOm(its.reduce((s, i) => s + i.preco * ccQtd[i.id], 0)));
+        h.querySelector('span').textContent = fmt(arredOm(its.reduce((s, i) => s + ccPrecoTela(i) * ccQtd[i.id], 0)));
         box.appendChild(h);
         its.forEach(i => {
           const r = document.createElement('div');
@@ -12257,8 +12301,8 @@
             + '<button type="button" class="cz-s-rm">' + iconeHtml('x') + '</button>';
           const nome = partesItemConforto(i.descricao).nome;
           r.querySelector('.cz-s-nome').textContent = nome;
-          r.querySelector('.cz-s-q').textContent = qtdConforto(i, ccQtd[i.id]) + ' × ' + fmt(i.preco);
-          r.querySelector('.cz-s-val').textContent = fmt(arredOm(i.preco * ccQtd[i.id]));
+          r.querySelector('.cz-s-q').textContent = qtdConforto(i, ccQtd[i.id]) + ' × ' + fmt(ccPrecoTela(i));
+          r.querySelector('.cz-s-val').textContent = fmt(arredOm(ccPrecoTela(i) * ccQtd[i.id]));
           r.querySelector('.cz-s-txt').addEventListener('click', () => irParaItemConforto(i));
           const rm = r.querySelector('.cz-s-rm');
           rm.setAttribute('aria-label', 'Tirar ' + nome);
@@ -12445,7 +12489,7 @@
       f.querySelector('label').htmlFor = id;
       const s = f.querySelector('select');
       s.id = id;
-      lista.forEach(i => { const o = document.createElement('option'); o.value = i.id; o.textContent = partesItemConforto(i.descricao).nome + ' · ' + fmt(i.preco); s.appendChild(o); });
+      lista.forEach(i => { const o = document.createElement('option'); o.value = i.id; o.textContent = partesItemConforto(i.descricao).nome + ' · ' + fmt(ccPrecoTela(i)); s.appendChild(o); });
       s.value = ccRebanho[chave];
       s.disabled = lista.length < 2;
       s.addEventListener('change', () => { ccRebanho[chave] = s.value; pintarRebanho(); });
@@ -12649,6 +12693,16 @@
     const n = nomeFornCat(nome);
     return n ? brands.find(b => nomeFornCat(b.name || '') === n) || null : null;
   }
+  // o item escolhido no formato único de OS, venda e orçamento
+  function itemDoCatalogo(x, margem) {
+    const m = margem == null || margem === '' ? Number(config.margemPadrao) : Number(margem);
+    const marca = marcaComNome(x.marca);
+    const fixo = !!(x.precoFinal || x.precoManual);
+    const origem = x.origem === 'fora' ? 'fora' : 'dentro';
+    return { pecaId: x.pecaId || null, catId: x.id || null, codigo: x.codigo || '', produto: nomeItemCatalogo(x), unidade: x.unidade || 'un',
+      marcaId: marca ? marca.id : '', marcaNome: (marca && marca.name) || x.marca || '', categoria: x.categoria || 'outros', origem, aliquota: aliquotaDaOrigem(origem),
+      quantidade: 1, custoUnit: fixo ? 0 : r2(x.custo), margem: m, precoUnit: x.precoManual ? r2(x.precoVenda) : precoVendaDoItem(x, m), precoManual: fixo, tipoItem: 'produto' };
+  }
   // item do catálogo de um item já lançado (OS ou venda): pelo id e, nos antigos, pelo nome
   function catPorNome(nome) {
     const n = normalizarBusca(String(nome || '').trim());
@@ -12730,7 +12784,7 @@
     else {
       pr.textContent = fmt(precoVendaDoItem(x));
       const s = document.createElement('small');
-      s.textContent = x.precoFinal ? 'tabela de venda' : 'preço de venda';
+      s.textContent = x.precoFinal ? 'tabela de venda' : veCustos() ? 'custo ' + fmt(x.custo) : 'preço de venda';
       pr.appendChild(s);
     }
     b.addEventListener('click', () => escolherDoCatalogo(x));
@@ -12797,7 +12851,8 @@
   $('ct-fechar').addEventListener('click', fecharCatalogo);
   async function escolherDoCatalogo(x) {
     let item = { ...x };
-    if (x.semPreco) {
+    // o estoque não usa preço; na Calculadora, quem não vê custos só leva o nome do produto
+    if (x.semPreco && ctOpts.onde !== 'estoque' && !(ctOpts.onde === 'calc' && !veCustos())) {
       const r = await pedirPrecoCatalogo(x);
       if (!r) return;
       item = { ...item, ...r, semPreco: false };
@@ -12811,10 +12866,10 @@
   let cpResolver = null, cpItem = null, cpTipo = 'custo';
   function pedirPrecoCatalogo(x) {
     cpItem = x;
-    const soCusto = ctOpts.onde === 'calc' || ctOpts.onde === 'estoque';
-    cpTipo = 'custo';
+    const soCusto = ctOpts.onde === 'calc', soVenda = !veCustos();
+    cpTipo = soVenda ? 'venda' : 'custo';
     $('cp-sub').textContent = nomeItemCatalogo(x) + (x.marca ? ' · ' + x.marca : '');
-    $('cp-tipo').hidden = soCusto;
+    $('cp-tipo').hidden = soCusto || soVenda;
     $('cp-valor').value = '';
     $('cp-salvar').checked = false;
     pintarCp();
@@ -12861,6 +12916,15 @@
   $('calc-catalogo').addEventListener('click', () => abrirCatalogo({ onde: 'calc', aoEscolher: c => {
     if (c.avulsa) { if (c.texto) { produtoEl.value = c.texto; saveCalcState(); } return; }
     produtoEl.value = nomeItemCatalogo(c);
+    if (!veCustos()) {
+      // sem a permissão de custos: leva o nome e a origem e mostra só o preço de venda
+      custoEl.value = '';
+      selectedBrandId = null;
+      renderBrands();
+      setOrigem(c.origem);
+      avisoRapido(c.semPreco ? 'Este item está com o preço a definir.' : 'Preço de venda: ' + fmt(precoVendaDoItem(c)) + '.');
+      return;
+    }
     if (c.precoFinal) {
       custoEl.value = '';
       selectedBrandId = null;   // não fica a marca de um item escolhido antes
