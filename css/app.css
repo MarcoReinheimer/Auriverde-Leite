@@ -3432,3 +3432,10 @@
   .ac-passos p { margin: 0 0 8px; }
   .ac-passos p:last-child { margin-bottom: 0; }
   .ac-trocar { margin-top: 12px; }
+
+  /* Início → Hoje: Levar e os botões de cada visita */
+  .hj-extra { margin: -4px 0 12px; }
+  .hj-levar { font-size: 14px; line-height: 1.4; margin: 0 2px 8px; color: var(--ink); }
+  .hj-levar b { color: var(--ink-soft); font-weight: 700; }
+  .hj-acoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 6px; }
+  .hj-acoes .os-acao { display: inline-flex; align-items: center; justify-content: center; min-width: 0; padding: 8px 4px; text-decoration: none; white-space: nowrap; }

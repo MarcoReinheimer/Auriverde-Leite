@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.27.3';
+  const APP_VERSAO = '2026.11.27.4';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -5240,6 +5240,7 @@
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     if (!$('view-rota').hidden) renderRota();
+    if (!$('view-home').hidden) agendarRenderOS();
   }
 
   function renderRota() {
@@ -11726,7 +11727,7 @@
     $('hm-aviso-limp-txt').textContent = plural(limpN, 'pulsador com Limp fora', 'pulsadores com Limp fora');
     // o que é de hoje: aberto, e some quando está vazio
     $('hm-sec-atrasadas').hidden = !pinta('hm-atrasadas', pm.atrasadas, 3, { status: 'atrasadas' });
-    $('hm-sec-hoje').hidden = !pinta('hm-hoje', pm.hoje, 5, { periodo: 'hoje' });
+    $('hm-sec-hoje').hidden = !pinta('hm-hoje', ordemHoje(pm.hoje), 5, { periodo: 'hoje' }, acoesHoje);
     $('hm-sec-chamados').hidden = !pinta('hm-chamados', pm.chamados, 3, { status: 'aberta' }, acoesChamadoHome);
     $('hm-tudo-certo').hidden = !!(pm.atrasadas.length || pm.hoje.length || pm.chamados.length);
     // o resto: recolhido, com o número no título; some quando é zero
@@ -11905,15 +11906,25 @@
     const d = await lerDocumento('produtores/' + pid + '/visitas/' + id);
     return d || null;
   }
-  // abre a ficha na aba de OS e espera a OS chegar na lista para fazer algo com ela
+  // abre a ficha na aba de OS e espera a OS chegar na lista para fazer algo com ela.
+  // A ficha começa com a cópia guardada no aparelho: espera a lista do banco (até 2,5 s) e, sem sinal,
+  // completa com o índice de OS, que já tem o que foi mudado pelos botões rápidos (Agendar, Iniciar).
+  const CAMPOS_RAPIDOS = ['status', 'data', 'horaInicio', 'tecnicoId', 'agendadaPara', 'agendadaPeriodo', 'agendadaHora', 'tipo', 'categoria', 'motivo', 'urgencia', 'historico', 'atualizadoEm', 'atualizadoPor'];
   function abrirOSNaFicha(pid, osId, voltar, fn) {
     openProdutor(pid, { aba: 'visitas', voltar: voltar || 'home' });
     manutSub = 'os'; renderManutSub();
-    let n = 0;
+    const t0 = Date.now();
     const tentar = () => {
       const v = currentProdutorId === pid ? visitas.find(x => x.id === osId) : null;
-      if (v) { fn(v); return; }
-      if (++n > 50) { avisar('Não consegui abrir esta OS agora. Tente de novo em instantes.'); return; }
+      const esperou = Date.now() - t0;
+      if (v && (visitasConfiavel || esperou > 2500)) {
+        const i = ordensIndice.find(x => x.id === osId);
+        const fresco = {};
+        if (i && (i.atualizadoEm || 0) > (v.atualizadoEm || 0)) CAMPOS_RAPIDOS.forEach(k => { if (i[k] !== undefined) fresco[k] = clonar(i[k]); });
+        fn({ ...v, ...fresco });
+        return;
+      }
+      if (esperou > 6000) { avisar('Não consegui abrir esta OS agora. Tente de novo em instantes.'); return; }
       setTimeout(tentar, 100);
     };
     tentar();
@@ -12685,6 +12696,88 @@
     pintarAgendaCelular(r && r.naFila ? 'Sem internet agora: o link novo passa a funcionar quando a conexão voltar.' : '');
     avisoRapido('Link trocado. Assine de novo no celular.');
   });
+
+  // =====================================================
+  // HOJE MAIS PRÁTICO: cada visita de hoje com Mapa, Avisar, Iniciar e Concluir (e "Levar: …")
+  // Ordem: hora → manhã → tarde → sem horário, ou a da Rota do dia quando ela foi montada hoje.
+  // =====================================================
+  // o que levar: componentes a trocar e peças lançadas na OS (só o nome e a quantidade)
+  function levarDaOS(o) {
+    const itens = [];
+    const nomes = (o && o.componentesNomes) || {};
+    (o && Array.isArray(o.componentesTrocados) ? o.componentesTrocados : []).forEach(id => { const n = (compPorId(id) || {}).nome || nomes[id]; if (n) itens.push(n); });
+    (o && Array.isArray(o.pecas) ? o.pecas : []).forEach(p => {
+      const d = String(p.descricao || '').trim();
+      const q = Number(p.qtd != null ? p.qtd : p.quantidade) || 0;
+      if (d) itens.push(d + (q > 1 ? ' (' + numBR(q, q % 1 ? 1 : 0) + ')' : ''));
+    });
+    return [...new Set(itens)].join(', ');
+  }
+  function ordemHoje(lista) {
+    if (!(rota && rota.data === todayISO() && rota.paradas.length)) return lista;
+    const ordem = paradasOrdenadas().map(p => p.id);
+    const pos = id => { const i = ordem.indexOf(id); return i < 0 ? 9999 : i; };
+    return lista.slice().sort((a, b) => pos(a.produtorId) - pos(b.produtorId));   // fora da rota: continua na ordem do dia
+  }
+  function msgPassoHoje(p, o) {
+    return 'Oi ' + primeiroNome(p.nome) + '! Passo aí hoje' + turnoFala(o.agendadaPeriodo, o.agendadaHora) + ' ' + paraQueFala(tipoOS(o), o.categoria || 'ordenha') + '. — ' + assinaturaTecnico(o.tecnicoId || viewerId);
+  }
+  async function iniciarOSDoIndice(o) {
+    const pid = o.produtorId;
+    const v = await osCompleta(pid, o.id);
+    const base = v || o;
+    if (!podeEditarOS(base)) { avisar('Você não tem permissão para mexer nesta OS.'); return; }
+    if (statusOS(base) !== 'agendada' && statusOS(base) !== 'aberta') return;
+    const souTecnico = !!viewerId && tecnicosManut().some(u => u.id === viewerId);
+    const m = { status: 'andamento', data: todayISO(), horaInicio: base.horaInicio || horaAgora(), tecnicoId: base.tecnicoId || (souTecnico ? viewerId : null), agendadaPara: base.agendadaPara || todayISO() };
+    if (v) mudarOS(pid, v, m, 'iniciou');
+    else {
+      // sem a OS inteira neste aparelho (sem sinal): muda só esses campos, na OS e no índice
+      const agora = Date.now();
+      const mm = { ...m, atualizadoPor: viewerId || null, atualizadoEm: agora, historico: (o.historico || []).concat([{ acao: 'iniciou', status: 'andamento', por: viewerId || null, em: agora }]).slice(-30) };
+      gravar('update', 'produtores/' + pid + '/visitas/' + o.id, mm);
+      gravar('update', 'ordens/' + o.id, mm);
+    }
+    avisoRapido(numOS(o.numero) + ' iniciada às ' + m.horaInicio + '.');
+  }
+  // o mesmo "✓ Concluir" da ficha: abre a OS já em "Concluída" para preencher o que foi feito
+  function concluirOSNoForm(v) {
+    openVisitaModal(v);
+    if ($('modal-visita').hidden) return;
+    osStatus = 'concluida';
+    if (!$('os-hora-fim').value && $('os-hora-ini').value) $('os-hora-fim').value = horaAgora();
+    if (!$('os-tecnico').value && viewerId && tecnicosManut().some(u => u.id === viewerId)) $('os-tecnico').value = viewerId;
+    pintarTempo();
+    pintarFormOS();
+    setTimeout(() => { if (!osAssinaturaAtual) window.limparAssinatura(); }, 60);
+  }
+  function acoesHoje(box, o) {
+    const p = produtorPorId(o.produtorId);
+    const d = document.createElement('div');
+    d.className = 'hj-extra';
+    const lev = levarDaOS(o);
+    if (lev) { const l = document.createElement('div'); l.className = 'hj-levar'; l.innerHTML = '<b>Levar:</b> '; l.appendChild(document.createTextNode(lev)); d.appendChild(l); }
+    const ac = document.createElement('div');
+    ac.className = 'hj-acoes';
+    const links = p ? linksMapa(p) : null;
+    if (links && links.google) {
+      const a = document.createElement('a');
+      a.className = 'os-acao'; a.href = links.google; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Mapa';
+      a.setAttribute('aria-label', 'Abrir ' + (p.nome || '') + ' no mapa');
+      ac.appendChild(a);
+    }
+    const botao = (txt, fn, primaria, rotulo) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'os-acao' + (primaria ? ' primaria' : ''); b.textContent = txt;
+      if (rotulo) b.setAttribute('aria-label', rotulo);
+      b.addEventListener('click', fn); ac.appendChild(b);
+    };
+    if (p) botao('Avisar', () => mandarWhatsProdutor(p, msgPassoHoje(p, o)), false, 'Avisar ' + (p.nome || '') + ' no WhatsApp');
+    const st = statusOS(o);
+    if (podeEditarOS(o) && st === 'agendada') botao('Iniciar', () => iniciarOSDoIndice(o), false, 'Iniciar ' + numOS(o.numero));
+    if (podeEditarOS(o) && (st === 'agendada' || st === 'andamento')) botao('Concluir', () => abrirOSNaFicha(o.produtorId, o.id, 'home', concluirOSNoForm), true, 'Concluir ' + numOS(o.numero));
+    if (ac.children.length) d.appendChild(ac);
+    if (d.children.length) box.appendChild(d);
+  }
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
