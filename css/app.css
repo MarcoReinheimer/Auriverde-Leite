@@ -3389,3 +3389,36 @@
   .agd-whats { width: 100%; background: #15803D; border-color: #15803D; color: #FFFFFF; }
   .os-card-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; }
   .ficha-topo .contato-acoes button.acao-link { font-family: inherit; cursor: pointer; }
+
+  /* Anotar (topo do Início) e "Para agendar" */
+  .an-card { padding: 12px 12px 10px; margin-bottom: 12px; }
+  .an-card[hidden], .an-lista-card[hidden] { display: none; }
+  #an-texto { display: block; width: 100%; min-height: 52px; resize: none; font-size: 17px; line-height: 1.35; padding: 12px 14px; border-radius: 12px;
+    border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font-family: inherit; }
+  .an-dica { font-size: 13px; color: var(--ink-soft); margin: 6px 2px 8px; }
+  .an-botoes { display: flex; gap: 8px; }
+  .an-botoes button { min-height: 44px; }
+  .an-botoes .an-ok { flex: 1; }
+  .an-mic.on { border-color: var(--tax); color: var(--tax); }
+  .an-res { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .an-res-tit { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin-bottom: 6px; }
+  .an-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .an-chip { min-height: 36px; max-width: 100%; padding: 6px 11px; border-radius: 999px; border: 1.5px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+    color: var(--accent-txt); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .an-chip.falta { border-style: dashed; border-color: var(--tax); background: color-mix(in srgb, var(--tax) 10%, var(--bg)); color: var(--tax); }
+  .an-chip.fraco { border-color: var(--line); background: var(--bg); color: var(--ink-soft); font-weight: 600; }
+  .an-chip.urg { border-color: var(--tax); background: var(--tax); color: #FFFFFF; }
+  .an-chip.motivo { font-weight: 600; }
+  .an-chip.on { outline: 2px solid var(--ink); outline-offset: 1px; }
+  .an-opcoes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding: 10px; border-radius: 12px; background: var(--surface-2); }
+  .an-opcoes[hidden] { display: none; }
+  .an-opcoes .os-chip { min-height: 38px; padding: 6px 11px; font-size: 14px; }
+  .an-op-campo { flex: 1 1 160px; min-height: 40px; }
+  .an-res-aviso { font-size: 13px; color: var(--ink-soft); margin-top: 8px; }
+  .an-res-aviso[hidden] { display: none; }
+  .an-res-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .an-item { padding: 10px 0; border-top: 1px solid var(--line); }
+  .an-item:first-child { border-top: none; padding-top: 2px; }
+  .an-item-txt { font-size: 15px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+  .an-item-sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+  .an-item-acoes { display: flex; gap: 8px; margin-top: 8px; }

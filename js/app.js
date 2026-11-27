@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.27.1';
+  const APP_VERSAO = '2026.11.27.2';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -114,7 +114,7 @@
   let dbRef = null;
   const DEMO_CHAVE = 'auriverde_demo';
   const DEMO_ATIVO = (() => { try { return localStorage.getItem(DEMO_CHAVE) === '1'; } catch (e) { return false; } })();
-  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque', 'orcamentos', 'avisos', 'avisos-tecnicos'];
+  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque', 'orcamentos', 'avisos', 'avisos-tecnicos', 'anotacoes'];
   function caminhoFisico(c) {
     if (!DEMO_ATIVO) return c;
     const i = c.indexOf('/'), raiz = i < 0 ? c : c.slice(0, i);
@@ -435,6 +435,7 @@
     assinar('calculos', l => { calculos = l.filter(naoArquivado); renderHistorico(); }, (a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
     assinar('vendas', l => { vendasTodas = l; vendas = escoparVendas(l); aoMudarVendas(); renderResumoHome(); }, (a, b) => (b.data || '').localeCompare(a.data || ''));
     assinar('orcamentos', l => { orcamentosTodos = l; aoMudarOrcamentos(); });
+    assinar('anotacoes', l => { anotacoesTodas = l; renderListaAnotacoes(); });
     assinar('config', l => aplicarConfig(l));
     iniciarEncaminhamentos();
     iniciarOrdens();
@@ -11698,6 +11699,7 @@
   }
   function renderHomeManut() {
     renderInicio();
+    renderAnotar();
     const foco = focoManutencao();
     document.body.classList.toggle('foco-manut', foco);
     $('home-manut').hidden = !foco;
@@ -12255,6 +12257,364 @@
       .forEach(o => { if (!m[o.produtorId]) m[o.produtorId] = o; });
     return m;
   }
+
+  // =====================================================
+  // ANOTAR (substitui o papel): "Valdir amanhã de manhã, resfriador não gela"
+  // interpretarAnotacao lê a frase só com regras (sem inteligência artificial).
+  // O que fica sem produtor ou sem dia vai para "Para agendar" (anotacoes/<id>).
+  // =====================================================
+  const AN_PARADAS = new Set(('de da do das dos e a o as os pra pro pras pros para com no na nos nas em um uma que se ver ir ligar visita visitar passar marcar agendar ' +
+    'ja hoje amanha dia depois tarde manha cedo proxima proximo vem urgente mais ta esta nao sem por pela pelo ao aos meu minha seu sua la ai ele ela quer precisa tem ' +
+    'sr sra seu dona senhor senhora falar avisar chamar ligou pediu disse problema').split(' '));
+  const AN_CONECTORES = new Set('de da do das dos pro pra pros pras para no na nos nas o a os as e com em ao aos que linha'.split(' '));
+  function anLev(a, b) {
+    if (Math.abs(a.length - b.length) > 2) return 9;
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[a.length][b.length];
+  }
+  const anTokens = s => normalizarBusca(s).split(/[^a-z0-9]+/).filter(t => t.length >= 2);
+  // base = o dia em que a anotação foi escrita ("amanhã" escrito ontem é hoje)
+  function interpretarAnotacao(texto, base) {
+    base = base || todayISO();
+    const orig = Array.from(String(texto || '').normalize('NFC'));
+    // uma letra do texto = uma letra da versão sem acento (as posições batem)
+    const norm = orig.map(ch => { const n = ch.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); return n.length === 1 ? n : (n.charAt(0) || ' '); }).join('');
+    const usado = new Array(orig.length).fill(false);
+    const marcar = (i, n) => { for (let k = i; k < i + n; k++) usado[k] = true; };
+    const livre = () => norm.split('').map((c, i) => (usado[i] ? ' ' : c)).join('');
+    const todos = (re, s) => { const out = []; re.lastIndex = 0; let m; while ((m = re.exec(s))) { out.push(m); if (!m[0]) re.lastIndex++; } return out; };
+    const dataOk = (y, m, d) => { const t = new Date(y, m - 1, d); return t.getFullYear() === y && t.getMonth() === m - 1 && t.getDate() === d; };
+    const iso = (y, m, d) => y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const [by, bm, bd] = base.split('-').map(Number);
+    const baseDow = diaSemanaISO(base);
+    const r = { data: '', periodo: '', hora: '', categoria: 'ordenha', tipo: 'visita', urgente: false, produtorId: null, candidatos: [], motivo: '' };
+
+    // ---- dia ----
+    const achados = [];
+    todos(/\bdepois\s+de\s+amanha\b/g, norm).forEach(m => achados.push({ m, data: addDaysISO(base, 2) }));
+    todos(/\bamanha\b/g, norm).forEach(m => achados.push({ m, data: addDaysISO(base, 1) }));
+    todos(/\bhoje\b/g, norm).forEach(m => achados.push({ m, data: base }));
+    const DOW = { dom: 0, domingo: 0, seg: 1, segunda: 1, ter: 2, terca: 2, qua: 3, quarta: 3, qui: 4, quinta: 4, sex: 5, sexta: 5, sab: 6, sabado: 6 };
+    todos(/\b(?:(?:na|nesta|essa|esta|nessa)\s+)?(?:proxim[ao]\s+)?(segunda|terca|quarta|quinta|sexta|sabado|domingo|seg|ter|qua|qui|sex|sab|dom)(?:\s*-?\s*feira)?(\s+(?:da\s+semana\s+)?que\s+vem)?\b/g, norm).forEach(m => {
+      // "ter" também é verbo: "ter que", "ter um"…
+      if (m[1] === 'ter' && /^\s+(que|de|um|uma|o|a|os|as|como|mais|isso|problema|algum|alguma)\b/.test(norm.slice(m.index + m[0].length))) return;
+      const alvo = DOW[m[1]];
+      let d;
+      if (m[2]) { const seg = addDaysISO(base, -((baseDow + 6) % 7) + 7); d = addDaysISO(seg, (alvo + 6) % 7); }   // o da semana seguinte
+      else { let dif = (alvo - baseDow + 7) % 7; if (!dif) dif = 7; d = addDaysISO(base, dif); }                        // sempre o próximo
+      achados.push({ m, data: d });
+    });
+    todos(/\b(?:dia\s+)?(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?\b/g, norm).forEach(m => {
+      const dd = Number(m[1]), mm = Number(m[2]);
+      let yy = m[3] ? Number(m[3].length === 2 ? '20' + m[3] : m[3]) : by;
+      if (!dataOk(yy, mm, dd)) return;
+      if (!m[3] && iso(yy, mm, dd) < base) yy++;
+      if (dataOk(yy, mm, dd)) achados.push({ m, data: iso(yy, mm, dd) });
+    });
+    todos(/\bdia\s+(\d{1,2})\b(?!\s*[\/:h]\s*\d)/g, norm).forEach(m => {
+      const dd = Number(m[1]);
+      if (dd < 1 || dd > 31) return;
+      let y = by, mo = bm;
+      if (dd < bd) { mo++; if (mo > 12) { mo = 1; y++; } }
+      for (let i = 0; i < 12 && !dataOk(y, mo, dd); i++) { mo++; if (mo > 12) { mo = 1; y++; } }
+      if (dataOk(y, mo, dd)) achados.push({ m, data: iso(y, mo, dd) });
+    });
+    // vale o primeiro que aparece no texto ("depois de amanhã" ganha de "amanhã" no mesmo lugar)
+    achados.sort((a, b) => a.m.index - b.m.index || b.m[0].length - a.m[0].length);
+    if (achados.length) { r.data = achados[0].data; marcar(achados[0].m.index, achados[0].m[0].length); }
+
+    // ---- hora ----
+    const ajustar = (h, qual) => { if ((qual === 'tarde' || qual === 'noite') && h < 12) return h + 12; if (!qual && h >= 1 && h <= 5) return h + 12; return h; };
+    const horaTxt = (h, mi) => String(h).padStart(2, '0') + ':' + String(mi).padStart(2, '0');
+    const sH = livre();
+    const horas = [];
+    todos(/\b(?:as\s+)?(\d{1,2})\s*(?:h|:)\s*(\d{2})\b(?:\s+da\s+(manha|tarde|noite))?/g, sH).forEach(m => horas.push({ m, h: ajustar(Number(m[1]), m[3]), mi: Number(m[2]) }));
+    todos(/\b(?:as\s+)?(\d{1,2})\s*(?:h|hs|hrs?|horas?)\b(?:\s+da\s+(manha|tarde|noite))?/g, sH).forEach(m => horas.push({ m, h: ajustar(Number(m[1]), m[2]), mi: 0 }));
+    // "às 2 da tarde", "às 8 e meia", "às 9" (mas "as 4 teteiras" não é hora)
+    todos(/\bas\s+(\d{1,2})(?:\s+e\s+(meia|\d{1,2}))?(?:\s+da\s+(manha|tarde|noite))?\b/g, sH).forEach(m => {
+      const depois = sH.slice(m.index + m[0].length).match(/^\s*([a-z]+)?/);
+      const prox = depois && depois[1];
+      if (!m[2] && !m[3] && prox && !['pra', 'para', 'pro', 'ver', 'no', 'na', 'ou', 'que', 'ai', 'la', 'com', 'e', 'ate', 'em'].includes(prox)) return;
+      horas.push({ m, h: ajustar(Number(m[1]), m[3]), mi: m[2] === 'meia' ? 30 : Number(m[2] || 0) });
+    });
+    todos(/\b(\d{1,2})\s+e\s+meia\b(?:\s+da\s+(manha|tarde|noite))?/g, sH).forEach(m => horas.push({ m, h: ajustar(Number(m[1]), m[2]), mi: 30 }));
+    todos(/\b(\d{1,2})\s+da\s+(manha|tarde|noite)\b/g, sH).forEach(m => horas.push({ m, h: ajustar(Number(m[1]), m[2]), mi: 0 }));
+    todos(/\b(?:ao\s+)?meio[\s-]dia(\s+e\s+meia)?\b/g, sH).forEach(m => horas.push({ m, h: 12, mi: m[1] ? 30 : 0 }));
+    const hv = horas.filter(x => x.h >= 0 && x.h <= 23 && x.mi >= 0 && x.mi <= 59).sort((a, b) => a.m.index - b.m.index || b.m[0].length - a.m[0].length);
+    if (hv.length) { r.hora = horaTxt(hv[0].h, hv[0].mi); marcar(hv[0].m.index, hv[0].m[0].length); }
+
+    // ---- período ----
+    const per = todos(/\b(?:(?:de|pela|na|a|parte\s+da|no)\s+)?(manha|cedo|tarde)\b/g, livre());
+    if (per.length) {
+      if (!r.hora) r.periodo = per[0][1] === 'tarde' ? 'tarde' : 'manha';
+      marcar(per[0].index, per[0][0].length);
+    }
+
+    // ---- categoria, tipo e urgência (no texto todo) ----
+    if (/\b(resfri\w*|tanques?|gel(a|ar|ando|ou|ava|am)\b|esfri\w*|compressor\w*)/.test(norm)) r.categoria = 'resfriador';
+    else if (/\b(ventila\w*|aspers\w*|compost\w*|canzi\w*|camas?\b|bebedouro\w*|exaust\w*)/.test(norm)) r.categoria = 'conforto';
+    if (/\b(revis\w*|preventiv\w*)/.test(norm)) r.tipo = 'preventiva';
+    else if (/\binstal\w*/.test(norm)) r.tipo = 'instalacao';
+    else if (/\b(quebr\w*|parou|parad[oa]s?|vazand\w*|vazament\w*|nao\s+(funciona\w*|liga\w*|gela\w*|esfria\w*)|perdendo\s+vacuo|sem\s+vacuo|estragou|queimou)\b/.test(norm)) r.tipo = 'corretiva';
+    r.urgente = /\b(urgente|urgencia|parad[oa]s?|parou|nao\s+gela\w*|sem\s+vacuo)\b/.test(norm);
+
+    // ---- produtor: nome, apelido e linha (sem acento, sem maiúsculas) ----
+    const palavras = todos(/[a-z0-9]+/g, livre()).filter(m => m[0].length >= 3 && !AN_PARADAS.has(m[0]) && !/^\d+$/.test(m[0]));
+    const notas = produtores.map(p => {
+      const nome = anTokens(p.nome), apel = anTokens(p.apelido || ''), linha = anTokens(String(p.linha || '').replace(/^\s*linha\s+/i, '')).filter(t => t.length >= 3 && !AN_PARADAS.has(t));
+      let nota = 0; const casou = [];
+      palavras.forEach(w => {
+        let melhor = 0;
+        nome.concat(apel).forEach((t, i) => {
+          let v = 0;
+          if (w[0] === t) v = 10 + (i === 0 ? 2 : 0);
+          else if (w[0].length >= 4 && t.startsWith(w[0])) v = 6;
+          else if (w[0].length >= 5 && anLev(w[0], t) <= 1) v = 7;
+          else if (w[0].length >= 7 && anLev(w[0], t) <= 2) v = 5;
+          if (v > melhor) melhor = v;
+        });
+        if (melhor) casou.push(w);
+        else if (linha.includes(w[0])) { melhor = 3; casou.push(w); }
+        nota += melhor;
+      });
+      return { p, nota, casou };
+    }).filter(x => x.nota >= 6).sort((a, b) => b.nota - a.nota || (a.p.nome || '').localeCompare(b.p.nome || ''));
+    if (notas.length) {
+      const empate = notas.length > 1 && notas[1].nota >= notas[0].nota;
+      if (!empate) r.produtorId = notas[0].p.id;
+      r.candidatos = (empate ? notas.filter(x => x.nota >= notas[0].nota * 0.6) : notas).slice(0, 3).map(x => x.p.id);
+      (empate ? notas.filter(x => x.nota >= notas[0].nota) : [notas[0]]).forEach(x => x.casou.forEach(w => marcar(w.index, w[0].length)));
+    }
+
+    // ---- motivo: o texto sem as partes de data, hora e nome ----
+    let pal = [];
+    let atual = '';
+    orig.forEach((ch, i) => {
+      if (usado[i] || /\s/.test(ch)) { if (atual) pal.push(atual); atual = ''; if (usado[i] && pal[pal.length - 1] !== null) pal.push(null); }
+      else atual += ch;
+    });
+    if (atual) pal.push(atual);
+    // tira conectores que sobraram nas pontas e ao lado do que saiu ("ligar pro [Darci]" fica; "resfriador do [Valdir]" vira "resfriador")
+    const limpa = w => normalizarBusca(w).replace(/[^a-z0-9]/g, '');
+    for (let i = 0; i < pal.length; i++) {
+      if (pal[i] === null) {
+        for (let k = i - 1; k >= 0 && pal[k] !== null && AN_CONECTORES.has(limpa(pal[k])); k--) pal[k] = null;
+        for (let k = i + 1; k < pal.length && pal[k] !== null && AN_CONECTORES.has(limpa(pal[k])); k++) pal[k] = null;
+      }
+    }
+    pal = pal.filter(w => w !== null);
+    while (pal.length && AN_CONECTORES.has(limpa(pal[0]))) pal.shift();
+    while (pal.length && AN_CONECTORES.has(limpa(pal[pal.length - 1]))) pal.pop();
+    r.motivo = pal.join(' ').replace(/\s+([,.;:!?])/g, '$1').replace(/^[\s,.;:!?—–-]+|[\s,.;:—–-]+$/g, '').trim();
+    if (r.motivo) r.motivo = r.motivo.charAt(0).toUpperCase() + r.motivo.slice(1);
+    return r;
+  }
+
+  // ---------- campo "Anotar…" no topo do Início ----------
+  var anotacoesTodas = [], anAtual = null, anAberto = '';
+  function podeAnotar() { return acesso.estado === 'ativo' && podeLancar('visitas'); }
+  function anotacoesAbertas() {
+    return anotacoesTodas.filter(a => a.situacao === 'aberta' && (!viewerId || !a.criadoPor || a.criadoPor === viewerId))
+      .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
+  }
+  function renderAnotar() {
+    const pode = podeAnotar();
+    $('an-card').hidden = !pode;
+    renderListaAnotacoes();
+  }
+  function anInterpretar() {
+    const texto = $('an-texto').value.trim();
+    if (!texto) { $('an-texto').focus(); return; }
+    anAtual = { texto, id: null, r: interpretarAnotacao(texto) };
+    anAberto = !anAtual.r.produtorId && anAtual.r.candidatos.length ? 'produtor' : '';
+    // sem produtor ou sem dia: já fica guardada em "Para agendar" (nada some sozinho)
+    if (!anAtual.r.produtorId || !anAtual.r.data) anGuardar(false);
+    renderAnResultado();
+  }
+  function anGuardar(limpar) {
+    const a = anAtual;
+    if (!a) return;
+    if (!a.id) {
+      a.id = novoId();
+      gravar('set', 'anotacoes/' + a.id, { texto: a.texto, criadoPor: viewerId || null, criadoEm: Date.now(), situacao: 'aberta', osId: null });
+    }
+    if (limpar) { anLimpar(); avisoRapido('Guardada em "Para agendar".'); }
+  }
+  function anLimpar() {
+    anAtual = null; anAberto = '';
+    $('an-texto').value = '';
+    anAjustarAltura();
+    $('an-res').hidden = true;
+    $('an-res').innerHTML = '';
+  }
+  function anAjustarAltura() { const t = $('an-texto'); t.style.height = 'auto'; t.style.height = Math.min(160, t.scrollHeight + 2) + 'px'; }
+  function anChip(box, txt, cls, chave) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'an-chip' + (cls ? ' ' + cls : '') + (anAberto === chave ? ' on' : '');
+    b.textContent = txt;
+    b.addEventListener('click', () => {
+      if (chave === 'urgente') { anAtual.r.urgente = !anAtual.r.urgente; renderAnResultado(); return; }
+      anAberto = anAberto === chave ? '' : chave; renderAnResultado();
+    });
+    box.appendChild(b);
+  }
+  function renderAnResultado() {
+    const a = anAtual, box = $('an-res');
+    if (!a) { box.hidden = true; return; }
+    const r = a.r, p = r.produtorId ? produtorPorId(r.produtorId) : null;
+    box.innerHTML = '<div class="an-res-tit">Entendi:</div><div class="an-chips"></div><div class="an-opcoes" hidden></div><div class="an-res-aviso" hidden></div><div class="an-res-botoes"></div>';
+    const chips = box.querySelector('.an-chips');
+    anChip(chips, p ? p.nome : (r.candidatos.length ? 'Qual produtor?' : 'Sem produtor'), p ? '' : 'falta', 'produtor');
+    anChip(chips, r.data ? DIAS_CURTO[diaSemanaISO(r.data)].toLowerCase() + ' ' + ddmmISO(r.data) : 'Sem dia', r.data ? '' : 'falta', 'data');
+    anChip(chips, r.hora || (PERIODOS[r.periodo] || 'sem horário'), r.hora || r.periodo ? '' : 'fraco', 'periodo');
+    anChip(chips, CAT_LABEL[r.categoria] === 'Conforto animal' ? 'Conforto' : CAT_LABEL[r.categoria], '', 'categoria');
+    anChip(chips, { visita: 'Visita', preventiva: 'Preventiva', corretiva: 'Corretiva', instalacao: 'Instalação' }[r.tipo], '', 'tipo');
+    anChip(chips, r.urgente ? 'urgente' : 'não urgente', r.urgente ? 'urg' : 'fraco', 'urgente');
+    anChip(chips, r.motivo ? '“' + r.motivo + '”' : '+ o que é', r.motivo ? 'motivo' : 'fraco', 'motivo');
+    // opções do chip tocado
+    const op = box.querySelector('.an-opcoes');
+    const opcao = (txt, on, fn, cor) => chipAg(op, txt, on, () => { fn(); renderAnResultado(); }, cor);
+    if (anAberto === 'produtor') {
+      r.candidatos.map(produtorPorId).filter(Boolean).forEach(c => opcao(c.nome, c.id === r.produtorId, () => { r.produtorId = c.id; anAberto = ''; }));
+      opcao(r.candidatos.length ? 'Outro…' : 'Escolher produtor…', false, () => {
+        anAberto = '';
+        escolherProdutor('Para qual produtor?', pid => { if (anAtual === a) { r.produtorId = pid; if (!r.candidatos.includes(pid)) r.candidatos = [pid].concat(r.candidatos).slice(0, 3); renderAnResultado(); } });
+      });
+    } else if (anAberto === 'data') {
+      chipsQuando().forEach(([d, t]) => opcao(t, r.data === d, () => { r.data = d; anAberto = ''; }));
+      const inp = document.createElement('input'); inp.type = 'date'; inp.className = 'an-op-campo'; inp.min = todayISO(); inp.value = r.data || '';
+      inp.setAttribute('aria-label', 'Outra data');
+      inp.addEventListener('change', () => { if (inp.value) { r.data = inp.value; anAberto = ''; renderAnResultado(); } });
+      op.appendChild(inp);
+    } else if (anAberto === 'periodo') {
+      [['manha', 'Manhã'], ['tarde', 'Tarde'], ['', 'Sem horário']].forEach(([k, t]) => opcao(t, !r.hora && r.periodo === k, () => { r.periodo = k; r.hora = ''; anAberto = ''; }));
+      const inp = document.createElement('input'); inp.type = 'time'; inp.className = 'an-op-campo'; inp.value = r.hora || '';
+      inp.setAttribute('aria-label', 'Hora marcada');
+      inp.addEventListener('change', () => { if (horaValida(inp.value)) { r.hora = inp.value; r.periodo = ''; anAberto = ''; renderAnResultado(); } });
+      op.appendChild(inp);
+    } else if (anAberto === 'categoria') {
+      [['ordenha', 'Ordenha'], ['resfriador', 'Resfriador'], ['conforto', 'Conforto']].forEach(([k, t]) => opcao(t, r.categoria === k, () => { r.categoria = k; anAberto = ''; }, CAT_COLOR[k]));
+    } else if (anAberto === 'tipo') {
+      [['visita', 'Visita'], ['preventiva', 'Preventiva'], ['corretiva', 'Corretiva'], ['instalacao', 'Instalação']].forEach(([k, t]) => opcao(t, r.tipo === k, () => { r.tipo = k; anAberto = ''; }));
+    } else if (anAberto === 'motivo') {
+      const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'an-op-campo'; inp.value = r.motivo || ''; inp.maxLength = 200;
+      inp.placeholder = 'O que o produtor relatou'; inp.setAttribute('aria-label', 'O que o produtor relatou');
+      const fim = () => { r.motivo = inp.value.trim(); anAberto = ''; renderAnResultado(); };
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fim(); } });
+      inp.addEventListener('change', fim);
+      op.appendChild(inp);
+      setTimeout(() => inp.focus(), 30);
+    }
+    op.hidden = !op.children.length;
+    // aviso e botões
+    const falta = [!r.produtorId ? 'o produtor' : '', !r.data ? 'o dia' : ''].filter(Boolean);
+    const aviso = box.querySelector('.an-res-aviso');
+    if (a.id && falta.length) { aviso.textContent = 'Guardada em "Para agendar". Falta ' + falta.join(' e ') + '.'; aviso.hidden = false; }
+    const bt = box.querySelector('.an-res-botoes');
+    const botao = (txt, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = txt; b.addEventListener('click', fn); bt.appendChild(b); };
+    botao(falta.length ? 'Agendar…' : 'Agendar', 'btn-primary', () => anAgendar());
+    botao(a.id ? 'Fechar' : 'Guardar para depois', 'btn-secondary', () => { if (a.id) { anLimpar(); return; } anGuardar(true); });
+    box.hidden = false;
+  }
+  // agenda direto quando tem produtor e dia; senão, abre a janela de agendar já preenchida
+  async function anAgendar() {
+    const a = anAtual;
+    if (!a) return;
+    const r = a.r;
+    if (r.produtorId && r.data && produtorPorId(r.produtorId)) {
+      const p = produtorPorId(r.produtorId);
+      const c = { status: 'agendada', agendadaPara: r.data, agendadaPeriodo: r.hora ? '' : r.periodo, agendadaHora: r.hora || '', tecnicoId: viewerId || null,
+        tipo: r.tipo, categoria: r.categoria, motivo: r.motivo, urgencia: r.urgente ? 'urgente' : 'normal' };
+      anLimpar();
+      await gravarAgendamento(p.id, null, c, a.id ? { anotacaoId: a.id, id: 'an_' + a.id } : {});
+      mostrarAgendado(p, c);
+      return;
+    }
+    anGuardar(false);   // se fechar a janela sem agendar, a anotação continua em "Para agendar"
+    anLimpar();
+    abrirAgendarDaAnotacao(r, a.id);
+  }
+  function abrirAgendarDaAnotacao(r, anId) {
+    abrirAgendar({
+      produtorId: r.produtorId, fixo: false, data: r.data, periodo: r.periodo, hora: r.hora, categoria: r.categoria, tipo: r.tipo, motivo: r.motivo, urgente: r.urgente,
+      extra: anId ? { anotacaoId: anId, id: 'an_' + anId } : {}, origem: 'Da anotação', voltar: 'home'
+    });
+  }
+  $('an-ok').addEventListener('click', anInterpretar);
+  $('an-texto').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); anInterpretar(); } });
+  $('an-texto').addEventListener('input', anAjustarAltura);
+  // "Colar": lê o que foi copiado (ex.: a mensagem do produtor no WhatsApp)
+  $('an-colar').hidden = !(navigator.clipboard && navigator.clipboard.readText);
+  $('an-colar').addEventListener('click', async () => {
+    try {
+      const t = (await navigator.clipboard.readText() || '').trim();
+      if (!t) { avisoRapido('Não há nada copiado.'); return; }
+      const atual = $('an-texto').value.trim();
+      $('an-texto').value = atual ? atual + ' ' + t : t;
+      anAjustarAltura();
+      anInterpretar();
+    } catch (e) { avisoRapido('Não deu para ler o que foi copiado. Toque e segure no campo e escolha "Colar".'); }
+  });
+  // microfone: só quando o navegador reconhece voz (senão, o microfone do teclado do celular resolve)
+  (function () {
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const b = $('an-mic');
+    if (!Rec) { b.hidden = true; return; }
+    b.hidden = false;
+    let rec = null;
+    b.addEventListener('click', () => {
+      if (rec) { try { rec.stop(); } catch (e) {} return; }
+      try { rec = new Rec(); } catch (e) { rec = null; avisoRapido('O reconhecimento de voz não está disponível.'); return; }
+      rec.lang = 'pt-BR'; rec.interimResults = false; rec.maxAlternatives = 1;
+      b.classList.add('on'); b.setAttribute('aria-pressed', 'true');
+      rec.onresult = e => {
+        const t = Array.from(e.results).map(x => x[0] && x[0].transcript).filter(Boolean).join(' ').trim();
+        if (!t) return;
+        const atual = $('an-texto').value.trim();
+        $('an-texto').value = atual ? atual + ' ' + t : t;
+        anAjustarAltura();
+        anInterpretar();
+      };
+      rec.onerror = e => { if (e && e.error === 'not-allowed') avisoRapido('Libere o microfone para este app nas configurações do navegador.'); };
+      rec.onend = () => { rec = null; b.classList.remove('on'); b.setAttribute('aria-pressed', 'false'); };
+      try { rec.start(); } catch (e) { rec = null; b.classList.remove('on'); }
+    });
+  })();
+
+  // ---------- lista "Para agendar" ----------
+  function renderListaAnotacoes() {
+    const card = $('an-lista-card');
+    if (!card) return;
+    const l = podeAnotar() ? anotacoesAbertas() : [];
+    card.hidden = !l.length;
+    $('an-lista-n').textContent = String(l.length);
+    const box = $('an-lista');
+    box.innerHTML = '';
+    l.forEach(an => {
+      const r = interpretarAnotacao(an.texto, an.criadoEm ? isoDeData(new Date(an.criadoEm)) : todayISO());
+      const p = r.produtorId ? produtorPorId(r.produtorId) : null;
+      const it = document.createElement('div');
+      it.className = 'an-item';
+      it.innerHTML = '<div class="an-item-txt"></div><div class="an-item-sub"></div><div class="an-item-acoes"></div>';
+      it.querySelector('.an-item-txt').textContent = an.texto;
+      it.querySelector('.an-item-sub').textContent = [p ? p.nome : '', r.data ? DIAS_CURTO[diaSemanaISO(r.data)].toLowerCase() + ' ' + ddmmISO(r.data) : '', an.criadoEm ? 'anotada ' + quandoTxt(an.criadoEm) : ''].filter(Boolean).join(' · ');
+      const ac = it.querySelector('.an-item-acoes');
+      const b1 = document.createElement('button'); b1.type = 'button'; b1.className = 'os-acao primaria'; b1.textContent = '📅 Agendar';
+      b1.addEventListener('click', () => abrirAgendarDaAnotacao({ ...r, data: r.data && r.data >= todayISO() ? r.data : '' }, an.id));
+      const b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'os-acao'; b2.textContent = 'Descartar';
+      b2.addEventListener('click', async () => {
+        if (!(await confirmar('Descartar esta anotação?\n\n"' + an.texto + '"', 'Descartar'))) return;
+        gravar('update', 'anotacoes/' + an.id, { situacao: 'descartada', descartadaEm: Date.now(), descartadaPor: viewerId || null });
+      });
+      ac.appendChild(b1); ac.appendChild(b2);
+      box.appendChild(it);
+    });
+  }
+  function isoDeData(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
@@ -18536,7 +18896,7 @@
   // ---------- modo demonstração ----------
   const DEMO_SUBCOLS = ['equipamentos', 'visitas', 'medias', 'coletas', 'fotos', 'animais', 'lotes', 'atendimentos', 'sanidade', 'reproducao',
     'nutricao', 'dietas', 'acoes', 'ccsVacas', 'checklists'];
-  const DEMO_TOPO = ['demo_ordens', 'demo_encaminhamentos', 'demo_vendas', 'demo_calculos', 'demo_orcamentos'];
+  const DEMO_TOPO = ['demo_ordens', 'demo_encaminhamentos', 'demo_vendas', 'demo_calculos', 'demo_orcamentos', 'demo_anotacoes'];
   function nomeArquivoDemo(n) { return DEMO_ATIVO ? 'DEMONSTRACAO-' + n : n; }
   // PDFs gerados no modo demonstração saem marcados em todas as páginas
   function carimboDemoPdf(doc) {
