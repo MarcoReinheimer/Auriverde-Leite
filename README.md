@@ -125,5 +125,35 @@ no `config.js`, os botões mostram "Os avisos ainda não foram configurados".
    para cancelar: `select cron.unschedule('enviar-avisos-8h');`
 7. Coloque a Public Key no `config.js` (`vapidPublicKey: '...'`) e suba no GitHub.
 
+## Agenda no celular (calendário)
+Em **Mais → Agenda no celular**, cada técnico assina a própria agenda: as OS em aberto com data marcada aparecem no
+calendário do iPhone ou no Google Agenda, com aviso 1 hora antes (dia inteiro: às 7h) e na véspera às 19h.
+Quem monta o calendário é a função **agenda** do Supabase (`supabase/functions/agenda/index.ts`).
+
+- O link leva um código de 32 letras e números (o "token"), guardado em `agenda-tokens/<token>` = `{ uid, criadoEm }`.
+  O calendário do celular não faz login: a função confere o token sozinha. Token errado, ou pessoa bloqueada → 404.
+- Vai para o calendário: dia, período ou hora, nome e linha/cidade do produtor, motivo, telefone do produtor, nº da OS
+  e o que levar (componentes e peças, só o nome). **Nunca** custo, preço ou comissão.
+- Horários: hora marcada → 1h30; manhã → 8h às 12h; tarde → 13h30 às 17h30; sem horário → dia inteiro.
+- "Trocar link" apaga o token antigo e cria outro (o link velho para de funcionar).
+- Qualquer pessoa com acesso liberado no app consegue ler a coleção `agenda-tokens` (como lê as OS). Por isso o link
+  só mostra o que essa pessoa já vê no app.
+
+**Publicar a função (uma vez, no computador, na pasta do app).** Não precisa de segredo novo: o `SUPABASE_URL` e a
+`SUPABASE_SERVICE_ROLE_KEY` o Supabase já entrega para a função.
+1. Entre no Supabase e ligue a pasta ao projeto (o `<ref>` é o começo do endereço: `https://<ref>.supabase.co`):
+   ```
+   npx supabase login
+   npx supabase link --project-ref <ref>
+   ```
+2. Publique (`--no-verify-jwt` porque o calendário não manda login; a função confere o token):
+   ```
+   npx supabase functions deploy agenda --no-verify-jwt
+   ```
+3. Teste: um token qualquer tem que dar 404; depois, abra o link de **Mais → Agenda no celular** no navegador e veja o `BEGIN:VCALENDAR`.
+   ```
+   curl -i "https://<ref>.supabase.co/functions/v1/agenda?t=00000000000000000000000000000000"
+   ```
+
 ## Nunca coloque no config.js
 A chave **service_role / secret** nem a senha do banco. Nem a chave **privada** VAPID dos avisos (só a pública vai lá).

@@ -3422,3 +3422,13 @@
   .an-item-txt { font-size: 15px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
   .an-item-sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
   .an-item-acoes { display: flex; gap: 8px; margin-top: 8px; }
+
+  /* Agenda no celular */
+  .ac-intro { margin: -8px 0 12px; }
+  #ac-acoes[hidden], #ac-status[hidden] { display: none; }
+  .ac-btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin-top: 10px; text-decoration: none; }
+  .ac-link { font-family: var(--fonte-mono, monospace); font-size: 12px; color: var(--ink-soft); margin: 8px 2px 0; overflow-wrap: anywhere; }
+  .ac-passos { font-size: 14px; line-height: 1.5; margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+  .ac-passos p { margin: 0 0 8px; }
+  .ac-passos p:last-child { margin-bottom: 0; }
+  .ac-trocar { margin-top: 12px; }

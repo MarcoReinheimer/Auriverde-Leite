@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.27.2';
+  const APP_VERSAO = '2026.11.27.3';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -114,7 +114,7 @@
   let dbRef = null;
   const DEMO_CHAVE = 'auriverde_demo';
   const DEMO_ATIVO = (() => { try { return localStorage.getItem(DEMO_CHAVE) === '1'; } catch (e) { return false; } })();
-  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque', 'orcamentos', 'avisos', 'avisos-tecnicos', 'anotacoes'];
+  const DEMO_COLECOES = ['produtores', 'ordens', 'encaminhamentos', 'vendas', 'calculos', 'sistema', 'atividades', 'estoque', 'orcamentos', 'avisos', 'avisos-tecnicos', 'anotacoes', 'agenda-tokens'];
   function caminhoFisico(c) {
     if (!DEMO_ATIVO) return c;
     const i = c.indexOf('/'), raiz = i < 0 ? c : c.slice(0, i);
@@ -12616,6 +12616,76 @@
   }
   function isoDeData(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
+  // =====================================================
+  // AGENDA NO CELULAR: as visitas do técnico no calendário (Edge Function "agenda")
+  // O calendário do celular não faz login: o link leva um token de 32 letras e números,
+  // guardado em agenda-tokens/<token> = { uid, criadoEm }. "Trocar link" apaga o antigo.
+  // =====================================================
+  function novoTokenAgenda() {
+    const abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let t = '';
+    while (t.length < 32) {
+      const b = new Uint8Array(48);
+      crypto.getRandomValues(b);
+      for (const n of b) if (n < 248 && t.length < 32) t += abc[n % 62];   // 248 = 4 × 62: sem puxar para nenhuma letra
+    }
+    return t;
+  }
+  function urlFuncaoAgenda(t) {
+    const base = String((window.AURIVERDE_CONFIG && window.AURIVERDE_CONFIG.supabaseUrl) || '').trim().replace(/\/+$/, '');
+    return base && t ? base + '/functions/v1/agenda?t=' + t : '';
+  }
+  async function meusTokensAgenda() {
+    return (await lerColecao('agenda-tokens')).filter(x => x.uid && x.uid === viewerId).sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
+  }
+  var acToken = null;
+  function pintarAgendaCelular(estado) {
+    const link = urlFuncaoAgenda(acToken);
+    $('ac-status').textContent = estado || '';
+    $('ac-status').hidden = !estado;
+    $('ac-acoes').hidden = !link;
+    if (!link) return;
+    $('ac-iphone').href = 'webcal://' + link.replace(/^https?:\/\//, '');
+    $('ac-link').textContent = link.replace(/(\?t=.{4}).+(.{4})$/, '$1…$2');
+  }
+  async function abrirAgendaCelular() {
+    acToken = null;
+    $('ac-demo').hidden = !DEMO_ATIVO;
+    $('modal-agenda-cel').hidden = false;
+    if (!viewerId || !urlFuncaoAgenda('x')) { pintarAgendaCelular('A agenda no celular precisa do app ligado ao banco de dados (Supabase) e de você ter entrado com a sua conta.'); return; }
+    pintarAgendaCelular('Preparando o seu link…');
+    let l = await meusTokensAgenda();
+    let naFila = false;
+    if (!l.length) {
+      const t = novoTokenAgenda();
+      const r = await gravar('set', 'agenda-tokens/' + t, { uid: viewerId, criadoEm: Date.now() });
+      if (r && r.recusado) { pintarAgendaCelular('Não consegui criar o seu link. Tente de novo mais tarde.'); return; }
+      naFila = !!(r && r.naFila);
+      l = [{ id: t }];
+    }
+    acToken = l[0].id;
+    pintarAgendaCelular(naFila ? 'Sem internet agora: o link passa a funcionar quando a conexão voltar.' : '');
+  }
+  $('mais-agenda-cel').addEventListener('click', abrirAgendaCelular);
+  $('ac-fechar').addEventListener('click', () => { $('modal-agenda-cel').hidden = true; });
+  $('ac-copiar').addEventListener('click', async () => {
+    const link = urlFuncaoAgenda(acToken);
+    if (!link) return;
+    try { await navigator.clipboard.writeText(link); avisoRapido('Link copiado. Cole no Google Agenda: Outras agendas → Do URL.'); }
+    catch (e) { avisar('Copie o link abaixo e cole no Google Agenda (Outras agendas → Do URL):\n\n' + link); }
+  });
+  $('ac-trocar').addEventListener('click', async () => {
+    if (!acToken) return;
+    if (!(await confirmar('Trocar o link? O link antigo para de funcionar e você vai precisar assinar a agenda de novo no celular.', 'Trocar link'))) return;
+    const antigos = await meusTokensAgenda();
+    antigos.forEach(x => gravar('delete', 'agenda-tokens/' + x.id));
+    const t = novoTokenAgenda();
+    const r = await gravar('set', 'agenda-tokens/' + t, { uid: viewerId, criadoEm: Date.now() });
+    acToken = t;
+    pintarAgendaCelular(r && r.naFila ? 'Sem internet agora: o link novo passa a funcionar quando a conexão voltar.' : '');
+    avisoRapido('Link trocado. Assine de novo no celular.');
+  });
+
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
   // aplica a margem em cada grupo e gera o orçamento com os dados da empresa. O PDF não sai do aparelho.
@@ -18896,7 +18966,7 @@
   // ---------- modo demonstração ----------
   const DEMO_SUBCOLS = ['equipamentos', 'visitas', 'medias', 'coletas', 'fotos', 'animais', 'lotes', 'atendimentos', 'sanidade', 'reproducao',
     'nutricao', 'dietas', 'acoes', 'ccsVacas', 'checklists'];
-  const DEMO_TOPO = ['demo_ordens', 'demo_encaminhamentos', 'demo_vendas', 'demo_calculos', 'demo_orcamentos', 'demo_anotacoes'];
+  const DEMO_TOPO = ['demo_ordens', 'demo_encaminhamentos', 'demo_vendas', 'demo_calculos', 'demo_orcamentos', 'demo_anotacoes', 'demo_agenda-tokens'];
   function nomeArquivoDemo(n) { return DEMO_ATIVO ? 'DEMONSTRACAO-' + n : n; }
   // PDFs gerados no modo demonstração saem marcados em todas as páginas
   function carimboDemoPdf(doc) {
