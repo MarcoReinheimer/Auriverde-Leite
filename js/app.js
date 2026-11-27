@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.27.5';
+  const APP_VERSAO = '2026.11.27.6';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -3340,12 +3340,12 @@
   }
   const CFG_CAMPOS = [
     ['cfg-icms-dentro', 'icmsDentro'], ['cfg-icms-fora', 'icmsFora'], ['cfg-margem', 'margemPadrao'],
-    ['cfg-comissao-pct', 'comissaoPct'], ['cfg-limite-ccs', 'limiteCCS'], ['cfg-limite-cpp', 'limiteCPP']
+    ['cfg-comissao-pct', 'comissaoPct'], ['cfg-limite-ccs', 'limiteCCS'], ['cfg-limite-cpp', 'limiteCPP'], ['cfg-agenda-max', 'agendaMaxDia']
   ];
   const CFG_LIMITES = {
     icmsDentro: [0, 100, 'o ICMS dentro de SC (de 0 a 100%)'], icmsFora: [0, 100, 'o ICMS fora de SC (de 0 a 100%)'],
     margemPadrao: [1, 79, 'a margem padrão (entre 1 e 79%)'], comissaoPct: [0, 100, 'a comissão (de 0 a 100%)'],
-    limiteCCS: [1, 100000, 'o limite de CCS'], limiteCPP: [1, 100000, 'o limite de CPP']
+    limiteCCS: [1, 100000, 'o limite de CCS'], limiteCPP: [1, 100000, 'o limite de CPP'], agendaMaxDia: [1, 30, 'o máximo de visitas por dia (de 1 a 30)']
   };
   async function abrirConfig(foco) {
     CFG_CAMPOS.forEach(([id, k]) => { $(id).value = numTxt(config[k]); });
@@ -3353,12 +3353,15 @@
     pintarCfgBase();
     cfgOsVenda = config.osViraVenda !== false;
     pintarCfgOsVenda();
+    cfgDias = diasDeTrabalho().slice();
+    pintarCfgDias();
     // null = o app ainda não sabe: deixa tentar, e o banco recusa se não for Editor
     const pode = ehAdmin();
     $('cfg-aviso').hidden = pode;
     CFG_CAMPOS.forEach(([id]) => { $(id).disabled = !pode; });
     $('cfg-comissao-base').querySelectorAll('button').forEach(b => { b.disabled = !pode; });
     $('cfg-os-venda').querySelectorAll('button').forEach(b => { b.disabled = !pode; });
+    $('cfg-agenda-dias').querySelectorAll('button').forEach(b => { b.disabled = !pode; });
     $('cfg-comissao-save').hidden = !pode;
     $('cfg-comissao-cancel').textContent = pode ? 'Cancelar' : 'Fechar';
     $('cfg-autor').textContent = '';
@@ -3393,8 +3396,9 @@
     }
     novo.comissaoBase = cfgBase;
     novo.osViraVenda = cfgOsVenda;
-    novo.agendaMaxDia = config.agendaMaxDia;
-    novo.agendaDias = config.agendaDias;
+    if (!cfgDias.length) { avisar('Marque pelo menos um dia de trabalho.'); return; }
+    novo.agendaMaxDia = Math.round(novo.agendaMaxDia);
+    novo.agendaDias = cfgDias.slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
     novo.atualizadoPor = viewerId || null;
     novo.atualizadoEm = Date.now();
     gravar('set', 'config/geral', novo);
@@ -12837,6 +12841,239 @@
     marcarRetorno(d);
   });
   $('modal-retorno').addEventListener('click', e => { if (e.target === $('modal-retorno')) fecharRetorno(); });
+
+  // =====================================================
+  // SUGERIR A SEMANA: junta o que precisa de visita (chamados sem data, revisões e trocas vencendo)
+  // dos produtores do técnico, agrupa por linha (ou cidade) e distribui nos próximos dias de trabalho,
+  // no máximo N por dia (Configurações). Aceitar cria as OS agendadas (manhã para os primeiros, tarde para os outros).
+  // =====================================================
+  function maxVisitasDia() { return Math.max(1, Math.min(30, Math.round(Number(config.agendaMaxDia) || 5))); }
+  // produtor do técnico: o "Técnico responsável" do cadastro bate com o nome dele;
+  // sem técnico responsável no cadastro, vale quem atendeu por último (ou entra para todos, se nunca teve OS)
+  function produtorDoTecnico(p, tecId, ultimaPorProd) {
+    const resp = normalizarBusca(p.tecnico || '').trim();
+    if (resp) {
+      const u = usuariosLista.find(x => x.id === tecId) || {};
+      const nomes = [nomeReal(tecId), u.apelido, perfisCache[tecId] && perfisCache[tecId].name, tecId === viewerId ? nomeParaSaudar() : '']
+        .filter(Boolean).map(n => normalizarBusca(n).trim());
+      return nomes.some(n => n === resp || n.includes(resp) || resp.includes(n) || primeiroNome(n) === primeiroNome(resp));
+    }
+    const ult = ultimaPorProd[p.id];
+    return !ult || !ult.tecnicoId || ult.tecnicoId === tecId;
+  }
+  function chaveLinha(p) {
+    const l = String(p.linha || '').trim(), c = String(p.cidade || '').trim();
+    return l ? { chave: 'l:' + normalizarBusca(l), rotulo: l } : c ? { chave: 'c:' + normalizarBusca(c), rotulo: c } : { chave: '-', rotulo: 'Sem linha nem cidade' };
+  }
+  function montarSugestao(tecId) {
+    const hoje = todayISO(), lim15 = addDaysISO(hoje, REVISAO_ALERTA_DIAS);
+    const todas = osVisiveis();
+    const ultimaPorProd = {};
+    todas.filter(o => osConcluida(o) || statusOS(o) === 'andamento').forEach(o => {
+      const u = ultimaPorProd[o.produtorId];
+      if (!u || (o.data || '') > (u.data || '')) ultimaPorProd[o.produtorId] = o;
+    });
+    const ativas = todas.filter(osAtiva);
+    // já tem visita marcada nos próximos dias: revisão e troca ficam para essa visita
+    const marcadaLogo = new Set(ativas.filter(o => (statusOS(o) === 'agendada' || statusOS(o) === 'andamento') && (o.agendadaPara || '') >= hoje && (o.agendadaPara || '') <= lim15).map(o => o.produtorId));
+    const prevAtiva = new Set(ativas.filter(o => tipoOS(o) === 'preventiva').map(o => o.produtorId));
+    const meus = produtores.filter(p => situacaoDe(p) !== 'inativo' && produtorDoTecnico(p, tecId, ultimaPorProd));
+    const ids = new Set(meus.map(p => p.id));
+    const nec = {};
+    const de = p => (nec[p.id] = nec[p.id] || { p, chamados: [], revisao: '', comps: [], prio: 9, desde: '9' });
+    // 1. chamados abertos sem data (urgentes primeiro)
+    ativas.filter(o => statusOS(o) === 'aberta' && !o.agendadaPara && (ids.has(o.produtorId) || o.tecnicoId === tecId)).forEach(o => {
+      const p = produtorPorId(o.produtorId);
+      if (!p) return;
+      const n = de(p);
+      n.chamados.push(o);
+      n.prio = Math.min(n.prio, o.urgencia === 'urgente' ? 0 : 1);
+      const quando = o.criadoEm ? isoDeData(new Date(o.criadoEm)) : (o.data || hoje);
+      if (quando < n.desde) n.desde = quando;
+    });
+    // 2. revisões vencidas e vencendo nos próximos 15 dias
+    meus.forEach(p => {
+      if (!p.proximaRevisao || p.proximaRevisao > lim15 || prevAtiva.has(p.id) || marcadaLogo.has(p.id)) return;
+      const n = de(p);
+      n.revisao = p.proximaRevisao;
+      n.prio = Math.min(n.prio, p.proximaRevisao < hoje ? 2 : 3);
+      if (p.proximaRevisao < n.desde) n.desde = p.proximaRevisao;
+    });
+    // 3. componentes vencidos
+    try {
+      planoGeral().forEach(({ p, plano }) => {
+        if (!ids.has(p.id) || marcadaLogo.has(p.id)) return;
+        const venc = plano.itens.filter(it => it.cls === 'vencida' && !it.osAtiva);
+        if (!venc.length) return;
+        const n = de(p);
+        n.comps = venc;
+        n.prio = Math.min(n.prio, 2);
+        venc.forEach(it => { if (it.proxima && it.proxima < n.desde) n.desde = it.proxima; });
+      });
+    } catch (e) { extraErro(e); }
+    // agrupa por linha (ou cidade)
+    const grupos = {};
+    Object.values(nec).forEach(n => {
+      const k = chaveLinha(n.p);
+      (grupos[k.chave] = grupos[k.chave] || { chave: k.chave, rotulo: k.rotulo, itens: [], prio: 9, desde: '9' }).itens.push(n);
+    });
+    const lista = Object.values(grupos);
+    lista.forEach(g => {
+      g.itens.sort((a, b) => a.prio - b.prio || a.desde.localeCompare(b.desde) || (a.p.nome || '').localeCompare(b.p.nome || ''));
+      g.prio = g.itens[0].prio; g.desde = g.itens.reduce((m, n) => (n.desde < m ? n.desde : m), '9');
+    });
+    lista.sort((a, b) => a.prio - b.prio || a.desde.localeCompare(b.desde) || b.itens.length - a.itens.length);
+    // dias de trabalho seguintes, descontando o que já está marcado para o técnico
+    const max = maxVisitasDia();
+    const dias = proximosDiasUteis(hoje, 5).map(d => {
+      const ja = ativas.filter(o => o.tecnicoId === tecId && (statusOS(o) === 'agendada' || statusOS(o) === 'andamento') && o.agendadaPara === d);
+      const linhas = new Set(ja.map(o => { const p = produtorPorId(o.produtorId); return p ? chaveLinha(p).chave : ''; }).filter(Boolean));
+      return { data: d, ja: ja.length, livre: Math.max(0, max - ja.length), linhas, itens: [], aceito: false };
+    });
+    const fora = [];
+    lista.forEach(g => {
+      let resto = g.itens.slice();
+      while (resto.length) {
+        const cabe = d => d.livre >= resto.length;
+        const comLivre = dias.filter(d => d.livre > 0);
+        const dia = g.prio === 0
+          ? (dias.find(d => cabe(d)) || comLivre[0])                                   // urgente: o quanto antes
+          : (dias.find(d => d.linhas.has(g.chave) && d.livre > 0)                       // a mesma linha no mesmo dia
+            || dias.find(d => cabe(d))                                                  // o primeiro dia em que o grupo cabe inteiro
+            || comLivre[0]);                                                            // não cabe inteiro: divide
+        if (!dia) { fora.push(...resto); break; }
+        const n = Math.min(dia.livre, resto.length);
+        resto.splice(0, n).forEach(it => dia.itens.push({ ...it, grupo: g.rotulo, chave: g.chave }));
+        dia.livre -= n;
+        dia.linhas.add(g.chave);
+      }
+    });
+    return { tecId, dias, fora, max };
+  }
+  function motivosDaNecessidade(n) {
+    const m = [];
+    n.chamados.forEach(o => m.push((o.urgencia === 'urgente' ? 'Chamado urgente' : 'Chamado') + (o.motivo ? ': ' + resumoCurto(o.motivo) : '')));
+    if (n.revisao) m.push(n.revisao < todayISO() ? 'Revisão vencida desde ' + fmtDate(n.revisao) : 'Revisão em ' + fmtDate(n.revisao));
+    if (n.comps.length) m.push('Trocar: ' + n.comps.map(it => it.comp.nome.toLowerCase()).join(', '));
+    return m;
+  }
+  // manhã para os primeiros do dia, tarde para os outros
+  function periodoNaSugestao(dia, i) { return i < Math.ceil(dia.itens.length / 2) ? 'manha' : 'tarde'; }
+
+  var sgAtual = null;
+  function abrirSugerirSemana() {
+    if (!podeLancar('visitas')) { avisar('Você não tem permissão para agendar visitas.'); return; }
+    const sel = $('sg-tecnico');
+    $('sg-tec-field').hidden = !ehAdmin();
+    if (ehAdmin()) {
+      preencherTecnicos(sel, viewerId || '');
+      if (viewerId && ![...sel.options].some(o => o.value === viewerId)) { const o = document.createElement('option'); o.value = viewerId; o.textContent = (nomeParaSaudar() || 'Eu') + ' (você)'; sel.appendChild(o); }
+      sel.value = viewerId || sel.value;
+    }
+    sgAtual = montarSugestao((ehAdmin() && sel.value) || viewerId);
+    renderSugestao();
+    $('modal-sugerir').hidden = false;
+    $('modal-sugerir').querySelector('.modal-sheet').scrollTop = 0;
+  }
+  function renderSugestao() {
+    const s = sgAtual;
+    const box = $('sg-dias');
+    box.innerHTML = '';
+    const pendentes = s.dias.filter(d => d.itens.length && !d.aceito);
+    const total = s.dias.reduce((n, d) => n + (d.aceito ? 0 : d.itens.length), 0);
+    $('sg-resumo').textContent = total
+      ? plural(total, 'visita sugerida', 'visitas sugeridas') + ' nos próximos dias de trabalho · no máximo ' + s.max + ' por dia (já contando o que está marcado).'
+      : (s.dias.some(d => d.aceito) ? 'Tudo aceito. As visitas já estão na agenda.' : 'Nada para sugerir agora: nenhum chamado sem data, revisão ou troca vencendo para os seus produtores.');
+    s.dias.forEach(dia => {
+      if (!dia.itens.length) return;
+      const card = document.createElement('div');
+      card.className = 'sg-dia' + (dia.aceito ? ' aceito' : '');
+      const linhas = [...new Set(dia.itens.map(i => i.grupo))];
+      const dow = diaSemanaISO(dia.data);
+      const nomeDia = DIAS_LONGO[dow].charAt(0).toUpperCase() + DIAS_LONGO[dow].slice(1);
+      card.innerHTML = '<div class="sg-dia-tit"></div><div class="sg-dia-sub"></div><div class="sg-itens"></div><div class="sg-dia-acoes"></div>';
+      card.querySelector('.sg-dia-tit').textContent = nomeDia + ' ' + ddmmISO(dia.data) + ' · ' + linhas.join(' + ') + ' · ' + plural(dia.itens.length, 'produtor', 'produtores');
+      card.querySelector('.sg-dia-sub').textContent = dia.ja ? plural(dia.ja, 'visita já marcada', 'visitas já marcadas') + ' neste dia' : '';
+      const itens = card.querySelector('.sg-itens');
+      dia.itens.forEach((it, i) => {
+        const row = document.createElement('div');
+        row.className = 'sg-item';
+        row.innerHTML = '<div class="sg-item-txt"><div class="sg-item-nome"><span></span><span class="sg-per"></span></div><div class="sg-item-mot"></div></div>';
+        row.querySelector('.sg-item-nome span').textContent = it.p.nome;
+        row.querySelector('.sg-per').textContent = PERIODOS[periodoNaSugestao(dia, i)];
+        row.querySelector('.sg-item-mot').textContent = motivosDaNecessidade(it).join(' · ');
+        if (!dia.aceito) {
+          const t = document.createElement('button');
+          t.type = 'button'; t.className = 'os-acao sg-tirar'; t.textContent = 'Tirar';
+          t.setAttribute('aria-label', 'Tirar ' + it.p.nome + ' de ' + ddmmISO(dia.data));
+          t.addEventListener('click', () => { dia.itens.splice(dia.itens.indexOf(it), 1); renderSugestao(); });
+          row.appendChild(t);
+        }
+        itens.appendChild(row);
+      });
+      const ac = card.querySelector('.sg-dia-acoes');
+      if (dia.aceito) ac.textContent = '✓ Agendado';
+      else {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'os-acao primaria'; b.textContent = 'Aceitar o dia';
+        b.addEventListener('click', async () => { b.disabled = true; const n = await aceitarDia(dia); avisoRapido(plural(n, 'visita agendada', 'visitas agendadas') + ' para ' + ddmmISO(dia.data) + '.'); renderSugestao(); });
+        ac.appendChild(b);
+      }
+      box.appendChild(card);
+    });
+    const fora = $('sg-fora');
+    fora.innerHTML = '';
+    if (s.fora.length) {
+      const h = document.createElement('div'); h.className = 'section-label'; h.textContent = 'Não couberam nesta semana (' + s.fora.length + ')'; fora.appendChild(h);
+      s.fora.forEach(it => { const d = document.createElement('div'); d.className = 'sg-fora-item'; d.textContent = it.p.nome + ' · ' + motivosDaNecessidade(it).join(' · '); fora.appendChild(d); });
+    }
+    $('sg-tudo').hidden = !pendentes.length;
+  }
+  // cria as OS do dia: o chamado passa para agendado; revisão e trocas viram uma OS preventiva
+  async function aceitarDia(dia) {
+    if (dia.aceito) return 0;
+    dia.aceito = true;
+    const tec = sgAtual.tecId;
+    let n = 0;
+    for (let i = 0; i < dia.itens.length; i++) {
+      const it = dia.itens[i], per = periodoNaSugestao(dia, i);
+      const base = { status: 'agendada', agendadaPara: dia.data, agendadaPeriodo: per, agendadaHora: '', tecnicoId: tec };
+      for (const o of it.chamados) {
+        await gravarAgendamento(it.p.id, o, { ...base, tipo: tipoOS(o), categoria: o.categoria || 'ordenha', motivo: o.motivo || '', urgencia: o.urgencia === 'urgente' ? 'urgente' : 'normal' });
+        n++;
+      }
+      if (it.revisao || it.comps.length) {
+        const nomes = it.comps.map(c => c.comp.nome.toLowerCase());
+        const motivo = it.revisao ? 'Revisão preventiva da ordenhadeira (6 meses)' + (nomes.length ? ' e troca de ' + nomes.join(', ') : '') + '.' : 'Troca preventiva: ' + nomes.join(', ') + '.';
+        await gravarAgendamento(it.p.id, null, { ...base, tipo: 'preventiva', categoria: 'ordenha', motivo, urgencia: 'normal' },
+          { id: 'sg_' + it.p.id + '_' + dia.data.replace(/-/g, ''), componentes: it.comps.map(c => c.comp.id) });
+        n++;
+      }
+    }
+    return n;
+  }
+  $('os-sugerir').addEventListener('click', abrirSugerirSemana);
+  $('sg-tecnico').addEventListener('change', () => { sgAtual = montarSugestao($('sg-tecnico').value || viewerId); renderSugestao(); });
+  $('sg-fechar').addEventListener('click', () => { sgAtual = null; $('modal-sugerir').hidden = true; });
+  $('sg-tudo').addEventListener('click', async () => {
+    const b = $('sg-tudo');
+    b.disabled = true;
+    let n = 0;
+    try { for (const dia of sgAtual.dias) if (dia.itens.length && !dia.aceito) n += await aceitarDia(dia); } finally { b.disabled = false; }
+    avisoRapido(plural(n, 'visita agendada', 'visitas agendadas') + '.');
+    renderSugestao();
+  });
+
+  // ---------- Configurações: máximo por dia e dias de trabalho ----------
+  var cfgDias = [1, 2, 3, 4, 5];
+  function pintarCfgDias() {
+    document.querySelectorAll('#cfg-agenda-dias .os-chip').forEach(b => { const on = cfgDias.includes(Number(b.dataset.d)); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  }
+  document.querySelectorAll('#cfg-agenda-dias .os-chip').forEach(b => b.addEventListener('click', () => {
+    const d = Number(b.dataset.d);
+    cfgDias = cfgDias.includes(d) ? cfgDias.filter(x => x !== d) : cfgDias.concat(d);
+    pintarCfgDias();
+  }));
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),

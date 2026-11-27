@@ -3446,3 +3446,26 @@
   .rt-data-linha { display: flex; gap: 8px; margin-top: 10px; }
   .rt-data-linha input { flex: 1; min-width: 0; }
   .rt-data-linha [hidden] { display: none; }
+
+  /* Sugerir minha semana */
+  .sg-abrir { width: 100%; min-height: 44px; margin-top: 4px; }
+  .sg-sheet.modal-sheet { padding-bottom: 0; }
+  .sg-resumo { margin: -6px 0 12px; }
+  .sg-dia { border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 12px; background: var(--bg); }
+  .sg-dia.aceito { opacity: 0.75; border-style: dashed; }
+  .sg-dia-tit { font-size: 15px; font-weight: 700; line-height: 1.35; }
+  .sg-dia-sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+  .sg-dia-sub:empty { display: none; }
+  .sg-itens { margin-top: 8px; }
+  .sg-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .sg-item-txt { flex: 1; min-width: 0; }
+  .sg-item-nome { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 15px; }
+  .sg-per { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent-suave); color: var(--accent-txt); }
+  .sg-item-mot { font-size: 13px; color: var(--ink-soft); margin-top: 2px; line-height: 1.35; }
+  .sg-tirar { flex-shrink: 0; min-height: 36px; padding: 6px 12px; }
+  .sg-dia-acoes { display: flex; justify-content: flex-end; margin-top: 8px; font-size: 14px; font-weight: 700; color: var(--accent-txt); }
+  .sg-fora .section-label { margin-top: 4px; }
+  .sg-fora-item { font-size: 13px; color: var(--ink-soft); padding: 4px 0; }
+  .sg-acoes { position: sticky; bottom: 0; z-index: 2; margin: 0 -20px; padding: 10px 20px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); }
+  .sg-acoes button { flex: 1; }
+  .sg-acoes [hidden] { display: none; }
