@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.21.6';
+  const APP_VERSAO = '2026.11.27.1';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -449,7 +449,7 @@
   // Um documento só (config/geral) com ICMS, margem padrão, comissão e os limites do PMLS.
   // Todo mundo lê; só quem é Editor do app (no botão Compartilhar) consegue gravar —
   // a regra está no próprio banco, então não depende só da tela.
-  const CONFIG_PADRAO = { icmsDentro: 18, icmsFora: 12, margemPadrao: 17, comissaoPct: 5, comissaoBase: 'venda', limiteCCS: 500, limiteCPP: 300, osViraVenda: true };
+  const CONFIG_PADRAO = { icmsDentro: 18, icmsFora: 12, margemPadrao: 17, comissaoPct: 5, comissaoBase: 'venda', limiteCCS: 500, limiteCPP: 300, osViraVenda: true, agendaMaxDia: 5, agendaDias: [1, 2, 3, 4, 5] };
   let config = { ...CONFIG_PADRAO };
   let podeEditarConfig = null; // null = ainda não se sabe (o banco decide na hora de gravar)
   function aplicarConfig(docs) {
@@ -462,7 +462,8 @@
     if (antigo.comissaoBase) novo.comissaoBase = antigo.comissaoBase;
     Object.keys(CONFIG_PADRAO).forEach(k => {
       if (geral[k] == null || geral[k] === '') return;
-      novo[k] = k === 'comissaoBase' ? geral[k] : k === 'osViraVenda' ? geral[k] !== false : Number(geral[k]);
+      novo[k] = k === 'comissaoBase' ? geral[k] : k === 'osViraVenda' ? geral[k] !== false
+        : k === 'agendaDias' ? (Array.isArray(geral[k]) && geral[k].length ? geral[k].map(Number) : CONFIG_PADRAO.agendaDias) : Number(geral[k]);
     });
     novo.atualizadoPor = geral.atualizadoPor || null;
     novo.atualizadoEm = geral.atualizadoEm || null;
@@ -1632,7 +1633,7 @@
     return {
       uid: 'os-' + o.id + '-' + o.agendadaPara,
       titulo: (CAT_LABEL[o.categoria] || 'OS') + ' – ' + nome + ' (' + numOS(o.numero) + ')',
-      data: o.agendadaPara, hora: horaValida(o.horaInicio) ? o.horaInicio : null,
+      data: o.agendadaPara, ...turnoDoEvento(o),
       local: localAgenda(p) || o.produtorLocal || '',
       descricao: linhas.join('\n') + '\n\nCriado pelo app Ordenha360.'
     };
@@ -3391,6 +3392,8 @@
     }
     novo.comissaoBase = cfgBase;
     novo.osViraVenda = cfgOsVenda;
+    novo.agendaMaxDia = config.agendaMaxDia;
+    novo.agendaDias = config.agendaDias;
     novo.atualizadoPor = viewerId || null;
     novo.atualizadoEm = Date.now();
     gravar('set', 'config/geral', novo);
@@ -5192,7 +5195,9 @@
   }
   const semVazio = (a, b) => (!a) - (!b) || (a || '').localeCompare(b || '');
   function paradasOrdenadas() {
+    const hoje = osDeHojePorProdutor();
     return rota.paradas.map(id => produtores.find(p => p.id === id)).filter(Boolean).sort((a, b) =>
+      ordemTurno(hoje[a.id]) - ordemTurno(hoje[b.id]) ||
       semVazio((a.cidade || '').trim(), (b.cidade || '').trim()) || semVazio((a.linha || '').trim(), (b.linha || '').trim()) ||
       (a.nome || '').localeCompare(b.nome || ''));
   }
@@ -5238,6 +5243,7 @@
 
   function renderRota() {
     const lista = paradasOrdenadas();
+    const osHoje = osDeHojePorProdutor();
     const feitas = lista.filter(p => rota.feitas.includes(p.id)).length;
     const hoje = rota.data === todayISO();
     $('rota-sub').textContent = lista.length
@@ -5257,7 +5263,7 @@
     } else if (proxima) {
       const k = lista.indexOf(proxima) + 1;
       agora.innerHTML = '<div class="rota-agora-rot"></div><div class="rota-agora-nome"></div><div class="rota-agora-local"></div><div class="rota-agora-ref" hidden></div><div class="rota-botoes"></div>';
-      agora.querySelector('.rota-agora-rot').textContent = 'Próxima parada · ' + k + ' de ' + lista.length;
+      agora.querySelector('.rota-agora-rot').textContent = 'Próxima parada · ' + k + ' de ' + lista.length + (turnoTxt(osHoje[proxima.id]) ? ' · ' + turnoTxt(osHoje[proxima.id]) : '');
       agora.querySelector('.rota-agora-nome').textContent = proxima.nome || '';
       agora.querySelector('.rota-agora-local').textContent = [proxima.propriedade, localDoProdutor(proxima)].filter(Boolean).join(' · ') || 'Sem endereço cadastrado';
       if (proxima.referencia) { const r = agora.querySelector('.rota-agora-ref'); r.textContent = '📍 ' + proxima.referencia; r.hidden = false; }
@@ -5316,7 +5322,7 @@
       const nome = item.querySelector('.rota-item-nome');
       nome.textContent = p.nome || '';
       nome.addEventListener('click', () => openProdutor(p.id, { aba: 'visitas', voltar: 'rota' }));
-      item.querySelector('.rota-item-sub').textContent = [p.propriedade, p.referencia ? '📍 ' + p.referencia : '', p.telefone ? '📞 ' + p.telefone : ''].filter(Boolean).join(' · ');
+      item.querySelector('.rota-item-sub').textContent = [turnoTxt(osHoje[p.id]) ? '⏰ ' + turnoTxt(osHoje[p.id]) : '', p.propriedade, p.referencia ? '📍 ' + p.referencia : '', p.telefone ? '📞 ' + p.telefone : ''].filter(Boolean).join(' · ');
       item.querySelector('.rota-tirar').addEventListener('click', () => alternarRota(p.id));
       const links = linksMapa(p);
       const mapas = item.querySelector('.rota-item-mapas');
@@ -9295,7 +9301,7 @@
       fotosN: (fotos || []).length, temAssinatura: !!assinatura
     };
   }
-  const chaveIndice = o => JSON.stringify([Number(o.numero) || 0, statusOS(o), tipoOS(o), o.data || '', o.agendadaPara || '', o.tecnicoId || '', Number(o.total) || 0,
+  const chaveIndice = o => JSON.stringify([Number(o.numero) || 0, statusOS(o), tipoOS(o), o.data || '', o.agendadaPara || '', o.agendadaPeriodo || '', o.agendadaHora || '', o.tecnicoId || '', Number(o.total) || 0,
     !!o.arquivado, o.atualizadoEm || 0, o.categoria || '', (o.equipamentos || []).join(','), o.produtorNome || '']);
   function iniciarOrdens() {
     assinar('ordens', (l, confiavel) => {
@@ -9326,6 +9332,7 @@
     b.textContent = n > 99 ? '99+' : String(n);
     b.hidden = !n;
     if (!$('view-ordens').hidden) renderOrdens();
+    if (!$('view-rota').hidden) renderRota();
   }
   function osVisiveis() {
     if (acesso.estado !== 'ativo' || !podeVer('visitas')) return [];
@@ -11187,7 +11194,8 @@
     preencherEquipProblema($('os-equip-problema'), equipamentos, osEquipProblema);
     const souTecnico = !!viewerId && tecnicosManut().some(u => u.id === viewerId);
     $('os-agendada').value = existing ? (existing.agendadaPara || '') : (opts.agendadaPara || (osStatus === 'agendada' ? todayISO() : ''));
-    preencherTecnicos($('os-tecnico'), existing ? (existing.tecnicoId || '') : (souTecnico ? viewerId : ''));
+    preencherTecnicos($('os-tecnico'), existing ? (existing.tecnicoId || '') : (opts.tecnicoId || (souTecnico ? viewerId : '')));
+    prepararPeriodoOS(existing ? existing.agendadaPeriodo : opts.agendadaPeriodo, existing ? existing.agendadaHora : opts.agendadaHora);
     // data do serviço: a que já foi lançada, ou hoje (OS que ainda não começou)
     $('visita-data').value = existing && existing.data && ['andamento', 'concluida'].includes(statusOS(existing)) ? existing.data : todayISO();
     $('os-hora-ini').value = existing ? (existing.horaInicio || '') : '';
@@ -11260,6 +11268,7 @@
     const extrasOS = extrasLer({ exec, categoria, st, base: osBase });
     if (st === 'aberta' && !motivo && !osEquipProblema) { avisar('Escreva o motivo do chamado.'); return; }
     if (st === 'agendada' && (!agendadaPara || !tecnicoId)) { avisar('Para agendar, informe a data e o técnico.'); return; }
+    if (st === 'agendada' && osPeriodo === 'hora' && !horaValida($('os-ag-hora').value)) { avisar('Escolha a hora marcada (ou outro período).'); return; }
     if (st === 'cancelada' && !$('os-cancel-motivo').value.trim()) { avisar('Escreva por que a OS foi cancelada.'); return; }
     if (st === 'concluida' && !descricao && !defeito && !marcouItens && temperaturaLeite == null && !fotosForm.length && !pecas.length && !extrasOS.temAlgo) {
       avisar(categoria === 'ordenha' ? 'Marque o que foi feito, descreva o serviço ou lance as peças.' : categoria === 'resfriador' ? 'Informe a temperatura do leite ou descreva o serviço feito.' : 'Descreva o serviço feito.');
@@ -11291,6 +11300,7 @@
       status: st, tipo: osTipo, categoria, data: dataServico,
       motivo, urgencia: osUrgencia, equipamentoProblema: osEquipProblema || null,
       agendadaPara, tecnicoId,
+      agendadaPeriodo: osPeriodo === 'manha' || osPeriodo === 'tarde' ? osPeriodo : '', agendadaHora: osPeriodo === 'hora' && horaValida($('os-ag-hora').value) ? $('os-ag-hora').value : '',
       horaInicio: exec ? ($('os-hora-ini').value || '') : ((osBase && osBase.horaInicio) || ''),
       horaFim: exec ? ($('os-hora-fim').value || '') : ((osBase && osBase.horaFim) || ''),
       km: exec && $('os-km').value.trim() !== '' ? parseNum($('os-km').value) : (exec ? null : ((osBase && osBase.km) ?? null)),
@@ -11316,6 +11326,8 @@
     } else {
       payload.criadoPor = viewerId || null; payload.criadoEm = agora;
       if (osOpts.encaminhamentoId) payload.encaminhamentoId = osOpts.encaminhamentoId;
+      if (osOpts.retornoDe) payload.retornoDe = osOpts.retornoDe;
+      if (osOpts.anotacaoId) { payload.anotacaoId = osOpts.anotacaoId; marcarAnotacaoAgendada(osOpts.anotacaoId, vid); }
       gravarOS(pid, vid, payload);
     }
     const prod = produtores.find(x => x.id === pid);
@@ -11405,7 +11417,7 @@
     const tec = v.tecnicoId ? (nomeReal(v.tecnicoId) || (perfis[v.tecnicoId] && perfis[v.tecnicoId].name) || '') : '';
     const sub = [OS_TIPOS[tipo]];
     if (st === 'aberta') sub.push('aberta em ' + fmtDate(v.data));
-    else if (st === 'agendada' || st === 'andamento') sub.push((st === 'agendada' ? 'marcada para ' : 'desde ') + fmtDate(v.agendadaPara || v.data) + (osAtrasada(v) ? ' (atrasada)' : ''));
+    else if (st === 'agendada' || st === 'andamento') sub.push((st === 'agendada' ? 'marcada para ' : 'desde ') + fmtDate(v.agendadaPara || v.data) + (st === 'agendada' && turnoTxt(v) ? ' · ' + turnoTxt(v) : '') + (osAtrasada(v) ? ' (atrasada)' : ''));
     else sub.push(fmtDate(v.data));
     if (tec) sub.push('técnico: ' + tec);
     if (v.duracaoMin > 0) sub.push(fmtDur(v.duracaoMin));
@@ -11493,7 +11505,7 @@
     acoes.className = 'os-rec-acoes';
     const botao = (txt, fn, primaria) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'os-acao' + (primaria ? ' primaria' : ''); b.textContent = txt; b.addEventListener('click', fn); acoes.appendChild(b); return b; };
     if (pode && (st === 'aberta' || st === 'agendada')) {
-      if (st === 'aberta') botao('📅 Agendar', () => { openVisitaModal(v); osStatus = 'agendada'; if (!$('os-agendada').value) $('os-agendada').value = todayISO(); pintarFormOS(); });
+      if (st === 'aberta') botao('📅 Agendar', () => agendarChamado(v, currentProdutorId, fichaVoltarPara));
       botao('▶ Iniciar', () => iniciarOS(v));
     }
     if (pode && (st === 'andamento' || st === 'agendada' || st === 'aberta')) botao('✓ Concluir', () => {
@@ -11647,7 +11659,7 @@
     const tec = o.tecnicoId ? nomeReal(o.tecnicoId) : '';
     const l1 = [numOS(o.numero), OS_TIPOS[tipoOS(o)], CAT_LABEL[o.categoria] || ''];
     if (st === 'aberta') l1.push('aberta ' + (o.criadoEm ? quandoTxt(o.criadoEm) : fmtDate(o.data)));
-    else if (st === 'agendada' || st === 'andamento') l1.push((st === 'andamento' ? 'desde ' : '') + fmtDate(o.agendadaPara || o.data));
+    else if (st === 'agendada' || st === 'andamento') l1.push((st === 'andamento' ? 'desde ' : '') + fmtDate(o.agendadaPara || o.data) + (turnoTxt(o) ? ' · ' + turnoTxt(o) : ''));
     else l1.push(fmtDate(o.data));
     if (tec) l1.push(tec);
     const linha = b.querySelector('.l1');
@@ -11678,8 +11690,8 @@
     const at = (a, b) => dataRefOS(a).localeCompare(dataRefOS(b)) || (Number(a.numero) || 0) - (Number(b.numero) || 0);
     const atrasadas = l.filter(osAtrasada).sort(at);
     const hojeL = l.filter(o => { const st = statusOS(o); return (st === 'agendada' || st === 'andamento') && !osAtrasada(o) && (o.agendadaPara === hoje || (st === 'andamento' && !o.agendadaPara)); })
-      .sort((a, b) => (statusOS(a) === 'andamento' ? 0 : 1) - (statusOS(b) === 'andamento' ? 0 : 1) || at(a, b));
-    const semana = l.filter(o => statusOS(o) === 'agendada' && o.agendadaPara > hoje && o.agendadaPara <= em7).sort(at);
+      .sort((a, b) => (statusOS(a) === 'andamento' ? 0 : 1) - (statusOS(b) === 'andamento' ? 0 : 1) || porTurno(a, b) || at(a, b));
+    const semana = l.filter(o => statusOS(o) === 'agendada' && o.agendadaPara > hoje && o.agendadaPara <= em7).sort((a, b) => dataRefOS(a).localeCompare(dataRefOS(b)) || porTurno(a, b) || at(a, b));
     const chamados = l.filter(o => statusOS(o) === 'aberta').sort((a, b) => (a.urgencia === 'urgente' ? 0 : 1) - (b.urgencia === 'urgente' ? 0 : 1) || (a.criadoEm || 0) - (b.criadoEm || 0));
     const concluidasHoje = l.filter(o => osConcluida(o) && o.data === hoje).length;
     return { atrasadas, hoje: hojeL, semana, chamados, concluidasHoje };
@@ -11692,10 +11704,10 @@
     if (!foco || $('view-home').hidden) return;
     const pm = painelManut();
     // cada lista mostra só as primeiras; "Ver mais" abre as Ordens já filtradas
-    const pinta = (id, lista, max, filtro) => {
+    const pinta = (id, lista, max, filtro, acoes) => {
       const box = $(id);
       box.innerHTML = '';
-      lista.slice(0, max).forEach(o => box.appendChild(cartaoOS(o, 'home')));
+      lista.slice(0, max).forEach(o => { box.appendChild(cartaoOS(o, 'home')); if (acoes) acoes(box, o); });
       if (lista.length > max) {
         const m = document.createElement('button'); m.type = 'button'; m.className = 'bloco-editar'; m.style.margin = '0 0 10px';
         m.textContent = 'Ver mais ' + (lista.length - max);
@@ -11713,7 +11725,7 @@
     // o que é de hoje: aberto, e some quando está vazio
     $('hm-sec-atrasadas').hidden = !pinta('hm-atrasadas', pm.atrasadas, 3, { status: 'atrasadas' });
     $('hm-sec-hoje').hidden = !pinta('hm-hoje', pm.hoje, 5, { periodo: 'hoje' });
-    $('hm-sec-chamados').hidden = !pinta('hm-chamados', pm.chamados, 3, { status: 'aberta' });
+    $('hm-sec-chamados').hidden = !pinta('hm-chamados', pm.chamados, 3, { status: 'aberta' }, acoesChamadoHome);
     $('hm-tudo-certo').hidden = !!(pm.atrasadas.length || pm.hoje.length || pm.chamados.length);
     // o resto: recolhido, com o número no título; some quando é zero
     $('hm-sec-semana').hidden = !pinta('hm-semana', pm.semana, 8, {});
@@ -11737,11 +11749,7 @@
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'os-acao'; b.textContent = 'Agendar';
         b.setAttribute('aria-label', 'Agendar preventiva de ' + p.nome);
-        b.addEventListener('click', e => {
-          e.stopPropagation();
-          openProdutor(p.id, { aba: 'visitas', voltar: 'home' });
-          openVisitaModal(null, { status: 'agendada', tipo: 'preventiva', categoria: 'ordenha', agendadaPara: p.proximaRevisao < todayISO() ? todayISO() : p.proximaRevisao, motivo: 'Revisão preventiva da ordenhadeira (6 meses)' });
-        });
+        b.addEventListener('click', e => { e.stopPropagation(); agendarRevisao(p, 'home'); });
         item.appendChild(b);
       }
       boxP.appendChild(item);
@@ -11793,6 +11801,7 @@
   }
   function abrirNovo() {
     const p = produtorDaFicha();
+    $('novo-agendar-sub').textContent = p ? 'Para ' + p.nome + ': dia, período e o que é' : 'Produtor, dia e período, em uma tela';
     $('novo-os-sub').textContent = p ? 'Para ' + p.nome : 'Escolha o produtor e registre o serviço';
     $('novo-chamado-sub').textContent = p ? 'Para ' + p.nome + ', para agendar' : 'Problema relatado pelo produtor, para agendar';
     // encaminhar fica aqui na ficha (o topo da ficha só mostra encaminhamentos quando há algum aberto)
@@ -11821,6 +11830,431 @@
     if (p) abrirNovoEncaminhamento({ produtorId: p.id });
   });
   $('novo-produtor').addEventListener('click', () => { fecharNovo(); abrirCadastroRapido(); });
+
+  // =====================================================
+  // AGENDAR VISITA: janela curta (produtor, dia, período e o que é)
+  // A OS guarda agendadaPeriodo ('manha' | 'tarde' | '') e agendadaHora ('HH:MM' | '').
+  // OS antigas ficam sem período (sem horário).
+  // =====================================================
+  const PERIODOS = { manha: 'manhã', tarde: 'tarde' };
+  const DIAS_LONGO = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+  const DIAS_CURTO = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  function diaSemanaISO(iso) { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).getDay(); } // 0 = domingo
+  const ddmmISO = iso => iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '';
+  function horaDaOS(o) { return o && horaValida(o.agendadaHora) ? o.agendadaHora : ''; }
+  function periodoDaOS(o) { return o && PERIODOS[o.agendadaPeriodo] ? o.agendadaPeriodo : ''; }
+  // ordem do dia: hora marcada → manhã → tarde → sem horário
+  function ordemTurno(o) {
+    const h = horaDaOS(o);
+    if (h) return minutosDe(h);
+    const p = periodoDaOS(o);
+    return p === 'manha' ? 2000 : p === 'tarde' ? 3000 : 4000;
+  }
+  const porTurno = (a, b) => ordemTurno(a) - ordemTurno(b);
+  function turnoTxt(o) { const h = horaDaOS(o); return h || PERIODOS[periodoDaOS(o)] || ''; }
+  // "hoje (27/11)", "amanhã (28/11)", "terça (02/12)"
+  function quandoFala(iso) {
+    const dias = diasAte(iso);
+    return (dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : DIAS_LONGO[diaSemanaISO(iso)]) + ' (' + ddmmISO(iso) + ')';
+  }
+  // " de manhã", " à tarde", " às 14h", " às 8h30"
+  function turnoFala(periodo, hora) {
+    if (horaValida(hora)) { const [h, m] = hora.split(':'); return ' às ' + Number(h) + 'h' + (m !== '00' ? m : ''); }
+    return periodo === 'manha' ? ' de manhã' : periodo === 'tarde' ? ' à tarde' : '';
+  }
+  const VER_CAT = { ordenha: 'a ordenhadeira', resfriador: 'o resfriador', conforto: 'o conforto animal' };
+  function paraQueFala(tipo, cat) {
+    if (tipo === 'preventiva') return 'para a revisão d' + (VER_CAT[cat] || VER_CAT.ordenha);
+    if (tipo === 'instalacao') return 'para a instalação';
+    return 'para ver ' + (VER_CAT[cat] || VER_CAT.ordenha);
+  }
+  function primeiroNome(n) { return String(n || '').trim().split(/\s+/)[0] || ''; }
+  function assinaturaTecnico(tid) { return primeiroNome(nomeReal(tid) || (tid && tid === viewerId ? nomeParaSaudar() : '') || nomeParaSaudar()); }
+  // WhatsApp do produtor com a mensagem pronta; sem telefone (ou sem conseguir abrir), só copia a mensagem
+  async function mandarWhatsProdutor(p, msg) {
+    const w = linkWhatsApp(p && p.telefone);
+    if (w) {
+      const janela = window.open(w + '?text=' + encodeURIComponent(msg), '_blank');
+      if (janela) { try { janela.opener = null; } catch (e) {} return; }
+    }
+    try {
+      await navigator.clipboard.writeText(msg);
+      avisoRapido(w ? 'Não abriu o WhatsApp: a mensagem foi copiada.' : 'Sem telefone no cadastro: a mensagem foi copiada.');
+    } catch (e) {
+      avisar((w ? 'Não consegui abrir o WhatsApp daqui.' : 'Este produtor não tem telefone no cadastro.') + ' Copie a mensagem:\n\n' + msg);
+    }
+  }
+  // dias de trabalho e máximo de visitas por dia (Configurações)
+  function diasDeTrabalho() {
+    const d = Array.isArray(config.agendaDias) ? config.agendaDias.map(Number).filter(n => n >= 0 && n <= 6) : [];
+    return d.length ? d : [1, 2, 3, 4, 5];
+  }
+  function ehDiaDeTrabalho(iso) { return diasDeTrabalho().includes(diaSemanaISO(iso)); }
+  function proximosDiasUteis(depoisDe, n) {
+    const out = [];
+    let d = depoisDe;
+    for (let i = 0; i < 90 && out.length < n; i++) { d = addDaysISO(d, 1); if (ehDiaDeTrabalho(d)) out.push(d); }
+    return out;
+  }
+  function produtorPorId(pid) { return produtores.find(x => x.id === pid) || produtoresTodos.find(x => x.id === pid) || null; }
+  // OS inteira (a da ficha aberta, a que está saindo deste aparelho ou a do banco)
+  async function osCompleta(pid, id) {
+    if (pid === currentProdutorId && visitasConfiavel) { const v = visitas.find(x => x.id === id); if (v) return v; }
+    const d = await lerDocumento('produtores/' + pid + '/visitas/' + id);
+    return d || null;
+  }
+  // abre a ficha na aba de OS e espera a OS chegar na lista para fazer algo com ela
+  function abrirOSNaFicha(pid, osId, voltar, fn) {
+    openProdutor(pid, { aba: 'visitas', voltar: voltar || 'home' });
+    manutSub = 'os'; renderManutSub();
+    let n = 0;
+    const tentar = () => {
+      const v = currentProdutorId === pid ? visitas.find(x => x.id === osId) : null;
+      if (v) { fn(v); return; }
+      if (++n > 50) { avisar('Não consegui abrir esta OS agora. Tente de novo em instantes.'); return; }
+      setTimeout(tentar, 100);
+    };
+    tentar();
+  }
+
+  // Grava o agendamento. base = OS que já existe (chamado aberto): só passa para agendada.
+  // Sem base, cria a OS agendada. extra: { id, componentes, retornoDe, anotacaoId, encaminhamentoId }
+  async function gravarAgendamento(pid, base, campos, extra = {}) {
+    const agora = Date.now();
+    const p = produtorPorId(pid);
+    if (base) {
+      const v = await osCompleta(pid, base.id);
+      const hist = ((v || base).historico || []).concat([{ acao: 'agendou', status: 'agendada', por: viewerId || null, em: agora }]).slice(-30);
+      const m = { ...campos, atualizadoPor: viewerId || null, atualizadoEm: agora, historico: hist };
+      if (v) gravarOS(pid, base.id, { ...v, ...m }, m);
+      else {
+        // sem a OS inteira neste aparelho (sem sinal): muda só os campos do agendamento, na OS e no índice
+        gravar('update', 'produtores/' + pid + '/visitas/' + base.id, m);
+        gravar('update', 'ordens/' + base.id, m);
+      }
+      registrarAtividade('agendou', 'os', base.id, ((p && p.nome) || '') + ' · ' + numOS(base.numero), OS_STATUS.agendada);
+      if (extra.anotacaoId) marcarAnotacaoAgendada(extra.anotacaoId, base.id);
+      return { id: base.id, numero: base.numero };
+    }
+    const id = extra.id || novoId();
+    const doc = {
+      numero: proximoNumeroOS(), status: 'agendada', tipo: 'visita', categoria: 'ordenha', data: todayISO(), motivo: '', urgencia: 'normal',
+      ...campos,
+      equipamentoProblema: null, equipamentos: [], equipamentosNomes: {}, horaInicio: '', horaFim: '', km: null, defeito: '', descricao: '',
+      vacuoKpa: null, temperaturaLeite: null, pecas: [], totalPecas: 0, maoDeObra: 0, total: 0, fotos: [],
+      assinatura: null, assinadoPor: '', assinadaEm: null, canceladaMotivo: '', revisao: null, duracaoMin: null,
+      criadoPor: viewerId || null, criadoEm: agora, historico: [{ acao: 'criou', status: 'agendada', por: viewerId || null, em: agora }]
+    };
+    if (extra.componentes && extra.componentes.length) {
+      doc.componentesTrocados = extra.componentes.slice();
+      doc.componentesNomes = {};
+      extra.componentes.forEach(c => { doc.componentesNomes[c] = (compPorId(c) || {}).nome || 'Componente'; });
+    }
+    if (extra.retornoDe) doc.retornoDe = extra.retornoDe;
+    if (extra.anotacaoId) doc.anotacaoId = extra.anotacaoId;
+    if (extra.encaminhamentoId) doc.encaminhamentoId = extra.encaminhamentoId;
+    gravarOS(pid, id, doc);
+    registrarAtividade('criou', 'os', id, ((p && p.nome) || '') + ' · ' + numOS(doc.numero), OS_STATUS.agendada);
+    if (extra.anotacaoId) marcarAnotacaoAgendada(extra.anotacaoId, id);
+    return { id, numero: doc.numero };
+  }
+  function marcarAnotacaoAgendada(anId, osId) {
+    gravar('update', 'anotacoes/' + anId, { situacao: 'agendada', osId, agendadaEm: Date.now(), agendadaPor: viewerId || null });
+  }
+
+  // ---------- a janela ----------
+  var ag = null;
+  function abrirAgendar(o = {}) {
+    if (!podeLancar('visitas')) { avisar('Você não tem permissão para agendar visitas. Use "Abrir chamado".'); return; }
+    const p = o.produtorId ? produtorPorId(o.produtorId) : null;
+    const periodo = horaValida(o.hora) ? 'hora' : (PERIODOS[o.periodo] ? o.periodo : '');
+    ag = {
+      pid: p ? p.id : null, os: o.os || null, fixo: !!p && o.fixo !== false,
+      data: o.data || '', outra: false, periodo, hora: horaValida(o.hora) ? o.hora : '',
+      categoria: CAT_LABEL[o.categoria] ? o.categoria : 'ordenha', tipo: OS_TIPOS[o.tipo] ? o.tipo : 'visita', urgente: !!o.urgente,
+      tecnicoId: ehAdmin() ? (o.tecnicoId || viewerId || null) : (viewerId || o.tecnicoId || null),
+      extra: o.extra || {}, voltar: o.voltar || voltarDaTelaAtual()
+    };
+    $('ag-titulo').textContent = o.os ? 'Agendar o chamado' : 'Agendar visita';
+    $('ag-origem').hidden = !o.origem;
+    $('ag-origem').textContent = o.origem || '';
+    $('ag-motivo').value = o.motivo || '';
+    $('ag-prod-busca').value = p && !ag.fixo ? p.nome : '';
+    $('ag-tec-field').hidden = !ehAdmin();
+    if (ehAdmin()) preencherTecnicos($('ag-tecnico'), ag.tecnicoId || '');
+    pintarAgendar();
+    $('modal-agendar').hidden = false;
+    $('modal-agendar').querySelector('.modal-sheet').scrollTop = 0;
+    if (!ag.pid) setTimeout(() => $('ag-prod-busca').focus(), 80);
+  }
+  function chipsQuando() {
+    const hoje = todayISO(), amanha = addDaysISO(hoje, 1);
+    return [[hoje, 'Hoje'], [amanha, 'Amanhã']].concat(proximosDiasUteis(amanha, 5).map(d => [d, DIAS_CURTO[diaSemanaISO(d)] + ' ' + ddmmISO(d)]));
+  }
+  function chipAg(box, txt, on, fn, cor) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'os-chip' + (on ? ' on' : '');
+    b.textContent = txt;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (cor) b.style.setProperty('--st', cor);
+    b.addEventListener('click', fn);
+    box.appendChild(b);
+    return b;
+  }
+  function pintarAgendar() {
+    const a = ag;
+    if (!a) return;
+    const p = a.pid ? produtorPorId(a.pid) : null;
+    // produtor
+    $('ag-prod-field').hidden = a.fixo;
+    $('ag-prod-fixo').hidden = !a.fixo;
+    if (a.fixo && p) {
+      $('ag-prod-fixo').innerHTML = '<b></b><span></span>';
+      $('ag-prod-fixo').querySelector('b').textContent = p.nome || '';
+      $('ag-prod-fixo').querySelector('span').textContent = localDoProdutor(p) ? ' · ' + localDoProdutor(p) : '';
+    }
+    // quando
+    const q = $('ag-quando');
+    q.innerHTML = '';
+    const lista = chipsQuando();
+    const naLista = lista.some(([d]) => d === a.data);
+    lista.forEach(([d, t]) => chipAg(q, t, !a.outra && d === a.data, () => { a.data = d; a.outra = false; pintarAgendar(); }));
+    const outraOn = a.outra || (!!a.data && !naLista);
+    chipAg(q, outraOn && a.data && !naLista ? 'Outra data: ' + ddmmISO(a.data) : 'Outra data', outraOn, () => {
+      a.outra = true; pintarAgendar();
+      const inp = $('ag-data');
+      setTimeout(() => { try { inp.showPicker(); } catch (e) { inp.focus(); } }, 30);
+    });
+    $('ag-data').hidden = !outraOn;
+    $('ag-data').min = todayISO();
+    if (outraOn) $('ag-data').value = a.data && !naLista ? a.data : ($('ag-data').value || '');
+    // período
+    const per = $('ag-periodo');
+    per.innerHTML = '';
+    [['manha', 'Manhã'], ['tarde', 'Tarde'], ['hora', 'Hora'], ['', 'Sem horário']].forEach(([k, t]) => chipAg(per, k === 'hora' && a.periodo === 'hora' && a.hora ? 'Hora: ' + a.hora : t, a.periodo === k, () => {
+      a.periodo = k; pintarAgendar();
+      if (k === 'hora') setTimeout(() => { const h = $('ag-hora'); try { h.showPicker(); } catch (e) { h.focus(); } }, 30);
+    }));
+    $('ag-hora').hidden = a.periodo !== 'hora';
+    $('ag-hora').value = a.hora || '';
+    // o que é
+    const cat = $('ag-cat');
+    cat.innerHTML = '';
+    [['ordenha', 'Ordenha'], ['resfriador', 'Resfriador'], ['conforto', 'Conforto']].forEach(([k, t]) => chipAg(cat, t, a.categoria === k, () => { a.categoria = k; pintarAgendar(); }, CAT_COLOR[k]));
+    const tp = $('ag-tipo');
+    tp.innerHTML = '';
+    [['visita', 'Visita'], ['preventiva', 'Preventiva'], ['corretiva', 'Corretiva'], ['instalacao', 'Instalação']].forEach(([k, t]) => chipAg(tp, t, a.tipo === k, () => { a.tipo = k; pintarAgendar(); }));
+    const u = $('ag-urgente');
+    u.classList.toggle('on', a.urgente);
+    u.setAttribute('aria-pressed', a.urgente ? 'true' : 'false');
+    u.textContent = a.urgente ? '⚠ Urgente' : 'Urgente';
+  }
+  $('ag-data').addEventListener('change', () => { if (!ag) return; ag.data = $('ag-data').value || ''; ag.outra = true; pintarAgendar(); });
+  $('ag-hora').addEventListener('change', () => { if (!ag) return; ag.hora = $('ag-hora').value || ''; pintarAgendar(); });
+  $('ag-urgente').addEventListener('click', () => { if (!ag) return; ag.urgente = !ag.urgente; pintarAgendar(); });
+  $('ag-cancelar').addEventListener('click', () => { ag = null; $('modal-agendar').hidden = true; });
+
+  // produtor: busca, com os 5 últimos atendidos no topo
+  function ultimosAtendidos(n) {
+    const l = osVisiveis().filter(o => osConcluida(o) || statusOS(o) === 'andamento');
+    const minhas = l.filter(o => viewerId && o.tecnicoId === viewerId);
+    const base = (minhas.length ? minhas : l).sort((a, b) => (b.data || '').localeCompare(a.data || '') || (b.concluidaEm || 0) - (a.concluidaEm || 0));
+    const vistos = new Set(), out = [];
+    base.forEach(o => { if (out.length < n && !vistos.has(o.produtorId)) { vistos.add(o.produtorId); const p = produtores.find(x => x.id === o.produtorId); if (p) out.push(p); } });
+    return out;
+  }
+  function renderAgProdutores() {
+    const input = $('ag-prod-busca'), lista = $('ag-prod-lista');
+    const termo = normalizarBusca(input.value.trim());
+    const sel = ag && ag.pid ? produtorPorId(ag.pid) : null;
+    const todos = !termo || (sel && normalizarBusca(sel.nome) === termo);
+    const recentes = ultimosAtendidos(5).filter(p => todos || textoBuscaProdutor(p).includes(termo));
+    const idsRec = new Set(recentes.map(p => p.id));
+    const resto = produtores.filter(p => !idsRec.has(p.id) && (todos || textoBuscaProdutor(p).includes(termo))).sort(porNome).slice(0, 40);
+    lista.innerHTML = '';
+    const item = p => {
+      const it = document.createElement('div');
+      it.className = 'picker-item' + (ag && p.id === ag.pid ? ' ativo' : '');
+      it.innerHTML = '<div class="picker-nome"></div><div class="picker-sub"></div>';
+      it.querySelector('.picker-nome').textContent = p.nome;
+      it.querySelector('.picker-sub').textContent = localDoProdutor(p) || 'Sem linha/cidade cadastrada';
+      it.addEventListener('mousedown', e => e.preventDefault());
+      it.addEventListener('click', () => { if (!ag) return; ag.pid = p.id; input.value = p.nome; lista.hidden = true; input.blur(); });
+      lista.appendChild(it);
+    };
+    if (recentes.length) {
+      const h = document.createElement('div'); h.className = 'picker-grupo'; h.textContent = todos ? 'Últimos atendidos' : 'Atendidos há pouco'; lista.appendChild(h);
+      recentes.forEach(item);
+      if (resto.length) { const h2 = document.createElement('div'); h2.className = 'picker-grupo'; h2.textContent = 'Todos'; lista.appendChild(h2); }
+    }
+    resto.forEach(item);
+    if (!recentes.length && !resto.length) {
+      const v = document.createElement('div'); v.className = 'picker-vazio';
+      v.textContent = produtores.length ? 'Nenhum produtor com esse nome.' : 'Nenhum produtor cadastrado ainda.';
+      lista.appendChild(v);
+    }
+    lista.hidden = false;
+  }
+  $('ag-prod-busca').addEventListener('focus', () => { $('ag-prod-busca').select(); renderAgProdutores(); });
+  $('ag-prod-busca').addEventListener('input', () => {
+    const sel = ag && ag.pid ? produtorPorId(ag.pid) : null;
+    if (ag && sel && normalizarBusca(sel.nome) !== normalizarBusca($('ag-prod-busca').value.trim())) ag.pid = null;
+    renderAgProdutores();
+  });
+  $('ag-prod-busca').addEventListener('blur', () => setTimeout(() => {
+    $('ag-prod-lista').hidden = true;
+    if (ag && !ag.pid) {
+      const termo = normalizarBusca($('ag-prod-busca').value.trim());
+      const exato = termo ? produtores.filter(p => normalizarBusca(p.nome) === termo) : [];
+      if (exato.length === 1) { ag.pid = exato[0].id; $('ag-prod-busca').value = exato[0].nome; }
+    }
+  }, 150));
+
+  // o que a janela tem agora, no formato da OS (ou o aviso do que falta)
+  function camposDaJanela() {
+    const a = ag;
+    if (!a) return null;
+    if (!a.pid || !produtorPorId(a.pid)) return { erro: 'Escolha o produtor.' };
+    if (!a.data) return { erro: 'Escolha o dia.' };
+    if (a.periodo === 'hora' && !horaValida(a.hora)) return { erro: 'Escolha a hora.' };
+    const tecnicoId = (ehAdmin() && $('ag-tecnico').value) || a.tecnicoId || viewerId || null;
+    return {
+      status: 'agendada', agendadaPara: a.data,
+      agendadaPeriodo: a.periodo === 'manha' || a.periodo === 'tarde' ? a.periodo : '', agendadaHora: a.periodo === 'hora' ? a.hora : '',
+      tecnicoId, tipo: a.tipo, categoria: a.categoria, motivo: $('ag-motivo').value.trim(), urgencia: a.urgente ? 'urgente' : 'normal'
+    };
+  }
+  $('ag-salvar').addEventListener('click', async () => {
+    const c = camposDaJanela();
+    if (!c) return;
+    if (c.erro) { avisar(c.erro); return; }
+    const a = ag, p = produtorPorId(a.pid);
+    const btn = $('ag-salvar');
+    btn.disabled = true;
+    try { await gravarAgendamento(p.id, a.os, c, a.extra); } finally { btn.disabled = false; }
+    ag = null;
+    $('modal-agendar').hidden = true;
+    mostrarAgendado(p, c);
+  });
+  // "Mais detalhes": o formulário completo da OS com o que já foi preenchido
+  $('ag-detalhes').addEventListener('click', () => {
+    const a = ag;
+    if (!a) return;
+    if (!a.pid || !produtorPorId(a.pid)) { avisar('Escolha o produtor.'); return; }
+    const c = camposDaJanela();
+    const campos = c && !c.erro ? c : {
+      agendadaPara: a.data || '', agendadaPeriodo: a.periodo === 'manha' || a.periodo === 'tarde' ? a.periodo : '', agendadaHora: a.periodo === 'hora' ? a.hora : '',
+      tecnicoId: (ehAdmin() && $('ag-tecnico').value) || a.tecnicoId || viewerId || null, tipo: a.tipo, categoria: a.categoria, motivo: $('ag-motivo').value.trim(), urgencia: a.urgente ? 'urgente' : 'normal'
+    };
+    ag = null;
+    $('modal-agendar').hidden = true;
+    if (a.os) {
+      abrirOSNaFicha(a.pid, a.os.id, a.voltar, v => {
+        openVisitaModal(v);
+        if ($('modal-visita').hidden) return;
+        osStatus = 'agendada'; osTipo = campos.tipo; novaVisitaCategoria = campos.categoria; osUrgencia = campos.urgencia;
+        $('os-motivo').value = campos.motivo;
+        $('os-agendada').value = campos.agendadaPara || todayISO();
+        if (campos.tecnicoId) preencherTecnicos($('os-tecnico'), campos.tecnicoId);
+        prepararPeriodoOS(campos.agendadaPeriodo, campos.agendadaHora);
+        pintarFormOS();
+      });
+      return;
+    }
+    abrirNovaOSDoProdutor(a.pid, a.voltar, {
+      status: 'agendada', tipo: campos.tipo, categoria: campos.categoria, motivo: campos.motivo, urgencia: campos.urgencia,
+      agendadaPara: campos.agendadaPara || todayISO(), agendadaPeriodo: campos.agendadaPeriodo, agendadaHora: campos.agendadaHora, tecnicoId: campos.tecnicoId,
+      componentes: a.extra.componentes, anotacaoId: a.extra.anotacaoId, retornoDe: a.extra.retornoDe, encaminhamentoId: a.extra.encaminhamentoId
+    });
+  });
+
+  // ---------- depois de agendar: "Agendado: …" e o aviso pronto para o produtor ----------
+  var agFeito = null;
+  function textoAgendado(p, c) {
+    return p.nome + ' · ' + DIAS_CURTO[diaSemanaISO(c.agendadaPara)].toLowerCase() + ' ' + ddmmISO(c.agendadaPara) + (turnoTxt(c) ? ' · ' + turnoTxt(c) : '');
+  }
+  function msgAgendado(p, c) {
+    return 'Oi ' + primeiroNome(p.nome) + '! Fica marcada a visita para ' + quandoFala(c.agendadaPara) + turnoFala(c.agendadaPeriodo, c.agendadaHora) +
+      ', ' + paraQueFala(c.tipo, c.categoria) + '. Qualquer coisa me chama. — ' + assinaturaTecnico(c.tecnicoId);
+  }
+  function mostrarAgendado(p, c) {
+    agFeito = { p, c };
+    $('agd-txt').textContent = 'Agendado: ' + textoAgendado(p, c);
+    $('agd-dica').hidden = !!linkWhatsApp(p.telefone);
+    $('modal-agendado').hidden = false;
+  }
+  $('agd-whats').addEventListener('click', () => { if (agFeito) mandarWhatsProdutor(agFeito.p, msgAgendado(agFeito.p, agFeito.c)); });
+  $('agd-fechar').addEventListener('click', () => { agFeito = null; $('modal-agendado').hidden = true; });
+
+  // ---------- período no formulário completo da OS ----------
+  var osPeriodo = '';
+  function prepararPeriodoOS(periodo, hora) {
+    osPeriodo = horaValida(hora) ? 'hora' : (PERIODOS[periodo] ? periodo : '');
+    $('os-ag-hora').value = horaValida(hora) ? hora : '';
+    pintarPeriodoOS();
+  }
+  function pintarPeriodoOS() {
+    document.querySelectorAll('#os-periodo .os-chip').forEach(c => { const on = c.dataset.p === osPeriodo; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    $('os-ag-hora').hidden = osPeriodo !== 'hora';
+  }
+  document.querySelectorAll('#os-periodo .os-chip').forEach(c => c.addEventListener('click', () => {
+    osPeriodo = c.dataset.p;
+    pintarPeriodoOS();
+    if (osPeriodo === 'hora') setTimeout(() => { const h = $('os-ag-hora'); try { h.showPicker(); } catch (e) { h.focus(); } }, 30);
+  }));
+
+  // ---------- onde se agenda ----------
+  function agendarChamado(o, pid, voltar) {
+    abrirAgendar({
+      produtorId: pid, fixo: true, os: o, tipo: tipoOS(o), categoria: o.categoria || 'ordenha', motivo: o.motivo || '', urgente: o.urgencia === 'urgente',
+      data: o.agendadaPara || '', periodo: o.agendadaPeriodo, hora: o.agendadaHora, tecnicoId: o.tecnicoId,
+      origem: 'Chamado ' + numOS(o.numero) + (o.criadoEm ? ', aberto ' + quandoTxt(o.criadoEm) : ''), voltar
+    });
+  }
+  function agendarRevisao(p, voltar) {
+    abrirAgendar({
+      produtorId: p.id, fixo: true, tipo: 'preventiva', categoria: 'ordenha', motivo: 'Revisão preventiva da ordenhadeira (6 meses)',
+      data: p.proximaRevisao && p.proximaRevisao >= todayISO() ? p.proximaRevisao : '', voltar,
+      origem: p.proximaRevisao ? proximaStatus(p.proximaRevisao).txt : ''
+    });
+  }
+  $('novo-agendar').addEventListener('click', () => {
+    const p = produtorDaFicha();
+    fecharNovo();
+    abrirAgendar(p ? { produtorId: p.id, fixo: true, voltar: fichaVoltarPara } : {});
+  });
+  $('produtor-agendar').addEventListener('click', () => {
+    if (currentProdutorId) abrirAgendar({ produtorId: currentProdutorId, fixo: true, voltar: fichaVoltarPara });
+  });
+  // botão "Agendar" embaixo do cartão do chamado (Início → Chamados aguardando agendamento)
+  function acoesChamadoHome(box, o) {
+    if (!podeLancar('visitas')) return;
+    const d = document.createElement('div');
+    d.className = 'os-card-acoes';
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'os-acao primaria'; b.textContent = '📅 Agendar';
+    b.setAttribute('aria-label', 'Agendar o chamado de ' + (o.produtorNome || ''));
+    b.addEventListener('click', () => agendarChamado(o, o.produtorId, 'home'));
+    d.appendChild(b);
+    box.appendChild(d);
+  }
+  // horário do evento na agenda: hora marcada (1h30), manhã (8h às 12h), tarde (13h30 às 17h30) ou o dia inteiro
+  function turnoDoEvento(o) {
+    const h = horaDaOS(o) || (horaValida(o.horaInicio) ? o.horaInicio : '');
+    if (h) return { hora: h, horaFim: somarHora(h, 90) };
+    const p = periodoDaOS(o);
+    if (p === 'manha') return { hora: '08:00', horaFim: '12:00' };
+    if (p === 'tarde') return { hora: '13:30', horaFim: '17:30' };
+    return { hora: null };
+  }
+  // a OS de hoje de cada produtor (para a Rota do dia mostrar e ordenar pelo período)
+  function osDeHojePorProdutor() {
+    const hoje = todayISO(), m = {};
+    osVisiveis().filter(o => (statusOS(o) === 'agendada' || statusOS(o) === 'andamento') && dataRefOS(o) === hoje).sort(porTurno)
+      .forEach(o => { if (!m[o.produtorId]) m[o.produtorId] = o; });
+    return m;
+  }
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
@@ -13812,7 +14246,7 @@
     let lista = box.parentElement.querySelector('.os-agenda-lista');
     if (!lista) { lista = document.createElement('div'); lista.className = 'os-agenda-lista'; box.after(lista); }
     lista.innerHTML = '';
-    const l = doDia(osDiaSel).sort((a, b) => (a.horaInicio || '99').localeCompare(b.horaInicio || '99') || (Number(a.numero) || 0) - (Number(b.numero) || 0));
+    const l = doDia(osDiaSel).sort((a, b) => porTurno(a, b) || (a.horaInicio || '99').localeCompare(b.horaInicio || '99') || (Number(a.numero) || 0) - (Number(b.numero) || 0));
     if (!l.length) { const v = document.createElement('div'); v.className = 'leite-ficha-sub'; v.style.margin = '0 0 8px'; v.textContent = 'Nada marcado para ' + fmtDate(osDiaSel) + '.'; lista.appendChild(v); }
     l.forEach(o => {
       lista.appendChild(cartaoOS(o, 'ordens'));

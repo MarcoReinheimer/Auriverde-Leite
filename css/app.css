@@ -3367,3 +3367,25 @@
   .om-form .om-acoes button { padding-left: 4px; padding-right: 4px; }
   .om-form .modal-actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
     background: var(--bg); border-top: 1px solid var(--line); }
+
+  /* agendar visita: janela curta */
+  .ag-sheet .field { margin-bottom: 14px; }
+  .ag-chips { gap: 6px; }
+  .ag-chips .os-chip { min-height: 40px; padding: 7px 12px; font-size: 14px; }
+  .ag-tipo { margin-top: 8px; }
+  .ag-extra { margin-top: 8px; }
+  .ag-extra[hidden] { display: none; }
+  .ag-origem { font-size: 13px; color: var(--ink-soft); margin: -6px 0 12px; line-height: 1.4; }
+  .ag-prod-fixo span { font-weight: 500; font-size: 14px; color: var(--ink-soft); }
+  .ag-urg { display: block; width: 100%; min-height: 46px; margin: 0 0 14px; border-radius: 12px; border: 1.5px dashed var(--line); background: var(--bg);
+    color: var(--ink); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .ag-urg.on { border-style: solid; border-color: var(--tax); background: color-mix(in srgb, var(--tax) 14%, var(--bg)); color: var(--tax); }
+  .ag-sheet.modal-sheet { padding-bottom: 0; scroll-padding-bottom: 130px; }
+  .ag-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: sticky; bottom: 0; z-index: 2; margin: 0 -20px; padding: 10px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface); border-top: 1px solid var(--line); }
+  .ag-acoes #ag-salvar { grid-column: 1 / -1; order: -1; }
+  .picker-grupo { padding: 8px 12px 4px; font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+  .agd-txt { font-size: 16px; font-weight: 700; line-height: 1.45; margin: 2px 0 14px; }
+  .agd-whats { width: 100%; background: #15803D; border-color: #15803D; color: #FFFFFF; }
+  .os-card-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; }
+  .ficha-topo .contato-acoes button.acao-link { font-family: inherit; cursor: pointer; }
