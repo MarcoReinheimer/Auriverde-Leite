@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.27.4';
+  const APP_VERSAO = '2026.11.27.5';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -11341,7 +11341,7 @@
     renderManutSub();
     osParaDestacar = vid;
     if (limpAviso && abrirCorretiva) setTimeout(() => abrirCorretivaLimp(pid, limpAviso.fora, payload.numero, dataServico), 120);
-    else if (st === 'concluida' && antes !== 'concluida') setTimeout(() => oferecerWhatsOS(pid, vid), 150);
+    else if (st === 'concluida' && antes !== 'concluida') setTimeout(() => perguntarRetorno(pid, vid, payload, () => oferecerWhatsOS(pid, vid)), 150);
   });
 
   // ---------- ações rápidas na OS ----------
@@ -12778,6 +12778,65 @@
     if (ac.children.length) d.appendChild(ac);
     if (d.children.length) box.appendChild(d);
   }
+
+  // =====================================================
+  // RETORNO EM UM TOQUE: ao concluir a OS, "Marcar retorno?"
+  // Cria uma OS agendada (tipo Visita) para o mesmo produtor, com retornoDe = id da OS concluída.
+  // O id do retorno é fixo (rt_<id da OS>): sem internet, em dois aparelhos, continua sendo um só.
+  // =====================================================
+  var rtCtx = null;
+  function perguntarRetorno(pid, vid, os, depois) {
+    const seguir = () => { if (typeof depois === 'function') depois(); };
+    const ja = ordensIndice.find(o => o.id === 'rt_' + vid && !o.arquivado);
+    if (!podeLancar('visitas') || ja) { seguir(); return; }
+    const p = produtorPorId(pid);
+    const base = (os && os.data) || todayISO();
+    const revisao = (os && os.revisao && os.revisao.proximaRevisao) || (p && p.proximaRevisao) || '';
+    rtCtx = { pid, vid, os, depois: seguir, base, revisao: revisao > todayISO() ? revisao : '' };
+    $('rt-sub').textContent = numOS(os && os.numero) + ' · ' + ((p && p.nome) || '');
+    $('rt-data').hidden = true; $('rt-data').value = ''; $('rt-data').min = addDaysISO(todayISO(), 1);
+    $('rt-marcar').hidden = true;
+    const box = $('rt-chips');
+    box.innerHTML = '';
+    chipAg(box, 'Não', true, () => fecharRetorno());
+    [7, 15, 30].forEach(n => chipAg(box, n + ' dias', false, () => marcarRetorno(diaUtilEmDiante(addDaysISO(base, n)))));
+    if (rtCtx.revisao) chipAg(box, 'Na próxima revisão', false, () => marcarRetorno(rtCtx.revisao));
+    chipAg(box, 'Escolher data', false, () => {
+      box.querySelectorAll('.os-chip').forEach(c => { const on = c.textContent === 'Escolher data'; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+      $('rt-data').hidden = false; $('rt-marcar').hidden = false;
+      setTimeout(() => { const i = $('rt-data'); try { i.showPicker(); } catch (e) { i.focus(); } }, 30);
+    });
+    $('rt-dica').textContent = rtCtx.revisao ? 'Próxima revisão: ' + fmtDate(rtCtx.revisao) + '.' : '';
+    $('modal-retorno').hidden = false;
+  }
+  // cai num dia de trabalho (fim de semana passa para o próximo dia útil)
+  function diaUtilEmDiante(iso) { return ehDiaDeTrabalho(iso) ? iso : (proximosDiasUteis(iso, 1)[0] || iso); }
+  function fecharRetorno() {
+    const c = rtCtx;
+    rtCtx = null;
+    $('modal-retorno').hidden = true;
+    if (c) c.depois();
+  }
+  async function marcarRetorno(data) {
+    const c = rtCtx;
+    if (!c || !data) return;
+    const os = c.os || {};
+    const motivoBase = (os.motivo || os.defeito || os.descricao || '').trim();
+    const campos = {
+      status: 'agendada', agendadaPara: data, agendadaPeriodo: '', agendadaHora: '', tecnicoId: os.tecnicoId || viewerId || null,
+      tipo: 'visita', categoria: os.categoria || 'ordenha', urgencia: 'normal',
+      motivo: 'Retorno da ' + numOS(os.numero) + (motivoBase ? ': ' + motivoBase : '')
+    };
+    await gravarAgendamento(c.pid, null, campos, { retornoDe: c.vid, id: 'rt_' + c.vid });
+    avisoRapido('Retorno marcado: ' + DIAS_CURTO[diaSemanaISO(data)].toLowerCase() + ' ' + ddmmISO(data) + '.');
+    fecharRetorno();
+  }
+  $('rt-marcar').addEventListener('click', () => {
+    const d = $('rt-data').value;
+    if (!d) { avisar('Escolha a data do retorno.'); return; }
+    marcarRetorno(d);
+  });
+  $('modal-retorno').addEventListener('click', e => { if (e.target === $('modal-retorno')) fecharRetorno(); });
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),

@@ -3439,3 +3439,10 @@
   .hj-levar b { color: var(--ink-soft); font-weight: 700; }
   .hj-acoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 6px; }
   .hj-acoes .os-acao { display: inline-flex; align-items: center; justify-content: center; min-width: 0; padding: 8px 4px; text-decoration: none; white-space: nowrap; }
+
+  /* Marcar retorno */
+  .rt-sub { margin: -8px 0 14px; }
+  .rt-chips .os-chip { min-height: 44px; }
+  .rt-data-linha { display: flex; gap: 8px; margin-top: 10px; }
+  .rt-data-linha input { flex: 1; min-width: 0; }
+  .rt-data-linha [hidden] { display: none; }
