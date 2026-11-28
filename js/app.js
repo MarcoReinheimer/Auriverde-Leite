@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.28.1';
+  const APP_VERSAO = '2026.11.28.2';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -11837,6 +11837,7 @@
   function abrirNovo() {
     const p = produtorDaFicha();
     $('novo-agendar-sub').textContent = p ? 'Para ' + p.nome + ': dia, período e o que é' : 'Produtor, dia e período, em uma tela';
+    $('novo-vr-sub').textContent = p ? 'Para ' + p.nome + ': produtos e total, numa tela' : 'Produtor, produtos e total, numa tela';
     $('novo-os-sub').textContent = p ? 'Para ' + p.nome : 'Escolha o produtor e registre o serviço';
     $('novo-chamado-sub').textContent = p ? 'Para ' + p.nome + ', para agendar' : 'Problema relatado pelo produtor, para agendar';
     // encaminhar fica aqui na ficha (o topo da ficha só mostra encaminhamentos quando há algum aberto)
@@ -12804,6 +12805,7 @@
       b.addEventListener('click', fn); ac.appendChild(b);
     };
     if (p) botao('Avisar', () => mandarWhatsProdutor(p, msgPassoHoje(p, o)), false, 'Avisar ' + (p.nome || '') + ' no WhatsApp');
+    if (p && podeLancar('vendas')) botao('Venda', () => abrirVendaRapida({ produtorId: o.produtorId, voltar: 'home' }), false, 'Venda rápida para ' + (p.nome || ''));
     const st = statusOS(o);
     if (podeEditarOS(o) && st === 'agendada') botao('Iniciar', () => iniciarOSDoIndice(o), false, 'Iniciar ' + numOS(o.numero));
     if (podeEditarOS(o) && (st === 'agendada' || st === 'andamento')) botao('Concluir', () => abrirOSNaFicha(o.produtorId, o.id, 'home', concluirOSNoForm), true, 'Concluir ' + numOS(o.numero));
@@ -13102,6 +13104,140 @@
     cfgDias = cfgDias.includes(d) ? cfgDias.filter(x => x !== d) : cfgDias.concat(d);
     pintarCfgDias();
   }));
+
+  // =====================================================
+  // VENDA RÁPIDA: produtor, "+ Produto" (catálogo) com − / + na quantidade e o total, numa tela só.
+  // Automático: preço de venda pelo preço único, origem do catálogo, à vista, comissão padrão e data de hoje.
+  // "Mais opções" abre o formulário completo da venda com os mesmos itens. Grava como venda (origem 'rapida').
+  // =====================================================
+  var vr = null;
+  montarPickerProdutor({ inputId: 'vr-prod-busca', listaId: 'vr-prod-lista', get: () => (vr ? vr.pid : null), set: id => { if (vr) vr.pid = id; } });
+  function abrirVendaRapida(o = {}) {
+    if (!podeLancar('vendas')) { avisar('Você não tem permissão para registrar vendas.'); return; }
+    const p = o.produtorId ? produtorPorId(o.produtorId) : null;
+    vr = { pid: p ? p.id : null, fixo: !!p, itens: (o.itens || []).map(i => ({ ...i })), origem: o.origem || 'rapida', avisos: o.avisos || [],
+      voltar: o.voltar || voltarDaTelaAtual(), titulo: o.titulo || 'Venda rápida', repeteDe: o.repeteDe || null };
+    $('vr-titulo').textContent = vr.titulo;
+    $('vr-prod-busca').value = '';
+    $('vr-salvar').disabled = false;
+    pintarVendaRapida();
+    $('modal-vr').hidden = false;
+    $('modal-vr').querySelector('.modal-sheet').scrollTop = 0;
+    if (!vr.pid) setTimeout(() => $('vr-prod-busca').focus(), 80);
+  }
+  const vrSubtotal = i => r2((Number(i.quantidade) || 0) * (Number(i.precoUnit) || 0));
+  function pintarVendaRapida() {
+    if (!vr) return;
+    const p = vr.pid ? produtorPorId(vr.pid) : null;
+    $('vr-prod-field').hidden = vr.fixo;
+    $('vr-prod-fixo').hidden = !vr.fixo;
+    if (vr.fixo && p) {
+      $('vr-prod-fixo').innerHTML = '<b></b><span></span>';
+      $('vr-prod-fixo').querySelector('b').textContent = p.nome || '';
+      $('vr-prod-fixo').querySelector('span').textContent = localDoProdutor(p) ? ' · ' + localDoProdutor(p) : '';
+    }
+    // avisos (ex.: preço que mudou desde a última venda)
+    const av = $('vr-avisos');
+    av.innerHTML = '';
+    vr.avisos.forEach(t => { const d = document.createElement('div'); d.textContent = t; av.appendChild(d); });
+    av.hidden = !vr.avisos.length;
+    const box = $('vr-itens');
+    box.innerHTML = '';
+    vr.itens.forEach((it, idx) => {
+      const row = document.createElement('div');
+      row.className = 'vr-item';
+      row.innerHTML = '<div class="vr-item-txt"><div class="vr-item-nome"></div><div class="vr-item-sub"></div></div>' +
+        '<div class="vr-item-fim"><div class="vr-qtd"><button type="button" class="vr-menos">−</button><input type="text" inputmode="decimal" class="vr-n mono-input"><button type="button" class="vr-mais">+</button></div>' +
+        '<div class="vr-subtotal"></div></div>';
+      const nome = row.querySelector('.vr-item-nome');
+      if (it.avulsaRapida) {
+        // peça fora do catálogo: a descrição aqui mesmo
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.value = it.produto || ''; inp.placeholder = 'Descrição da peça'; inp.setAttribute('aria-label', 'Descrição da peça');
+        inp.addEventListener('input', () => { it.produto = inp.value; });
+        nome.appendChild(inp);
+      } else nome.textContent = it.produto;
+      const sub = row.querySelector('.vr-item-sub');
+      if (!(Number(it.precoUnit) > 0)) {
+        // sem preço: o valor de venda aqui mesmo
+        sub.innerHTML = '<label class="vr-preco-rot">Preço unit. (R$) <input type="text" inputmode="decimal" class="vr-preco mono-input" placeholder="0,00"></label>';
+        const pin = sub.querySelector('.vr-preco');
+        pin.addEventListener('change', () => { const v = r2(parseMoney(pin.value)); if (v > 0) { it.precoUnit = v; it.precoManual = true; pintarVendaRapida(); } });
+      } else sub.textContent = fmt(it.precoUnit) + ' cada' + (it.unidade && it.unidade !== 'un' ? ' (' + it.unidade + ')' : '');
+      const n = row.querySelector('.vr-n');
+      n.value = fmtQtd(it.quantidade);
+      n.setAttribute('aria-label', 'Quantidade de ' + (it.produto || 'item'));
+      row.querySelector('.vr-menos').setAttribute('aria-label', 'Tirar um de ' + (it.produto || 'item'));
+      row.querySelector('.vr-mais').setAttribute('aria-label', 'Mais um de ' + (it.produto || 'item'));
+      n.addEventListener('change', () => { const q = parseMoney(n.value); if (q > 0) it.quantidade = r3(q); else vr.itens.splice(idx, 1); pintarVendaRapida(); });
+      row.querySelector('.vr-menos').addEventListener('click', () => { const q = r3((Number(it.quantidade) || 0) - 1); if (q > 0) it.quantidade = q; else vr.itens.splice(idx, 1); pintarVendaRapida(); });
+      row.querySelector('.vr-mais').addEventListener('click', () => { it.quantidade = r3((Number(it.quantidade) || 0) + 1); pintarVendaRapida(); });
+      row.querySelector('.vr-subtotal').textContent = fmt(vrSubtotal(it));
+      box.appendChild(row);
+    });
+    $('vr-vazio').hidden = vr.itens.length > 0;
+    $('vr-total').textContent = fmt(r2(vr.itens.reduce((s, i) => s + vrSubtotal(i), 0)));
+  }
+  $('vr-add').addEventListener('click', () => abrirCatalogo({ onde: 'rapida', titulo: 'Adicionar produto', aoEscolher: x => {
+    if (!vr) return;
+    if (x.avulsa) {
+      vr.itens.push({ ...novoItem(), produto: (x.texto || '').trim(), categoria: categoriaPorPalavra(x.texto), quantidade: 1, precoUnit: 0, precoManual: true, tipoItem: 'produto', avulsaRapida: true });
+      pintarVendaRapida();
+      return;
+    }
+    const ja = vr.itens.find(i => !i.avulsaRapida && ((i.catId && i.catId === x.id) || (x.pecaId && i.pecaId === x.pecaId)));
+    if (ja) ja.quantidade = r3((Number(ja.quantidade) || 0) + 1);
+    else vr.itens.push(itemDoCatalogo(x));
+    pintarVendaRapida();
+  } }));
+  // a venda no formato de sempre: à vista, comissão padrão e data de hoje
+  function registroVendaRapida(pid, itens, origem, extra = {}) {
+    const p = produtorPorId(pid);
+    const itensSalvos = itensParaGravar(itens);
+    const tot = totaisDosItens(itensSalvos);
+    const pct = Number(config.comissaoPct) || 0, base = config.comissaoBase;
+    return {
+      produtorId: pid, produtorNome: (p && p.nome) || '', data: todayISO(),
+      itens: itensSalvos, pagamento: 'avista', observacao: '',
+      custoTotal: r2(tot.custo), valorTotal: r2(tot.venda), lucro: r2(tot.lucro), margem: Math.round(tot.margem * 10000) / 10000,
+      comissaoPct: pct, comissaoBase: base, comissaoValor: r2(calcComissao(tot, pct, base)),
+      origem, numero: proximoNumeroVenda(), saiuEstoque: false, estoqueTecnico: null,
+      criadoPor: viewerId || null, criadoEm: Date.now(), comissaoRecebida: false, comissaoRecebidaEm: null, ...extra
+    };
+  }
+  $('vr-salvar').addEventListener('click', () => {
+    if (!vr) return;
+    if (!vr.pid || !produtorPorId(vr.pid)) { avisar('Escolha o produtor.'); return; }
+    if (!vr.itens.length) { avisar('Adicione pelo menos um produto.'); return; }
+    const falta = vr.itens.find(i => !String(i.produto || '').trim() || !(Number(i.quantidade) > 0) || !(Number(i.precoUnit) > 0));
+    if (falta) { avisar(String(falta.produto || '').trim() ? 'Confira "' + falta.produto.trim() + '": falta o preço ou a quantidade.' : 'Escreva a descrição da peça avulsa.'); return; }
+    $('vr-salvar').disabled = true;
+    const o = vr;
+    vr = null;
+    const p = produtorPorId(o.pid);
+    const id = novoId();
+    const registro = registroVendaRapida(o.pid, o.itens, o.origem, o.repeteDe ? { repeteDe: o.repeteDe } : {});
+    gravar('set', 'vendas/' + id, registro);
+    registrarAtividade('criou', 'venda', id, ((p && p.nome) || '') + ' · ' + fmt(registro.valorTotal), o.repeteDe ? 'repetiu o pedido' : 'venda rápida');
+    $('modal-vr').hidden = true;
+    avisoRapido(numVenda(registro.numero) + ' registrada: ' + fmt(registro.valorTotal) + '.');
+  });
+  // "Mais opções": o formulário completo da venda (pagamento, observação, comissão, preço na mão)
+  $('vr-mais-opcoes').addEventListener('click', () => {
+    if (!vr) return;
+    const o = vr;
+    vr = null;
+    $('modal-vr').hidden = true;
+    abrirFormVenda(null, { origem: o.origem, produtorId: o.pid, itens: o.itens.map(i => { const { avulsaRapida, ...resto } = i; return { ...resto }; }),
+      voltarPara: o.voltar === 'produtor' && currentProdutorId ? 'produtor' : 'vendas' });
+  });
+  $('vr-cancelar').addEventListener('click', () => { vr = null; $('modal-vr').hidden = true; });
+  $('novo-vr').addEventListener('click', () => {
+    const p = produtorDaFicha();
+    fecharNovo();
+    abrirVendaRapida(p ? { produtorId: p.id, voltar: 'produtor' } : {});
+  });
+  $('produtor-venda-rapida').addEventListener('click', () => { if (currentProdutorId) abrirVendaRapida({ produtorId: currentProdutorId, voltar: 'produtor' }); });
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
