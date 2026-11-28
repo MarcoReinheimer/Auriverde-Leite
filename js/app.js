@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.28.2';
+  const APP_VERSAO = '2026.11.28.3';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -3419,7 +3419,7 @@
     $('produtor-compras-resumo').textContent = compras.length || abertos.length
       ? 'Comprou ' + fmt(totalAno) + ' em ' + ano + ' · ' + (compras.length === 1 ? '1 compra' : compras.length + ' compras') + (abertos.length ? ' · ' + (abertos.length === 1 ? '1 orçamento em aberto' : abertos.length + ' orçamentos em aberto') : '')
       : 'Nenhuma compra registrada ainda.';
-    const linhas = compras.map(v => ({ data: v.data || '', valor: Number(v.valorTotal) || 0, de: rotuloOrigemVenda(v), itens: resumoItens(v.itens), abrir: () => abrirVendaDetalhe(v.id, 'produtor') }))
+    const linhas = compras.map(v => ({ data: v.data || '', valor: Number(v.valorTotal) || 0, de: rotuloOrigemVenda(v), itens: resumoItens(v.itens), venda: v, abrir: () => abrirVendaDetalhe(v.id, 'produtor') }))
       .concat(abertos.map(o => ({ data: o.data || '', valor: Number(o.total) || 0, de: numOrc(o.numero) + ' · ' + ORC_SIT[situacaoOrc(o)], itens: resumoItens(o.itens), orc: true, abrir: () => abrirOrcamento(o.id, 'produtor') })))
       .sort((a, b) => b.data.localeCompare(a.data));
     const box = $('produtor-compras-lista');
@@ -3434,6 +3434,14 @@
       row.querySelector('.compra-valor').textContent = fmt(l.valor);
       row.querySelector('.compra-de').textContent = l.de;
       row.querySelector('.compra-itens').textContent = l.itens;
+      if (l.venda && podeLancar('vendas') && (l.venda.itens || []).some(i => !ehItemEquip(i) && i.tipoItem !== 'servico')) {
+        const rep = document.createElement('button');
+        rep.type = 'button'; rep.className = 'os-acao compra-repetir'; rep.textContent = 'Repetir';
+        rep.setAttribute('aria-label', 'Repetir o pedido de ' + fmtDate(l.data));
+        rep.addEventListener('click', e => { e.stopPropagation(); repetirVenda(l.venda); });
+        rep.addEventListener('keydown', e => e.stopPropagation());
+        row.appendChild(rep);
+      }
       row.addEventListener('click', l.abrir);
       row.addEventListener('keydown', e => { if (e.key === 'Enter') l.abrir(); });
       box.appendChild(row);
@@ -13232,6 +13240,30 @@
       voltarPara: o.voltar === 'produtor' && currentProdutorId ? 'produtor' : 'vendas' });
   });
   $('vr-cancelar').addEventListener('click', () => { vr = null; $('modal-vr').hidden = true; });
+  // REPETIR O PEDIDO: os mesmos itens e quantidades na Venda rápida, com os preços da tabela de hoje
+  async function repetirVenda(v) {
+    await carregarCatalogo();
+    const avisos = [], itens = [];
+    let pulou = 0;
+    (v.itens || []).forEach(i => {
+      if (ehItemEquip(i) || i.tipoItem === 'servico') { pulou++; return; }
+      const q = Number(i.quantidade) > 0 ? Number(i.quantidade) : 1;
+      const c = catDoLancado(i.catId, i.pecaId, i.produto);
+      if (c && !c.semPreco) {
+        const novo = { ...itemDoCatalogo(c), quantidade: q };
+        if (Math.abs(r2(novo.precoUnit) - r2(i.precoUnit)) > 0.004) avisos.push('Preço de ' + (c.descricao || i.produto) + ' mudou de ' + fmt(r2(i.precoUnit)) + ' para ' + fmt(r2(novo.precoUnit)) + '.');
+        itens.push(novo);
+      } else {
+        // fora do catálogo (ou sem preço na tabela hoje): fica o preço da última venda
+        const { equip, equipamentoId, osInstalacaoId, ...resto } = i;
+        itens.push({ ...novoItem(), ...resto, quantidade: q, precoManual: true });
+        avisos.push((i.produto || 'Item') + (c ? ' está sem preço na tabela' : ' não está no catálogo') + ': ficou o preço da última venda (' + fmt(r2(i.precoUnit)) + ').');
+      }
+    });
+    if (pulou) avisos.push(pulou === 1 ? '1 item de serviço ou equipamento ficou de fora.' : pulou + ' itens de serviço ou equipamento ficaram de fora.');
+    if (!itens.length) { avisar('Esta venda não tem produtos para repetir.'); return; }
+    abrirVendaRapida({ produtorId: v.produtorId, itens, avisos, titulo: 'Repetir pedido', repeteDe: v.id, voltar: 'produtor' });
+  }
   $('novo-vr').addEventListener('click', () => {
     const p = produtorDaFicha();
     fecharNovo();

@@ -3514,3 +3514,6 @@
   .vr-acoes #vr-salvar { grid-column: 1 / -1; order: -1; }
   .vr-completa { width: 100%; margin-top: 8px; }
   .hj-acoes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  /* Repetir o pedido (ficha → Compras) */
+  .compra-repetir { grid-column: 1 / -1; justify-self: end; min-height: 36px; padding: 6px 14px; margin-top: 4px; }
