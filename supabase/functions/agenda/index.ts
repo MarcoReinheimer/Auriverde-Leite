@@ -93,15 +93,20 @@ async function produtoresDe(prefixo: string, ids: string[]) {
   return mapa;
 }
 
-// o que levar: componentes a trocar e peças lançadas na OS (só nome e quantidade, nunca valor)
+// o que levar: a lista "Levar" da OS e os componentes a trocar (só nome e quantidade, nunca valor)
 function levar(o: Record<string, any>) {
   const itens: string[] = [];
+  (Array.isArray(o.levar) ? o.levar : []).forEach((i: Record<string, any>) => {
+    const d = String(i.descricao || '').trim();
+    if (!d) return;
+    const q = i.qtd == null ? null : Number(i.qtd);
+    itens.push(q == null || q === 1 ? d : d + ' (' + String(q).replace('.', ',') + ')');
+  });
   const nomes = o.componentesNomes || {};
-  (Array.isArray(o.componentesTrocados) ? o.componentesTrocados : []).forEach((id: string) => { if (nomes[id]) itens.push(nomes[id]); });
-  (Array.isArray(o.pecas) ? o.pecas : []).forEach((p: Record<string, any>) => {
-    const d = String(p.descricao || '').trim();
-    const q = Number(p.qtd ?? p.quantidade) || 0;
-    if (d) itens.push(d + (q > 1 ? ' (' + String(q).replace('.', ',') + ')' : ''));
+  const sem = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  (Array.isArray(o.componentesTrocados) ? o.componentesTrocados : []).forEach((id: string) => {
+    const n = nomes[id];
+    if (n && !itens.some((t) => sem(t).includes(sem(n)))) itens.push(n);
   });
   return [...new Set(itens)].join(', ');
 }

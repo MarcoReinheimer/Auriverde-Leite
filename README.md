@@ -133,7 +133,7 @@ Quem monta o calendário é a função **agenda** do Supabase (`supabase/functio
 - O link leva um código de 32 letras e números (o "token"), guardado em `agenda-tokens/<token>` = `{ uid, criadoEm }`.
   O calendário do celular não faz login: a função confere o token sozinha. Token errado, ou pessoa bloqueada → 404.
 - Vai para o calendário: dia, período ou hora, nome e linha/cidade do produtor, motivo, telefone do produtor, nº da OS
-  e o que levar (componentes e peças, só o nome). **Nunca** custo, preço ou comissão.
+  e o que levar (a lista "Levar" da OS e os componentes a trocar, só o nome e a quantidade). **Nunca** custo, preço ou comissão.
 - Horários: hora marcada → 1h30; manhã → 8h às 12h; tarde → 13h30 às 17h30; sem horário → dia inteiro.
 - "Trocar link" apaga o token antigo e cria outro (o link velho para de funcionar).
 - Qualquer pessoa com acesso liberado no app consegue ler a coleção `agenda-tokens` (como lê as OS). Por isso o link

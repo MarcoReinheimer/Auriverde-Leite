@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.28.3';
+  const APP_VERSAO = '2026.11.28.4';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -5339,6 +5339,8 @@
       nome.addEventListener('click', () => openProdutor(p.id, { aba: 'visitas', voltar: 'rota' }));
       item.querySelector('.rota-item-sub').textContent = [turnoTxt(osHoje[p.id]) ? '⏰ ' + turnoTxt(osHoje[p.id]) : '', p.propriedade, p.referencia ? '📍 ' + p.referencia : '', p.telefone ? '📞 ' + p.telefone : ''].filter(Boolean).join(' · ');
       item.querySelector('.rota-tirar').addEventListener('click', () => alternarRota(p.id));
+      const levRota = osHoje[p.id] ? levarDaOS(osHoje[p.id]) : '';
+      if (levRota) { const d = document.createElement('div'); d.className = 'rota-item-levar'; d.textContent = 'Levar: ' + levRota; item.insertBefore(d, item.querySelector('.rota-item-mapas')); }
       const links = linksMapa(p);
       const mapas = item.querySelector('.rota-item-mapas');
       if (links) {
@@ -11238,6 +11240,8 @@
     $('os-agendada').value = existing ? (existing.agendadaPara || '') : (opts.agendadaPara || (osStatus === 'agendada' ? todayISO() : ''));
     preencherTecnicos($('os-tecnico'), existing ? (existing.tecnicoId || '') : (opts.tecnicoId || (souTecnico ? viewerId : '')));
     prepararPeriodoOS(existing ? existing.agendadaPeriodo : opts.agendadaPeriodo, existing ? existing.agendadaHora : opts.agendadaHora);
+    osLevar = clonar(existing ? (existing.levar || []) : (opts.levar || []));
+    pintarEditorLevar($('os-levar'), osLevar);
     // data do serviço: a que já foi lançada, ou hoje (OS que ainda não começou)
     $('visita-data').value = existing && existing.data && ['andamento', 'concluida'].includes(statusOS(existing)) ? existing.data : todayISO();
     $('os-hora-ini').value = existing ? (existing.horaInicio || '') : '';
@@ -11353,6 +11357,7 @@
       canceladaMotivo: st === 'cancelada' ? $('os-cancel-motivo').value.trim() : ''
     };
     payload.duracaoMin = duracaoMin(payload.horaInicio, payload.horaFim);
+    { const lvr = limparLevar(osLevar); if (lvr.length || (osBase && osBase.levar)) payload.levar = lvr; }
     Object.assign(payload, extrasOS.campos);
     payload.revisao = marcouItens ? { itens, proximaRevisao: addMonthsISO(dataServico, MESES_ATE_REVISAO), responsavelTecnico: $('revisao-responsavel').value.trim() } : null;
     payload.fotos = gravarFotosDaVisita(pid, vid);
@@ -11550,6 +11555,7 @@
       if (st === 'aberta') botao('📅 Agendar', () => agendarChamado(v, currentProdutorId, fichaVoltarPara));
       botao('▶ Iniciar', () => iniciarOS(v));
     }
+    if (pode && (st === 'andamento' || st === 'agendada' || st === 'aberta')) botao('Levei', () => abrirLevei({ produtorId: currentProdutorId, os: v }));
     if (pode && (st === 'andamento' || st === 'agendada' || st === 'aberta')) botao('✓ Concluir', () => {
       openVisitaModal(v);
       osStatus = 'concluida';
@@ -12027,12 +12033,13 @@
       data: o.data || '', outra: false, periodo, hora: horaValida(o.hora) ? o.hora : '',
       categoria: CAT_LABEL[o.categoria] ? o.categoria : 'ordenha', tipo: OS_TIPOS[o.tipo] ? o.tipo : 'visita', urgente: !!o.urgente,
       tecnicoId: ehAdmin() ? (o.tecnicoId || viewerId || null) : (viewerId || o.tecnicoId || null),
-      extra: o.extra || {}, voltar: o.voltar || voltarDaTelaAtual()
+      extra: o.extra || {}, voltar: o.voltar || voltarDaTelaAtual(), levar: clonar((o.os && o.os.levar) || o.levar || [])
     };
     $('ag-titulo').textContent = o.os ? 'Agendar o chamado' : 'Agendar visita';
     $('ag-origem').hidden = !o.origem;
     $('ag-origem').textContent = o.origem || '';
     $('ag-motivo').value = o.motivo || '';
+    pintarEditorLevar($('ag-levar'), ag.levar);
     $('ag-prod-busca').value = p && !ag.fixo ? p.nome : '';
     $('ag-tec-field').hidden = !ehAdmin();
     if (ehAdmin()) preencherTecnicos($('ag-tecnico'), ag.tecnicoId || '');
@@ -12176,7 +12183,8 @@
     return {
       status: 'agendada', agendadaPara: a.data,
       agendadaPeriodo: a.periodo === 'manha' || a.periodo === 'tarde' ? a.periodo : '', agendadaHora: a.periodo === 'hora' ? a.hora : '',
-      tecnicoId, tipo: a.tipo, categoria: a.categoria, motivo: $('ag-motivo').value.trim(), urgencia: a.urgente ? 'urgente' : 'normal'
+      tecnicoId, tipo: a.tipo, categoria: a.categoria, motivo: $('ag-motivo').value.trim(), urgencia: a.urgente ? 'urgente' : 'normal',
+      ...(limparLevar(a.levar).length || (a.os && a.os.levar) ? { levar: limparLevar(a.levar) } : {})
     };
   }
   $('ag-salvar').addEventListener('click', async () => {
@@ -12201,6 +12209,7 @@
       agendadaPara: a.data || '', agendadaPeriodo: a.periodo === 'manha' || a.periodo === 'tarde' ? a.periodo : '', agendadaHora: a.periodo === 'hora' ? a.hora : '',
       tecnicoId: (ehAdmin() && $('ag-tecnico').value) || a.tecnicoId || viewerId || null, tipo: a.tipo, categoria: a.categoria, motivo: $('ag-motivo').value.trim(), urgencia: a.urgente ? 'urgente' : 'normal'
     };
+    campos.levar = limparLevar(a.levar);
     ag = null;
     $('modal-agendar').hidden = true;
     if (a.os) {
@@ -12212,6 +12221,8 @@
         $('os-agendada').value = campos.agendadaPara || todayISO();
         if (campos.tecnicoId) preencherTecnicos($('os-tecnico'), campos.tecnicoId);
         prepararPeriodoOS(campos.agendadaPeriodo, campos.agendadaHora);
+        osLevar = clonar(campos.levar);
+        pintarEditorLevar($('os-levar'), osLevar);
         pintarFormOS();
       });
       return;
@@ -12219,7 +12230,7 @@
     abrirNovaOSDoProdutor(a.pid, a.voltar, {
       status: 'agendada', tipo: campos.tipo, categoria: campos.categoria, motivo: campos.motivo, urgencia: campos.urgencia,
       agendadaPara: campos.agendadaPara || todayISO(), agendadaPeriodo: campos.agendadaPeriodo, agendadaHora: campos.agendadaHora, tecnicoId: campos.tecnicoId,
-      componentes: a.extra.componentes, anotacaoId: a.extra.anotacaoId, retornoDe: a.extra.retornoDe, encaminhamentoId: a.extra.encaminhamentoId
+      componentes: a.extra.componentes, anotacaoId: a.extra.anotacaoId, retornoDe: a.extra.retornoDe, encaminhamentoId: a.extra.encaminhamentoId, levar: campos.levar
     });
   });
 
@@ -12744,13 +12755,11 @@
   // =====================================================
   // o que levar: componentes a trocar e peças lançadas na OS (só o nome e a quantidade)
   function levarDaOS(o) {
-    const itens = [];
+    const itens = textosLevar(o && o.levar);
     const nomes = (o && o.componentesNomes) || {};
-    (o && Array.isArray(o.componentesTrocados) ? o.componentesTrocados : []).forEach(id => { const n = (compPorId(id) || {}).nome || nomes[id]; if (n) itens.push(n); });
-    (o && Array.isArray(o.pecas) ? o.pecas : []).forEach(p => {
-      const d = String(p.descricao || '').trim();
-      const q = Number(p.qtd != null ? p.qtd : p.quantidade) || 0;
-      if (d) itens.push(d + (q > 1 ? ' (' + numBR(q, q % 1 ? 1 : 0) + ')' : ''));
+    (o && Array.isArray(o.componentesTrocados) ? o.componentesTrocados : []).forEach(id => {
+      const n = (compPorId(id) || {}).nome || nomes[id];
+      if (n && !itens.some(t => normalizarBusca(t).includes(normalizarBusca(n)))) itens.push(n);
     });
     return [...new Set(itens)].join(', ');
   }
@@ -12814,6 +12823,7 @@
     };
     if (p) botao('Avisar', () => mandarWhatsProdutor(p, msgPassoHoje(p, o)), false, 'Avisar ' + (p.nome || '') + ' no WhatsApp');
     if (p && podeLancar('vendas')) botao('Venda', () => abrirVendaRapida({ produtorId: o.produtorId, voltar: 'home' }), false, 'Venda rápida para ' + (p.nome || ''));
+    if (p && podeLancar('visitas')) botao('Levei', () => abrirLevei({ produtorId: o.produtorId, os: o }), false, 'Levei: as peças que foram para ' + (p.nome || ''));
     const st = statusOS(o);
     if (podeEditarOS(o) && st === 'agendada') botao('Iniciar', () => iniciarOSDoIndice(o), false, 'Iniciar ' + numOS(o.numero));
     if (podeEditarOS(o) && (st === 'agendada' || st === 'andamento')) botao('Concluir', () => abrirOSNaFicha(o.produtorId, o.id, 'home', concluirOSNoForm), true, 'Concluir ' + numOS(o.numero));
@@ -13270,6 +13280,288 @@
     abrirVendaRapida(p ? { produtorId: p.id, voltar: 'produtor' } : {});
   });
   $('produtor-venda-rapida').addEventListener('click', () => { if (currentProdutorId) abrirVendaRapida({ produtorId: currentProdutorId, voltar: 'produtor' }); });
+
+  // =====================================================
+  // LEVAR E LEVEI: as peças que vão para o produtor
+  // Levar (antes da visita): na OS, levar: [{ pecaId, catId, descricao, qtd }]; o texto livre fica num item com qtd null.
+  // Levei (na visita): confirma o que foi. Com OS de hoje (agendada, aberta ou em andamento), as peças entram nela
+  // (com o preço de venda; ao concluir, a OS vira venda e dá baixa no estoque, como sempre). Sem OS, vira uma venda
+  // com origem 'levei' (id fixo lv_<produtor>_<dia>), com "Saiu do meu estoque" ligado: a mesma proteção contra
+  // baixa dupla; diminuir depois devolve a diferença ao estoque.
+  // =====================================================
+  function limparLevar(l) {
+    return (l || []).filter(i => String(i.descricao || '').trim() && (i.qtd == null || Number(i.qtd) > 0))
+      .map(i => ({ pecaId: i.pecaId || null, catId: i.catId || null, descricao: String(i.descricao).trim(), qtd: i.qtd == null ? null : r3(Number(i.qtd)) }));
+  }
+  function textosLevar(l) { return (l || []).filter(i => String(i.descricao || '').trim()).map(i => i.qtd == null ? String(i.descricao).trim() : String(i.descricao).trim() + (Number(i.qtd) !== 1 ? ' (' + qtdTxt(i.qtd) + ')' : '')); }
+  // o editor do campo "Levar" (janela de agendar e OS): peças com − / + e um texto livre
+  function pintarEditorLevar(box, lista) {
+    box.innerHTML = '';
+    lista.forEach((i, idx) => {
+      if (i.qtd == null) return;
+      const row = document.createElement('div');
+      row.className = 'lvr-item';
+      row.innerHTML = '<span class="lvr-nome"></span><span class="vr-qtd"><button type="button" class="vr-menos">−</button><span class="lvr-n"></span><button type="button" class="vr-mais">+</button></span>';
+      row.querySelector('.lvr-nome').textContent = i.descricao;
+      row.querySelector('.lvr-n').textContent = qtdTxt(i.qtd);
+      row.querySelector('.vr-menos').setAttribute('aria-label', 'Tirar um de ' + i.descricao);
+      row.querySelector('.vr-mais').setAttribute('aria-label', 'Mais um de ' + i.descricao);
+      row.querySelector('.vr-menos').addEventListener('click', () => { const q = r3(Number(i.qtd) - 1); if (q > 0) i.qtd = q; else lista.splice(idx, 1); pintarEditorLevar(box, lista); });
+      row.querySelector('.vr-mais').addEventListener('click', () => { i.qtd = r3(Number(i.qtd) + 1); pintarEditorLevar(box, lista); });
+      box.appendChild(row);
+    });
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'bloco-editar lvr-add'; add.textContent = '+ Peça do catálogo';
+    add.addEventListener('click', () => abrirCatalogo({ onde: 'levar', titulo: 'Peça para levar', aoEscolher: x => {
+      if (x.avulsa) {
+        if (x.texto) { lista.push({ pecaId: null, catId: null, descricao: x.texto.trim(), qtd: 1 }); pintarEditorLevar(box, lista); }
+        return;
+      }
+      const ja = lista.find(i => i.qtd != null && ((i.catId && i.catId === x.id) || (x.pecaId && i.pecaId === x.pecaId)));
+      if (ja) ja.qtd = r3(Number(ja.qtd) + 1);
+      else lista.push({ pecaId: x.pecaId || null, catId: x.id || null, descricao: x.descricao, qtd: 1 });
+      pintarEditorLevar(box, lista);
+    } }));
+    box.appendChild(add);
+    const livre = lista.find(i => i.qtd == null);
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.className = 'lvr-livre'; inp.autocomplete = 'off'; inp.maxLength = 200;
+    inp.placeholder = 'Ou escreva: 2 jogos de teteira, 10 m de mangueira';
+    inp.setAttribute('aria-label', 'O que levar, em texto');
+    inp.value = livre ? livre.descricao : '';
+    inp.addEventListener('input', () => {
+      const atual = lista.find(i => i.qtd == null);
+      const t = inp.value;
+      if (atual) { if (t.trim()) atual.descricao = t; else lista.splice(lista.indexOf(atual), 1); }
+      else if (t.trim()) lista.push({ pecaId: null, catId: null, descricao: t, qtd: null });
+    });
+    box.appendChild(inp);
+  }
+
+  // ---------- Levei ----------
+  var lv = null;
+  const lvChave = x => (x.catId || x.id) ? 'c:' + (x.catId || x.id) : x.pecaId ? 'p:' + x.pecaId : 'd:' + normalizarBusca(x.descricao || x.produto || '');
+  // a OS de hoje do produtor: em andamento, depois agendada para hoje, depois chamado aberto
+  function osDeHojeDoProdutor(pid) {
+    const hoje = todayISO();
+    const l = osVisiveis().filter(o => o.produtorId === pid);
+    return l.find(o => statusOS(o) === 'andamento') || l.find(o => statusOS(o) === 'agendada' && o.agendadaPara === hoje) || l.find(o => statusOS(o) === 'aberta') || null;
+  }
+  const idVendaLevei = (pid, dia) => 'lv_' + pid + '_' + String(dia || todayISO()).replace(/-/g, '');
+  async function abrirLevei(o = {}) {
+    if (!podeLancar('visitas')) { avisar('Você não tem permissão para lançar peças.'); return; }
+    const pid = o.produtorId;
+    const p = produtorPorId(pid);
+    if (!p) return;
+    const os = o.os || osDeHojeDoProdutor(pid);
+    const vid = idVendaLevei(pid);
+    const venda = os ? null : (vendasTodas.find(v => v.id === vid && !v.arquivado) || null);
+    lv = { pid, os, venda, itens: [], nota: '', cat: '', tipo: '', token: 0 };
+    $('lv-sub').textContent = p.nome + (os ? ' · entra na ' + numOS(os.numero) : venda ? ' · ajusta a ' + numVenda(venda.numero) + ' de hoje' : ' · vira uma venda');
+    $('lv-estoque-campo').hidden = !!os;
+    $('lv-estoque').checked = venda ? venda.saiuEstoque !== false : true;
+    $('lv-busca').value = '';
+    $('lv-lista').innerHTML = '<div class="picker-vazio">Abrindo o catálogo…</div>';
+    $('modal-levei').hidden = false;
+    $('modal-levei').querySelector('.modal-sheet').scrollTop = 0;
+    const t = ++lv.token;
+    await carregarCatalogo();
+    if (!lv || t !== lv.token) return;
+    const mem = lerAbaCat('levei');
+    lv.cat = mem && CATEGORIAS[mem.cat] ? mem.cat : '';
+    lv.tipo = (mem && mem.tipo) || CT_MU;
+    // o que já foi lançado (pelo Levei) ou, na primeira vez, a lista "Levar"
+    if (os) {
+      const base = (await osCompleta(pid, os.id)) || os;
+      if (!lv) return;
+      lv.base = base;
+      const ja = (base.pecas || []).filter(pc => pc.levei);
+      if (ja.length) ja.forEach(pc => lv.itens.push({ chave: lvChave(pc), descricao: pc.descricao, qtd: Number(pc.qtd) || 0, peca: pc }));
+      else (base.levar || []).forEach(i => {
+        if (i.qtd == null) return;
+        const c = catDoLancado(i.catId, i.pecaId, i.descricao);
+        if (c) lv.itens.push({ chave: lvChave(c), descricao: c.descricao, qtd: Number(i.qtd) || 1, cat: c });
+      });
+      lv.nota = textosLevar(base.levar).join(', ');
+    } else if (venda) {
+      (venda.itens || []).forEach(i => { if (!ehItemEquip(i) && i.tipoItem !== 'servico') lv.itens.push({ chave: lvChave(i), descricao: i.produto, qtd: Number(i.quantidade) || 0, item: i }); });
+    }
+    $('lv-nota').hidden = !lv.nota;
+    $('lv-nota').textContent = lv.nota ? 'Levar: ' + lv.nota : '';
+    pintarLevei();
+  }
+  function lvQtd(chave) { const i = lv.itens.find(x => x.chave === chave); return i ? i.qtd : 0; }
+  async function lvSomar(x, delta) {
+    const k = lvChave(x);
+    let i = lv.itens.find(y => y.chave === k);
+    if (!i && delta > 0) {
+      let c = x;
+      // peça sem preço: pede o valor (vai na OS ou na venda)
+      if (x.semPreco) {
+        ctOpts = { onde: 'levei' };
+        const r = await pedirPrecoCatalogo(x);
+        if (!r || !lv) return;
+        c = { ...x, ...r, semPreco: false };
+      }
+      i = { chave: k, descricao: x.descricao, qtd: 0, cat: c };
+      lv.itens.push(i);
+    }
+    if (!i) return;
+    i.qtd = r3(Math.max(0, Number(i.qtd) + delta));
+    pintarLevei();
+  }
+  function lvPrecoUnit(i) {
+    if (i.peca) return Number(i.peca.precoUnit) || 0;
+    if (i.item) return Number(i.item.precoUnit) || 0;
+    return i.cat ? itemDoCatalogo(i.cat).precoUnit : 0;
+  }
+  function pintarLevei() {
+    if (!lv || !catCache) return;
+    // o que foi marcado
+    const sel = $('lv-escolhidos');
+    sel.innerHTML = '';
+    lv.itens.filter(i => i.qtd > 0 || i.peca || i.item).forEach(i => {
+      const row = document.createElement('div');
+      row.className = 'lvr-item' + (i.qtd > 0 ? '' : ' zerado');
+      row.innerHTML = '<span class="lvr-nome"></span><span class="vr-qtd"><button type="button" class="vr-menos">−</button><span class="lvr-n"></span><button type="button" class="vr-mais">+</button></span>';
+      row.querySelector('.lvr-nome').textContent = i.descricao + (i.qtd > 0 ? '' : ' (tirado)');
+      row.querySelector('.lvr-n').textContent = qtdTxt(i.qtd);
+      row.querySelector('.vr-menos').setAttribute('aria-label', 'Tirar um de ' + i.descricao);
+      row.querySelector('.vr-mais').setAttribute('aria-label', 'Mais um de ' + i.descricao);
+      row.querySelector('.vr-menos').addEventListener('click', () => { i.qtd = r3(Math.max(0, i.qtd - 1)); pintarLevei(); });
+      row.querySelector('.vr-mais').addEventListener('click', () => { i.qtd = r3(i.qtd + 1); pintarLevei(); });
+      sel.appendChild(row);
+    });
+    $('lv-vazio').hidden = lv.itens.some(i => i.qtd > 0);
+    const total = r2(lv.itens.reduce((s, i) => s + (i.qtd > 0 ? i.qtd * lvPrecoUnit(i) : 0), 0));
+    $('lv-total').textContent = fmt(total);
+    // o catálogo: categoria, abas de tipo e a lista com − / +
+    const texto = $('lv-busca').value.trim();
+    const achados = buscarCatalogo({ texto });
+    const chips = $('lv-cats');
+    chips.innerHTML = '';
+    [['', 'Todas']].concat(Object.entries(CATEGORIAS)).forEach(([k, nome]) => {
+      if (k && !catCache.itens.some(x => x.categoria === k)) return;
+      const n = k ? achados.filter(x => x.categoria === k).length : achados.length;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flt-chip' + (lv.cat === k ? ' on' : '');
+      b.setAttribute('aria-pressed', lv.cat === k ? 'true' : 'false');
+      b.textContent = nome + ' (' + n + ')';
+      b.addEventListener('click', () => { lv.cat = k; gravarAbaCat('levei', lv.cat, lv.tipo); pintarLevei(); });
+      chips.appendChild(b);
+    });
+    const lista = buscarCatalogo({ texto, categoria: lv.cat });
+    const box = $('lv-lista');
+    box.innerHTML = '';
+    const linha = x => {
+      const q = lvQtd(lvChave(x));
+      const d = document.createElement('div');
+      d.className = 'pe-item lv-linha' + (q > 0 ? ' on' : '');
+      d.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod"></span></span><span class="vr-qtd"></span>';
+      d.querySelector('.pe-item-desc').textContent = x.descricao;
+      d.querySelector('.pe-item-cod').textContent = [x.codigo, x.unidade, x.marca].filter(Boolean).join(' · ');
+      const qb = d.querySelector('.vr-qtd');
+      if (q > 0) {
+        const m = document.createElement('button'); m.type = 'button'; m.className = 'vr-menos'; m.textContent = '−'; m.setAttribute('aria-label', 'Tirar um de ' + x.descricao);
+        m.addEventListener('click', e => { e.stopPropagation(); lvSomar(x, -1); });
+        const n = document.createElement('span'); n.className = 'lvr-n'; n.textContent = qtdTxt(q);
+        qb.appendChild(m); qb.appendChild(n);
+      }
+      const mais = document.createElement('button'); mais.type = 'button'; mais.className = 'vr-mais'; mais.textContent = '+'; mais.setAttribute('aria-label', 'Mais um de ' + x.descricao);
+      mais.addEventListener('click', e => { e.stopPropagation(); lvSomar(x, 1); });
+      qb.appendChild(mais);
+      d.addEventListener('click', () => lvSomar(x, 1));
+      return d;
+    };
+    let total2 = lista.length, mostrados = 0;
+    if (texto) {
+      $('lv-tipos').hidden = true;
+      mostrados = gruposPorTipo(box, lista, lv.cat, CAT_MAX, linha);
+    } else {
+      const mu = maisUsadasCatalogo().filter(x => !lv.cat || x.categoria === lv.cat);
+      lv.tipo = pintarAbasTipo($('lv-tipos'), lista, lv.cat, lv.tipo, mu.length, k => { lv.tipo = k; gravarAbaCat('levei', lv.cat, lv.tipo); pintarLevei(); $('lv-lista').scrollTop = 0; });
+      const l = lv.tipo === CT_MU ? mu : lista.filter(x => x.tipo === lv.tipo);
+      total2 = l.length;
+      l.slice(0, CAT_MAX).forEach(x => box.appendChild(linha(x)));
+      mostrados = Math.min(total2, CAT_MAX);
+    }
+    if (!lista.length) { const v = document.createElement('div'); v.className = 'picker-vazio'; v.textContent = 'Nenhuma peça com essa busca.'; box.appendChild(v); }
+    $('lv-info').textContent = total2 > mostrados ? 'Mostrando ' + mostrados + ' de ' + total2 + '. Busque pelo nome para achar o resto.' : '';
+    $('lv-info').hidden = !(total2 > mostrados);
+  }
+  $('lv-busca').addEventListener('input', pintarLevei);
+  $('lv-cancelar').addEventListener('click', () => { lv = null; $('modal-levei').hidden = true; });
+  $('lv-ok').addEventListener('click', async () => {
+    const l = lv;
+    if (!l) return;
+    const usados = l.itens.filter(i => i.qtd > 0);
+    if (!usados.length && !l.itens.some(i => i.peca || i.item)) { avisar('Marque o que você levou (toque nas peças).'); return; }
+    $('lv-ok').disabled = true;
+    try {
+      if (l.os) await leveiNaOS(l, usados);
+      else await leveiNaVenda(l, usados);
+    } finally { $('lv-ok').disabled = false; }
+    lv = null;
+    $('modal-levei').hidden = true;
+  });
+  // com OS de hoje: as peças entram nas peças da OS (com o preço de venda); as que não vieram do Levei ficam como estão
+  async function leveiNaOS(l, usados) {
+    const base = l.base || (await osCompleta(l.pid, l.os.id)) || l.os;
+    const outras = (base.pecas || []).filter(pc => !pc.levei);
+    const novas = usados.map(i => {
+      if (i.peca) return { ...i.peca, qtd: i.qtd, valor: i.peca.valorManual ? r2(i.peca.valor) : r2(i.qtd * (Number(i.peca.precoUnit) || 0)) };
+      const it = itemDoCatalogo(i.cat);
+      return { ...it, descricao: i.cat.descricao || '', qtd: i.qtd, valor: r2(i.qtd * it.precoUnit), valorManual: false, levei: true };
+    });
+    const pecas = outras.concat(novas);
+    const totalPecas = r2(pecas.reduce((s, pc) => s + (Number(pc.valor) || 0), 0));
+    const agora = Date.now();
+    const m = { pecas, totalPecas, total: r2(totalPecas + (Number(base.maoDeObra) || 0)), atualizadoPor: viewerId || null, atualizadoEm: agora,
+      historico: (base.historico || []).concat([{ acao: 'editou', status: statusOS(base), por: viewerId || null, em: agora, obs: 'Levei' }]).slice(-30) };
+    if (base.id && base !== l.os) gravarOS(l.pid, l.os.id, { ...base, ...m }, m);
+    else {
+      // sem a OS inteira neste aparelho (sem sinal): muda só as peças, na OS e no índice
+      gravar('update', 'produtores/' + l.pid + '/visitas/' + l.os.id, m);
+      gravar('update', 'ordens/' + l.os.id, m);
+    }
+    registrarAtividade('editou', 'os', l.os.id, nomeProdutorPid(l.pid) + ' · ' + numOS(l.os.numero), 'Levei: ' + plural(usados.length, 'peça', 'peças'));
+    avisoRapido(usados.length ? 'Peças lançadas na ' + numOS(l.os.numero) + '. Ao concluir, ela vira venda e baixa o estoque.' : 'Peças do Levei tiradas da ' + numOS(l.os.numero) + '.');
+  }
+  // sem OS: uma venda "levei" por produtor e dia; editar devolve ao estoque o que diminuiu
+  async function leveiNaVenda(l, usados) {
+    const vid = idVendaLevei(l.pid);
+    const antes = vendasTodas.find(v => v.id === vid) || null;
+    const saiu = $('lv-estoque').checked;
+    const itens = usados.map(i => {
+      if (i.item) return { ...novoItem(), ...i.item, quantidade: i.qtd };
+      return { ...itemDoCatalogo(i.cat), quantidade: i.qtd };
+    });
+    const agora = Date.now();
+    if (!antes) {
+      if (!itens.length) return;
+      const registro = registroVendaRapida(l.pid, itens, 'levei', { saiuEstoque: saiu, estoqueTecnico: saiu ? (viewerId || null) : null });
+      gravar('set', 'vendas/' + vid, registro);
+      registrarAtividade('criou', 'venda', vid, nomeProdutorPid(l.pid) + ' · ' + fmt(registro.valorTotal), 'Levei');
+      estoqueAposGravarVenda(vid, registro);
+      avisoRapido(numVenda(registro.numero) + ' registrada' + (saiu ? ' e baixada do seu estoque.' : '.'));
+      return;
+    }
+    // a venda de hoje já existe: atualiza (sem itens, fica cancelada e tudo volta ao estoque)
+    const itensSalvos = itensParaGravar(itens);
+    const tot = totaisDosItens(itensSalvos);
+    const mud = itens.length ? {
+      itens: itensSalvos, custoTotal: r2(tot.custo), valorTotal: r2(tot.venda), lucro: r2(tot.lucro), margem: Math.round(tot.margem * 10000) / 10000,
+      comissaoValor: r2(calcComissao(tot, antes.comissaoPct, antes.comissaoBase)), saiuEstoque: saiu, estoqueTecnico: saiu ? (antes.estoqueTecnico || viewerId || null) : null,
+      cancelada: false, canceladaEm: null, canceladaMotivo: ''
+    } : { cancelada: true, canceladaEm: todayISO(), canceladaMotivo: 'Levei: tudo tirado' };
+    Object.assign(mud, { atualizadoPor: viewerId || null, atualizadoEm: agora });
+    gravar('update', 'vendas/' + vid, mud);
+    registrarAtividade('editou', 'venda', vid, nomeProdutorPid(l.pid) + ' · ' + numVenda(antes.numero), 'Levei');
+    estoqueAposGravarVenda(vid, { ...antes, ...mud });
+    avisoRapido(itens.length ? numVenda(antes.numero) + ' atualizada.' : numVenda(antes.numero) + ' cancelada: as peças voltaram ao estoque.');
+  }
+  $('produtor-levei').addEventListener('click', () => { if (currentProdutorId) abrirLevei({ produtorId: currentProdutorId }); });
+  var osLevar = [];
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
@@ -15165,7 +15457,7 @@
   async function escolherDoCatalogo(x) {
     let item = { ...x };
     // o estoque não usa preço; na Calculadora, quem não vê custos só leva o nome do produto
-    if (x.semPreco && ctOpts.onde !== 'estoque' && !(ctOpts.onde === 'calc' && !veCustos())) {
+    if (x.semPreco && ctOpts.onde !== 'estoque' && ctOpts.onde !== 'levar' && !(ctOpts.onde === 'calc' && !veCustos())) {
       const r = await pedirPrecoCatalogo(x);
       if (!r) return;
       item = { ...item, ...r, semPreco: false };
