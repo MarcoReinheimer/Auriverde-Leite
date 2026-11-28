@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.27.6';
+  const APP_VERSAO = '2026.11.28.1';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -456,6 +456,7 @@
   function aplicarConfig(docs) {
     aplicarModulos(docs.find(d => d.id === 'modulos'));
     try { aplicarConfigPrev(docs.find(d => d.id === 'preventiva')); } catch (e) {}
+    try { aplicarTiposPeca(docs.find(d => d.id === 'tiposPeca')); } catch (e) {}
     const antigo = docs.find(d => d.id === 'vendas') || {};   // versão anterior guardava só a comissão aqui
     const geral = docs.find(d => d.id === 'geral') || {};
     const novo = { ...CONFIG_PADRAO };
@@ -9532,13 +9533,15 @@
       });
       box.appendChild(c);
     });
+    renderTiposAdmin();
   }
   // ---------- seção "Peças": busca, categorias, lista e peças sem preço ----------
-  var admCat = '', admSoSemPreco = false, admPecasToken = 0;
+  var admCat = null, admTipo = '', admSoSemPreco = false, admPecasToken = 0;
   async function renderListaPecasAdmin() {
     const t = ++admPecasToken;
     await carregarCatalogo();
     if (t !== admPecasToken) return;
+    if (admCat === null) { const m = lerAbaCat('admin'); admCat = m && CATEGORIAS[m.cat] ? m.cat : ''; admTipo = (m && m.tipo) || ''; }
     const texto = $('adm-pecas-busca').value.trim();
     const nSem = buscarCatalogo({ semPreco: true }).length;
     if (!nSem) admSoSemPreco = false;
@@ -9556,19 +9559,19 @@
       b.type = 'button'; b.className = 'flt-chip' + (admCat === k ? ' on' : '');
       b.setAttribute('aria-pressed', admCat === k ? 'true' : 'false');
       b.textContent = nome + ' (' + n + ')';
-      b.addEventListener('click', () => { admCat = k; renderListaPecasAdmin(); });
+      b.addEventListener('click', () => { admCat = k; gravarAbaCat('admin', admCat, admTipo); renderListaPecasAdmin(); });
       chips.appendChild(b);
     });
     const lista = admCat ? base.filter(x => x.categoria === admCat) : base;
     const box = $('adm-pecas');
     box.innerHTML = '';
-    lista.slice(0, CAT_MAX).forEach(x => {
+    const linha = x => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'adm-peca';
       b.innerHTML = '<span class="pe-item-txt"><span class="pe-item-desc"></span><span class="pe-item-cod"></span></span><span class="pe-item-preco"></span>';
       b.querySelector('.pe-item-desc').textContent = x.descricao || 'Sem descrição';
-      b.querySelector('.pe-item-cod').textContent = [x.codigo, x.unidade, x.marca, CATEGORIAS[x.categoria]].filter(Boolean).join(' · ');
+      b.querySelector('.pe-item-cod').textContent = [x.codigo, x.unidade, x.marca, CATEGORIAS[x.categoria] + ' · ' + x.tipo].filter(Boolean).join(' · ');
       const pr = b.querySelector('.pe-item-preco');
       if (x.semPreco) { pr.textContent = 'preço a definir'; pr.classList.add('sem'); }
       else {
@@ -9578,12 +9581,23 @@
         pr.appendChild(s);
       }
       b.addEventListener('click', () => abrirPecaDoCatalogo(x));
-      box.appendChild(b);
-    });
+      return b;
+    };
+    let total = lista.length, mostrados;
+    if (texto) {
+      $('adm-pecas-tipos').hidden = true;
+      mostrados = gruposPorTipo(box, lista, admCat, CAT_MAX, linha);
+    } else {
+      admTipo = pintarAbasTipo($('adm-pecas-tipos'), lista, admCat, admTipo, 0, k => { admTipo = k; gravarAbaCat('admin', admCat, admTipo); renderListaPecasAdmin(); });
+      const l = lista.filter(x => x.tipo === admTipo);
+      total = l.length;
+      l.slice(0, CAT_MAX).forEach(x => box.appendChild(linha(x)));
+      mostrados = Math.min(total, CAT_MAX);
+    }
     $('adm-pecas-vazio').hidden = lista.length > 0;
     $('adm-pecas-vazio').textContent = admSoSemPreco ? 'Nenhuma peça sem preço com essa busca.' : 'Nenhuma peça com essa busca.';
-    $('adm-pecas-info').textContent = lista.length > CAT_MAX ? 'Mostrando ' + CAT_MAX + ' de ' + lista.length + '. Refine a busca.' : '';
-    $('adm-pecas-info').hidden = lista.length <= CAT_MAX;
+    $('adm-pecas-info').textContent = total > mostrados ? 'Mostrando ' + mostrados + ' de ' + total + '. Refine a busca.' : '';
+    $('adm-pecas-info').hidden = !(total > mostrados);
   }
   $('adm-pecas-busca').addEventListener('input', renderListaPecasAdmin);
   $('adm-sem-preco').addEventListener('click', () => { admSoSemPreco = !admSoSemPreco; renderListaPecasAdmin(); });
@@ -9610,6 +9624,7 @@
     pcOrigem = x.origem === 'fora' ? 'fora' : 'dentro';
     pintarPcOrigem();
     pintarPcCategoria('');
+    pintarPcTipo('');
   }
   function abrirPeca(p) {
     if (!ehAdmin()) return;
@@ -9622,6 +9637,7 @@
     $('pc-preco').value = p && Number(p.preco) ? numTxt(r2(p.preco)) : '';
     const fk = p ? fornDaPeca(p) : null;
     pintarPcCategoria(p && CATEGORIAS[p.categoria] ? p.categoria : '');
+    pintarPcTipo(p && p.tipo ? p.tipo : '');
     $('pc-marca').value = p ? (p.marca || '') : '';
     $('pc-marca').placeholder = fk ? marcaDoForn(fk) : 'Opcional';
     pcOrigem = p && (p.origemICMS === 'fora' || p.origemICMS === 'dentro') ? p.origemICMS : (fk ? fornInfo(fk).origem : 'dentro');
@@ -9639,9 +9655,21 @@
     [['', 'Automática (' + CATEGORIAS[auto] + ')']].concat(Object.entries(CATEGORIAS)).forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); });
     sel.value = valor;
   }
+  // tipo: "Automático" sai das palavras da descrição; a lista muda com a categoria
+  function pintarPcTipo(valor) {
+    const p = pecasCatalogo.find(x => x.id === pecaEditandoId) || null;
+    const cat = $('pc-categoria').value || categoriaPorRegra(pcDaTabela ? pcDaTabela.grupo : (p && fornDaPeca(p)) || '', $('pc-descricao').value);
+    const lista = TIPOS_PECA[cat] || TIPOS_PECA.outros;
+    const sel = $('pc-tipo');
+    const atual = valor === undefined ? sel.value : valor;
+    sel.innerHTML = '';
+    [['', 'Automático (' + tipoPorRegra(cat, $('pc-descricao').value) + ')']].concat(lista.map(t => [t, t])).forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); });
+    sel.value = lista.includes(atual) ? atual : '';
+  }
+  $('pc-categoria').addEventListener('change', () => pintarPcTipo());
   function pintarPcOrigem() { $('pc-origem').querySelectorAll('button').forEach(b => { const on = b.dataset.o === pcOrigem; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
   $('pc-origem').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { pcOrigem = b.dataset.o; pintarPcOrigem(); }));
-  $('pc-descricao').addEventListener('input', () => pintarPcCategoria($('pc-categoria').value));
+  $('pc-descricao').addEventListener('input', () => { pintarPcCategoria($('pc-categoria').value); pintarPcTipo(); });
   $('adm-peca-nova').addEventListener('click', () => abrirPeca(null));
   // catálogo da Ordemax: o listaProdutos.xml da pasta do Configmax (código e descrição abertos; o preço vem
   // protegido no arquivo, então entra em branco). Códigos que já estão no catálogo ficam como estão.
@@ -9706,7 +9734,7 @@
       if (outra && !(await confirmar('O código ' + codigo + ' já é de "' + (outra.descricao || '') + '". Salvar assim mesmo?', 'Salvar assim mesmo'))) return;
     }
     const dados = { codigo, descricao, unidade: $('pc-unidade').value.trim() || 'un', preco: r2(parseMoney($('pc-preco').value)),
-      categoria: $('pc-categoria').value || null, marca: $('pc-marca').value.trim() || null, origemICMS: pcOrigem };
+      categoria: $('pc-categoria').value || null, tipo: $('pc-tipo').value || null, marca: $('pc-marca').value.trim() || null, origemICMS: pcOrigem };
     if (pecaEditandoId) {
       gravar('update', 'pecas/' + pecaEditandoId, { ...dados, atualizadoPor: viewerId || null, atualizadoEm: Date.now() });
       registrarAtividade('editou', 'peca', pecaEditandoId, descricao);
@@ -14546,6 +14574,184 @@
   }
   function hashTxt(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
 
+  // ---------- TIPOS DE PEÇA: uma subdivisão dentro da categoria (as abas do catálogo) ----------
+  // O tipo sai por palavra na descrição (lista em Administração → Tabelas de preço → Tipos de peça,
+  // gravada em config/tiposPeca) ou é o que o Administrador escolheu na peça (pecas/<id>.tipo).
+  // Vale a primeira regra que casar entre os tipos da categoria da peça; o que não casar fica em "Outros".
+  const TIPOS_PECA = {
+    ordenha: ['Teteiras', 'Mangueiras', 'Reparos e kits', 'Pulsadores', 'Coletores e copos', 'Medidores', 'Reguladores e vacuômetros', 'Bomba de vácuo', 'Unidade final', 'Filtros', 'Limpeza', 'Outros'],
+    resfriador: ['Compressor e gás', 'Controlador e sensores', 'Agitador e motor', 'Vedações e torneiras', 'Outros'],
+    conforto: ['Ventiladores', 'Aspersão', 'Contenção e canzis', 'Camas e colchões', 'Bebedouros', 'Bezerreiras', 'Escovas', 'Outros'],
+    aguaquente: ['Aquecedores', 'Boilers', 'Peças'],
+    quimicos: ['Detergentes', 'Sanitizantes', 'Pré e pós-dipping', 'Outros'],
+    eletrica: ['Motores', 'Comandos', 'Cabos', 'Outros'],
+    outros: ['Outros']
+  };
+  const REGRAS_TIPO_PADRAO = [
+    ['Teteiras', 'teteira, insuflador'],
+    ['Mangueiras', 'mangueira, tubo de leite, tubo curto'],
+    ['Reparos e kits', 'reparo, kit, membrana, diafragma, anel, o-ring, oring, vedação, gaxeta'],
+    ['Pulsadores', 'pulsador'],
+    ['Coletores e copos', 'coletor, copo'],
+    ['Medidores', 'medidor'],
+    ['Reguladores e vacuômetros', 'regulador, vacuômetro'],
+    ['Bomba de vácuo', 'palheta, bomba de vácuo, óleo, correia'],
+    ['Unidade final', 'unidade final, bomba de leite'],
+    ['Filtros', 'filtro'],
+    ['Limpeza', 'jetter, vela, escova'],
+    ['Compressor e gás', 'compressor, gás, fluido, r22, r-22, r404, r-404, capacitor, condensador'],
+    ['Controlador e sensores', 'controlador, termostato, sensor, termômetro, placa, display'],
+    ['Agitador e motor', 'agitador, motor, redutor'],
+    ['Vedações e torneiras', 'torneira, vedação, borracha, tampa, registro, válvula'],
+    ['Ventiladores', 'ventilador, exaustor, hélice'],
+    ['Aspersão', 'bico, anti gotejo, antigotejo, aspersão, aspersor, nebuliz'],
+    ['Contenção e canzis', 'canzil, contenção, cont, portão, portões, cantoneira, brete, tronco'],
+    ['Camas e colchões', 'colchão, cama, separador, tapete'],
+    ['Bebedouros', 'bebedouro, drinker, cocho, saleiro'],
+    ['Bezerreiras', 'bezerreira, bezerreiro, baia'],
+    ['Escovas', 'escova, coçador'],
+    ['Aquecedores', 'aquecedor, coletor solar, placa solar'],
+    ['Boilers', 'boiler, reservatório'],
+    ['Detergentes', 'detergente, alcalino, ácido'],
+    ['Sanitizantes', 'sanitizante, cloro, peracético, quaternário'],
+    ['Pré e pós-dipping', 'dipping, pré dipping, pós dipping, iodo, selante'],
+    ['Motores', 'motor'],
+    ['Comandos', 'contator, disjuntor, comando, chave, inversor, relé, partida, botoeira'],
+    ['Cabos', 'cabo, fio']
+  ].map(([tipo, p]) => ({ tipo, palavras: p.split(',').map(s => s.trim()).filter(Boolean) }));
+  // texto com espaço nas pontas, sem acento e sem sinais: a palavra da regra casa no começo de uma palavra
+  const normTipo = s => ' ' + normalizarBusca(s).replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+  var regrasTipo = [], regrasTipoAssin = '', regrasTipoDoc = null;
+  function compilarRegrasTipo(regras) {
+    return regras.map(r => ({ tipo: r.tipo, palavras: (r.palavras || []).map(p => normTipo(p).trimEnd()).filter(p => p.trim()) })).filter(r => r.palavras.length);
+  }
+  function aplicarTiposPeca(doc) {
+    regrasTipoDoc = doc && Array.isArray(doc.regras) && doc.regras.length ? doc : null;
+    const regras = regrasTipoDoc ? regrasTipoDoc.regras : REGRAS_TIPO_PADRAO;
+    const assin = JSON.stringify(regras);
+    if (assin === regrasTipoAssin) return;
+    regrasTipoAssin = assin;
+    regrasTipo = compilarRegrasTipo(regras);
+    catVer++;   // o tipo de cada item é refeito na próxima vez que o catálogo abrir
+    if (!$('modal-cat').hidden) carregarCatalogo().then(() => { if (!$('modal-cat').hidden) renderCatalogo(); });
+    if (!$('view-admin').hidden) renderPecasAdmin();
+  }
+  function tipoPadrao(cat) { const l = TIPOS_PECA[cat] || TIPOS_PECA.outros; return l.includes('Outros') ? 'Outros' : l[l.length - 1]; }
+  function tipoPorRegra(cat, desc) {
+    if (!regrasTipo.length) regrasTipo = compilarRegrasTipo(REGRAS_TIPO_PADRAO);
+    const lista = TIPOS_PECA[cat] || TIPOS_PECA.outros;
+    const t = normTipo(desc);
+    const r = regrasTipo.find(x => lista.includes(x.tipo) && x.palavras.some(p => t.includes(p)));
+    return r ? r.tipo : tipoPadrao(cat);
+  }
+  // o tipo escolhido na peça vale, se for um dos tipos da categoria dela
+  function tipoDaPeca(peca, cat, desc) {
+    return peca && peca.tipo && (TIPOS_PECA[cat] || []).includes(peca.tipo) ? peca.tipo : tipoPorRegra(cat, desc);
+  }
+  const CT_MU = '*';   // a aba "Mais usadas"
+  function ordemDosTipos(cat) {
+    if (cat) return TIPOS_PECA[cat] || TIPOS_PECA.outros;
+    const out = [];
+    Object.keys(CATEGORIAS).forEach(k => (TIPOS_PECA[k] || []).forEach(t => { if (!out.includes(t)) out.push(t); }));
+    // em "Todas", as abas de sobra ("Peças" e "Outros") ficam no fim
+    const sobra = ['Peças', 'Outros'];
+    return out.filter(t => !sobra.includes(t)).concat(sobra);
+  }
+  // as abas de tipo: "Mais usadas" (quando tem) e os tipos que têm peça, com a quantidade; devolve a aba que vale
+  function pintarAbasTipo(box, itens, cat, atual, nMaisUsadas, aoTrocar) {
+    const cont = {};
+    itens.forEach(x => { cont[x.tipo] = (cont[x.tipo] || 0) + 1; });
+    const abas = [];
+    if (nMaisUsadas) abas.push([CT_MU, 'Mais usadas', nMaisUsadas]);
+    ordemDosTipos(cat).forEach(t => { if (cont[t]) abas.push([t, t, cont[t]]); });
+    Object.keys(cont).forEach(t => { if (!abas.some(a => a[0] === t)) abas.push([t, t, cont[t]]); });
+    const vale = abas.some(a => a[0] === atual) ? atual : (abas[0] ? abas[0][0] : '');
+    box.innerHTML = '';
+    abas.forEach(([k, nome, n]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ct-tipo' + (k === vale ? ' on' : '');
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', k === vale ? 'true' : 'false');
+      b.innerHTML = '<span></span><small></small>';
+      b.querySelector('span').textContent = nome;
+      b.querySelector('small').textContent = String(n);
+      b.addEventListener('click', () => aoTrocar(k));
+      box.appendChild(b);
+    });
+    box.hidden = !abas.length;
+    const on = box.querySelector('.ct-tipo.on');
+    if (on) box.scrollLeft = Math.max(0, on.offsetLeft - (box.clientWidth - on.offsetWidth) / 2);
+    return vale;
+  }
+  // resultado da busca: agrupado com um título por tipo (até max itens no total)
+  function gruposPorTipo(box, itens, cat, max, linha) {
+    const grupos = {};
+    itens.forEach(x => { (grupos[x.tipo] = grupos[x.tipo] || []).push(x); });
+    const ordem = ordemDosTipos(cat).filter(t => grupos[t]).concat(Object.keys(grupos).filter(t => !ordemDosTipos(cat).includes(t)));
+    let n = 0;
+    ordem.forEach(t => {
+      if (n >= max) return;
+      const h = document.createElement('div'); h.className = 'ct-sec'; h.textContent = t + ' (' + grupos[t].length + ')'; box.appendChild(h);
+      grupos[t].slice(0, max - n).forEach(x => { box.appendChild(linha(x)); n++; });
+    });
+    return n;
+  }
+  // a última aba usada em cada lugar (OS, venda, estoque…): só neste aparelho
+  const CT_ABAS_KEY = DEMO_ATIVO ? 'auriverde_demo_cat_abas' : 'auriverde_cat_abas';
+  function lerAbaCat(onde) { const m = lerLS(CT_ABAS_KEY, {}); return (m && typeof m === 'object' && m[onde]) || null; }
+  function gravarAbaCat(onde, cat, tipo) { const m = lerLS(CT_ABAS_KEY, {}); const o = m && typeof m === 'object' ? m : {}; o[onde] = { cat: cat || '', tipo: tipo || '' }; gravarLS(CT_ABAS_KEY, o); }
+
+  // ---------- Administração → Tabelas de preço → Tipos de peça ----------
+  function renderTiposAdmin() {
+    const box = $('adm-tipos');
+    if (!box) return;
+    const regras = regrasTipoDoc ? regrasTipoDoc.regras : REGRAS_TIPO_PADRAO;
+    box.innerHTML = '';
+    Object.keys(TIPOS_PECA).filter(c => c !== 'outros').forEach(cat => {
+      const g = document.createElement('div'); g.className = 'tt-grupo';
+      const h = document.createElement('div'); h.className = 'tt-cat'; h.textContent = CATEGORIAS[cat]; g.appendChild(h);
+      TIPOS_PECA[cat].forEach(t => {
+        const n = catCache ? catCache.itens.filter(x => x.categoria === cat && x.tipo === t).length : null;
+        const d = document.createElement('div'); d.className = 'tt-linha';
+        d.innerHTML = '<label class="tt-nome"></label>';
+        const rot = d.querySelector('.tt-nome');
+        rot.textContent = t + (n != null ? ' (' + n + ')' : '');
+        if (t === tipoPadrao(cat)) {
+          const s = document.createElement('div'); s.className = 'campo-dica'; s.style.margin = '2px 0 0';
+          s.textContent = 'O que não casar com as palavras acima.';
+          d.appendChild(s);
+        } else {
+          const r = regras.find(x => x.tipo === t);
+          const inp = document.createElement('input');
+          inp.type = 'text'; inp.autocomplete = 'off'; inp.dataset.tipo = t; inp.value = r ? (r.palavras || []).join(', ') : '';
+          inp.id = 'tt-' + cat + '-' + TIPOS_PECA[cat].indexOf(t); rot.htmlFor = inp.id;
+          d.appendChild(inp);
+        }
+        g.appendChild(d);
+      });
+      box.appendChild(g);
+    });
+  }
+  $('adm-tipos-padrao').addEventListener('click', () => {
+    document.querySelectorAll('#adm-tipos input[data-tipo]').forEach(i => { const r = REGRAS_TIPO_PADRAO.find(x => x.tipo === i.dataset.tipo); i.value = r ? r.palavras.join(', ') : ''; });
+    avisoRapido('Palavras do padrão de volta. Toque em "Salvar palavras" para valer.');
+  });
+  $('adm-tipos-salvar').addEventListener('click', () => {
+    if (catalogoSoLeitura()) return;
+    const regras = [];
+    document.querySelectorAll('#adm-tipos input[data-tipo]').forEach(i => {
+      const palavras = i.value.split(',').map(s => s.trim()).filter(Boolean);
+      if (palavras.length && !regras.some(r => r.tipo === i.dataset.tipo)) regras.push({ tipo: i.dataset.tipo, palavras });
+    });
+    const doc = { regras, atualizadoPor: viewerId || null, atualizadoEm: Date.now() };
+    gravar('set', 'config/tiposPeca', doc);
+    aplicarTiposPeca(doc);
+    registrarAtividade('editou', 'configuracoes', '', 'Tipos de peça');
+    carregarCatalogo().then(renderTiposAdmin);
+    avisoRapido('Palavras salvas. O catálogo já usa os tipos novos.');
+  });
+
   var catCache = null, catVer = 0, catCacheVer = -1, catCarregando = null;
   function carregarCatalogo() {
     if (catCache && catCacheVer === catVer && !catCache.falhou.length) return Promise.resolve(catCache);
@@ -14579,6 +14785,7 @@
           dataTabela: peca ? (peca.tabela || '') : ((tab && tab.data) || ''), vigencia: x.vigencia || ''
         };
         it.busca = normalizarBusca(it.descricao + ' ' + it.codigo + ' ' + it.marca);
+        it.tipo = tipoDaPeca(peca, it.categoria, it.descricao);
         out.push(it);
       };
       // 1º as peças do banco: num repetido, fica a do banco
@@ -14670,13 +14877,18 @@
 
   // ---------- a janela ----------
   const CAT_MAX = 80;
-  let ctOpts = {}, ctCat = '', ctMarca = '', ctToken = 0;
+  let ctOpts = {}, ctCat = '', ctMarca = '', ctTipo = '', ctToken = 0;
+  const ctOnde = () => ctOpts.onde || 'geral';
   async function abrirCatalogo(opts) {
     ctOpts = typeof opts === 'function' ? { aoEscolher: opts } : (opts || {});
-    ctCat = ctOpts.categoria || ''; ctMarca = '';
+    // volta na última categoria e aba usadas neste lugar (OS, venda, estoque…)
+    const memCat = lerAbaCat(ctOnde());
+    ctCat = ctOpts.categoria || (memCat && CATEGORIAS[memCat.cat] ? memCat.cat : ''); ctMarca = '';
+    ctTipo = (memCat && memCat.tipo) || CT_MU;
     $('ct-titulo').textContent = ctOpts.titulo || (ctOpts.onde === 'os' || ctOpts.onde === 'estoque' ? 'Adicionar peça' : 'Catálogo de produtos');
     $('ct-busca').value = '';
     $('ct-cats').innerHTML = '';
+    $('ct-tipos').innerHTML = ''; $('ct-tipos').hidden = true;
     $('ct-marca-campo').hidden = true;
     $('ct-info').hidden = true;
     $('ct-lista').innerHTML = '';
@@ -14712,7 +14924,7 @@
     if (!catCache) return;
     const texto = $('ct-busca').value.trim();
     const achados = buscarCatalogo({ texto });
-    // chips por categoria, com quantos itens a busca acha em cada uma
+    // 1ª linha: chips por categoria, com quantos itens a busca acha em cada uma
     const chips = $('ct-cats');
     chips.innerHTML = '';
     [['', 'Todas']].concat(Object.entries(CATEGORIAS)).forEach(([k, nome]) => {
@@ -14722,7 +14934,7 @@
       b.type = 'button'; b.className = 'flt-chip' + (ctCat === k ? ' on' : '');
       b.setAttribute('aria-pressed', ctCat === k ? 'true' : 'false');
       b.textContent = nome + ' (' + n + ')';
-      b.addEventListener('click', () => { ctCat = k; ctMarca = ''; renderCatalogo(); });
+      b.addEventListener('click', () => { ctCat = k; ctMarca = ''; gravarAbaCat(ctOnde(), ctCat, ctTipo); renderCatalogo(); $('ct-lista').scrollTop = 0; });
       chips.appendChild(b);
     });
     // marcas: só as da categoria escolhida
@@ -14741,13 +14953,28 @@
       const h = document.createElement('div'); h.className = 'ct-sec'; h.textContent = titulo; box.appendChild(h);
       itens.forEach(x => box.appendChild(linhaCatalogo(x)));
     };
-    if (!texto) {
+    let total = lista.length, mostrados = 0;
+    if (texto) {
+      // buscando: tudo o que casou, com um título por tipo
+      $('ct-tipos').hidden = true;
+      mostrados = gruposPorTipo(box, lista, ctCat, CAT_MAX, linhaCatalogo);
+    } else {
+      // 2ª linha: abas de tipo ("Mais usadas" primeiro); a lista em ordem alfabética dentro da aba
       const filtro = x => (!ctCat || x.categoria === ctCat) && (!ctMarca || x.marca === ctMarca);
-      if (ctOpts.onde === 'os') secao('Sugeridas pelo checklist', sugeridasChecklist(ctOpts.checklist, ctOpts.marcaEquip).filter(filtro));
-      secao('Mais usadas por você', maisUsadasCatalogo().filter(filtro));
-      if (box.children.length && lista.length) { const h = document.createElement('div'); h.className = 'ct-sec'; h.textContent = ctCat ? CATEGORIAS[ctCat] : 'Todo o catálogo'; box.appendChild(h); }
+      const sug = ctOpts.onde === 'os' ? sugeridasChecklist(ctOpts.checklist, ctOpts.marcaEquip).filter(filtro) : [];
+      const mu = maisUsadasCatalogo().filter(filtro).filter(x => !sug.includes(x));
+      ctTipo = pintarAbasTipo($('ct-tipos'), lista, ctCat, ctTipo, sug.length + mu.length, k => { ctTipo = k; gravarAbaCat(ctOnde(), ctCat, ctTipo); renderCatalogo(); $('ct-lista').scrollTop = 0; });
+      if (ctTipo === CT_MU) {
+        if (sug.length) { secao('Sugeridas pelo checklist', sug); secao('Mais usadas por você', mu); }
+        else mu.forEach(x => box.appendChild(linhaCatalogo(x)));
+        total = mostrados = sug.length + mu.length;
+      } else {
+        const l = lista.filter(x => x.tipo === ctTipo);
+        total = l.length;
+        l.slice(0, CAT_MAX).forEach(x => box.appendChild(linhaCatalogo(x)));
+        mostrados = Math.min(total, CAT_MAX);
+      }
     }
-    lista.slice(0, CAT_MAX).forEach(x => box.appendChild(linhaCatalogo(x)));
     if (!lista.length) { const v = document.createElement('div'); v.className = 'picker-vazio'; v.textContent = catCache.itens.length ? 'Nenhum item com essa busca.' : 'O catálogo ainda está vazio.'; box.appendChild(v); }
     // peça fora do catálogo: a descrição vem da busca
     const av = document.createElement('button');
@@ -14758,7 +14985,7 @@
     av.addEventListener('click', () => { const cb = ctOpts.aoEscolher; fecharCatalogo(); if (cb) cb({ avulsa: true, texto }); });
     box.appendChild(av);
     const info = [];
-    if (lista.length > CAT_MAX) info.push('Mostrando ' + CAT_MAX + ' de ' + lista.length + '. Refine a busca.');
+    if (total > mostrados) info.push('Mostrando ' + mostrados + ' de ' + total + '. Busque pelo nome para achar o resto.');
     if (catCache.falhou.length) info.push('Não consegui abrir a tabela de ' + listaE(catCache.falhou) + ' (sem internet?).');
     $('ct-info').textContent = info.join(' ');
     $('ct-info').hidden = !info.length;

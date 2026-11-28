@@ -3469,3 +3469,20 @@
   .sg-acoes { position: sticky; bottom: 0; z-index: 2; margin: 0 -20px; padding: 10px 20px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); }
   .sg-acoes button { flex: 1; }
   .sg-acoes [hidden] { display: none; }
+
+  /* abas de tipo de peça (catálogo e Administração) */
+  .ct-tipos { display: flex; gap: 4px; overflow-x: auto; flex-wrap: nowrap; margin: 8px -2px 10px; padding: 0 2px; border-bottom: 1px solid var(--line);
+    -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .ct-tipos::-webkit-scrollbar { display: none; }
+  .ct-tipos[hidden] { display: none; }
+  .ct-tipo { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 10px; border: none; border-bottom: 3px solid transparent;
+    border-radius: 10px 10px 0 0; background: transparent; color: var(--ink-soft); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .ct-tipo small { font-size: 12px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); }
+  .ct-tipo.on { color: var(--accent-txt); border-bottom-color: var(--accent); background: var(--accent-suave); }
+  .ct-tipo.on small { background: var(--accent); color: var(--accent-ink); }
+  .tt-grupo { margin-top: 12px; }
+  .tt-cat { font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+  .tt-linha { margin-bottom: 8px; }
+  .tt-nome { display: block; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .tt-linha input { width: 100%; }
+  .adm-tipos-acoes { display: flex; gap: 8px; justify-content: flex-end; align-items: center; margin-top: 10px; }
