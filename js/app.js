@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.28.5';
+  const APP_VERSAO = '2026.11.28.6';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -10686,9 +10686,10 @@
   // Quem manda os avisos é a Edge Function "enviar-avisos" do Supabase (veja o README): o app só inscreve.
   // A chave pública VAPID fica no config.js (vapidPublicKey); a privada fica só nos segredos da função.
   // =====================================================================
-  // DESLIGADO a pedido do dono: os cartões de avisos ficam escondidos e o aviso de chamado não sai.
-  // Para ligar de novo: true aqui (e criar a tarefa das 8h no Supabase, como no README).
-  const AVISOS_LIGADOS = false;
+  // Ligado para quem usa o app (técnicos e Administrador): Mais → Avisos no celular.
+  // A área do produtor ainda não é usada: o cartão de avisos dela continua escondido (AVISOS_PRODUTOR).
+  const AVISOS_LIGADOS = true;
+  const AVISOS_PRODUTOR = false;
   const avChavePublica = () => String((window.AURIVERDE_CONFIG || {}).vapidPublicKey || '').trim();
   const avEhIPhone = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const avInstalado = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
@@ -10766,8 +10767,8 @@
 
   // ---------- produtor: lembrete da revisão, da troca de peças e da visita ----------
   async function avPintarProdutor() {
-    $('pd-avisos').hidden = !AVISOS_LIGADOS;
-    if (!AVISOS_LIGADOS || !pdPid) return;
+    $('pd-avisos').hidden = !AVISOS_PRODUTOR;
+    if (!AVISOS_PRODUTOR || !pdPid) return;
     const pid = pdPid, col = 'avisos/' + pid + '/inscricoes';
     const ligado = await avLigadoEm(col).catch(() => false);
     if (pid !== pdPid) return;
@@ -10786,25 +10787,39 @@
     avPintarProdutor();
   });
 
-  // ---------- técnico: aviso de chamado novo aberto pelo produtor ----------
+  // ---------- técnico e Administrador: lembretes das visitas, resumo do dia e chamados novos ----------
+  // O que cada pessoa quer receber fica em avisos-tecnicos/<pessoa>/prefs/avisos (vale para todos os aparelhos dela):
+  //   { hora, vespera, manha, chamados } (true/false; sem o documento, tudo ligado)
+  const AV_PREFS = () => 'avisos-tecnicos/' + viewerId + '/prefs/avisos';
   async function avPintarTecnico() {
     $('mais-avisos').hidden = !AVISOS_LIGADOS;
     if (!AVISOS_LIGADOS || !viewerId || !podeVer('visitas')) return;
     const ligado = await avLigadoEm('avisos-tecnicos/' + viewerId + '/inscricoes').catch(() => false);
-    avPintarBotao($('mais-av-btn'), $('mais-av-txt'), $('mais-av-dica'), ligado, 'Ligar avisos de chamado',
-      'Avisos ligados neste celular: chega um aviso quando um produtor abre um chamado.',
-      'Receba um aviso no celular quando um produtor abrir um chamado.');
+    avPintarBotao($('mais-av-btn'), $('mais-av-txt'), $('mais-av-dica'), ligado, 'Receber avisos neste celular',
+      'Avisos ligados neste celular.',
+      'Receba no celular o lembrete 1 hora antes da visita, as visitas de amanhã (às 19h), o resumo do dia (às 7h) e os chamados novos.');
     $('mais-av-btn').dataset.ligado = ligado ? '1' : '';
+    $('mais-av-instalar').hidden = !(avEhIPhone() && !avInstalado());
+    const pref = (await lerDocumento(AV_PREFS()).catch(() => null)) || {};
+    document.querySelectorAll('#mais-av-prefs input[data-pref]').forEach(i => { i.checked = pref[i.dataset.pref] !== false; });
   }
   $('mais-av-btn').addEventListener('click', async () => {
     const btn = $('mais-av-btn');
     if (!viewerId) return;
     const col = 'avisos-tecnicos/' + viewerId + '/inscricoes';
     btn.disabled = true;
-    if (btn.dataset.ligado) { await avDesligar(col); avisoRapido('Avisos de chamado desligados neste celular.'); }
-    else if (await avLigar(col, { usuarioId: viewerId })) avisoRapido('Pronto: chega um aviso quando um produtor abrir um chamado.');
+    if (btn.dataset.ligado) { await avDesligar(col); avisoRapido('Avisos desligados neste celular.'); }
+    else if (await avLigar(col, { usuarioId: viewerId })) avisoRapido('Pronto: este celular vai receber os avisos.');
     avPintarTecnico();
   });
+  document.querySelectorAll('#mais-av-prefs input[data-pref]').forEach(i => i.addEventListener('change', () => {
+    if (!viewerId) return;
+    const dados = { atualizadoEm: Date.now() };
+    document.querySelectorAll('#mais-av-prefs input[data-pref]').forEach(x => { dados[x.dataset.pref] = x.checked; });
+    gravar('set', AV_PREFS(), dados);
+    avisoRapido(i.checked ? 'Aviso ligado.' : 'Aviso desligado.');
+  }));
+  $('mais-av-instalar').addEventListener('click', () => abrirInstalar(false));
   // chamado aberto pelo produtor: pede à função do servidor que avise os técnicos (se a conexão estiver ok)
   function avisarChamadoAosTecnicos(pid, osId, r) {
     const sb = window.auriverdeSupabase;

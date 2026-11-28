@@ -3553,3 +3553,12 @@
   .inst-link { overflow-wrap: anywhere; }
   .inst-alerta { font-size: 15px; font-weight: 700; color: var(--tax); margin: 0 0 6px; }
   .inst-btn { width: 100%; margin-top: 14px; }
+
+  /* Avisos no celular: o que cada pessoa quer receber */
+  .av-instalar { margin-top: 6px; }
+  .av-instalar[hidden] { display: none; }
+  .av-prefs { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .av-prefs-tit { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin-bottom: 4px; }
+  .av-pref { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; line-height: 1.35; cursor: pointer; }
+  .av-pref input { flex: none; width: 22px; height: 22px; }
+  .mais-avisos .av-prefs .campo-dica { margin-top: 6px; }

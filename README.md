@@ -62,23 +62,23 @@ Ficam no Supabase, em `tabelas-preco/<fornecedor>` (`ordemax`, `mx`, `lero`, `fe
 **Não coloque as tabelas neste repositório nem no site:** tudo aqui é público. A pasta `tabelas/` está no `.gitignore`.
 
 ## Avisos no celular (Web Push)
-> **Desligado** (pedido do dono, 20/11/2026): os botões estão escondidos no app (`AVISOS_LIGADOS = false` em `js/app.js`)
-> e a tarefa das 8h foi apagada no Supabase. Para ligar de novo: `AVISOS_LIGADOS = true`, gere as versões compactadas
-> e refaça os passos 3 a 6 abaixo.
+> **Ligado para os técnicos e o Administrador** (28/11/2026): Mais → Avisos no celular. A parte do produtor continua
+> escondida (`AVISOS_PRODUTOR = false` em `js/app.js`), porque os produtores ainda não entram no app.
 
 O app já tem os botões para ligar os avisos; quem manda os avisos é a função **enviar-avisos** do Supabase
 (`supabase/functions/enviar-avisos/index.ts`). Enquanto ela não estiver publicada e a chave pública não estiver
 no `config.js`, os botões mostram "Os avisos ainda não foram configurados".
 
-**O que chega no celular**
-- **Produtor** (botão "Receber avisos no celular", no Início da área do produtor): todo dia às 8h de Brasília, no máximo
-  1 aviso por produtor, nesta ordem: visita agendada para amanhã; revisão marcada para os próximos 7 dias (avisa uma vez)
-  ou revisão vencida (uma vez por semana); troca de componente nos próximos 7 dias (avisa uma vez).
-  Ex.: "Sua ordenhadeira está com a revisão marcada para 23/11. Qualquer dúvida, abra um chamado no app."
-- **Técnico** (Mais → Avisos no celular): um aviso na hora em que um produtor abre um chamado.
-- O que foi enviado fica gravado em `avisos-enviados/` (para não repetir). Celular que desinstalou o app sai sozinho da lista.
-- **iPhone:** só funciona com o app instalado na tela inicial (Compartilhar → Adicionar à Tela de Início) e iOS 16.4 ou mais novo.
-- A data da próxima troca de componente é atualizada no cadastro do produtor sempre que alguém abre a ficha dele.
+**O que chega no celular** (cada pessoa liga ou desliga cada um em Mais → Avisos no celular; vale para todos os aparelhos dela,
+em `avisos-tecnicos/<id>/prefs/avisos` = `{ hora, vespera, manha, chamados }`)
+- **1 hora antes** de cada visita com hora marcada: "Daqui 1 hora: Valdir Schneider · Resfriador" (o toque abre a OS).
+- **Véspera, às 19h**, para quem tem visita no dia seguinte: "Amanhã: Valdir (manhã), Adriana (14h), Márcia (tarde)", com o que levar.
+- **Às 7h, o resumo do dia**: "Hoje: 3 visitas · 2 revisões vencendo esta semana · 1 chamado sem resposta" (sem nada, não manda).
+  Cada técnico recebe só o que é dele; o Administrador recebe o resumo de todos.
+- **Chamado novo** aberto pelo produtor (o toque abre o chamado).
+- Nunca vai custo, preço ou comissão. O que foi enviado fica em `avisos-enviados/` (o mesmo aviso não sai duas vezes).
+  Celular que desinstalou o app sai sozinho da lista.
+- **iPhone:** só funciona com o app instalado na Tela de Início (Compartilhar → Adicionar à Tela de Início) e iOS 16.4 ou mais novo.
 
 **Passo a passo (uma vez, no computador, na pasta do app)**
 1. Gere as chaves VAPID:
@@ -101,28 +101,28 @@ no `config.js`, os botões mostram "Os avisos ainda não foram configurados".
    npx supabase functions deploy enviar-avisos --no-verify-jwt
    ```
    (`--no-verify-jwt` porque o agendador entra com o `AVISOS_SEGREDO`; no aviso de chamado a própria função confere o login de quem pediu.)
-5. Teste na mão (deve responder com quantos produtores estão inscritos):
+5. Teste na mão (deve responder com quantas pessoas estão inscritas e quantos avisos saíram):
    ```
-   curl -X POST "https://<ref>.supabase.co/functions/v1/enviar-avisos" -H "Authorization: Bearer <senha longa>" -H "Content-Type: application/json" -d "{\"modo\":\"diario\"}"
+   curl -X POST "https://<ref>.supabase.co/functions/v1/enviar-avisos" -H "Authorization: Bearer <senha longa>" -H "Content-Type: application/json" -d "{\"modo\":\"lembretes\"}"
    ```
 6. Guarde a mesma senha no **Vault** (Supabase → Project Settings → Vault → Add new secret), com o nome `avisos_segredo`.
-   Agende todo dia às 8h de Brasília (11h no horário UTC; o Brasil não tem mais horário de verão). No **SQL Editor**:
+   Agende o modo "lembretes" a cada 15 minutos (a própria função usa o horário de Brasília). No **SQL Editor**:
    ```sql
    create extension if not exists pg_cron;
    create extension if not exists pg_net with schema extensions;
-   select cron.schedule('enviar-avisos-8h', '0 11 * * *', $$
+   select cron.schedule('enviar-avisos-lembretes', '*/15 * * * *', $$
      select net.http_post(
        url := 'https://<ref>.supabase.co/functions/v1/enviar-avisos',
        headers := jsonb_build_object('Content-Type', 'application/json',
          'Authorization', 'Bearer ' || coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'avisos_segredo'), '')),
-       body := '{"modo":"diario"}'::jsonb,
+       body := '{"modo":"lembretes"}'::jsonb,
        timeout_milliseconds := 60000
      ) as request_id;
    $$);
    ```
    A senha é lida do Vault na hora: ela não fica escrita no comando. Para conferir: `select * from cron.job;` ·
    para ver a última resposta: `select status_code, content from net._http_response order by id desc limit 1;` ·
-   para cancelar: `select cron.unschedule('enviar-avisos-8h');`
+   para cancelar: `select cron.unschedule('enviar-avisos-lembretes');`
 7. Coloque a Public Key no `config.js` (`vapidPublicKey: '...'`) e suba no GitHub.
 
 ## Agenda no celular (calendário)
