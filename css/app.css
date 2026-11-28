@@ -3542,3 +3542,14 @@
   .rota-item-levar { font-size: 13px; color: var(--ink); margin-top: 4px; }
   .ficha-topo .contato-acoes { flex-wrap: wrap; }
   .ficha-topo .contato-acoes .acao-link { flex: 1 1 auto; min-width: 0; padding-left: 8px; padding-right: 8px; }
+
+  /* Instalar no celular */
+  .inst-intro { margin: -8px 0 12px; }
+  .inst-passo { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 15px; line-height: 1.45; }
+  .inst-ico { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: var(--accent-suave); color: var(--accent-txt); }
+  .inst-ico .ic { width: 22px; height: 22px; }
+  .inst-menu { font-size: 22px; line-height: 1; }
+  .inst-txt { padding-top: 8px; }
+  .inst-link { overflow-wrap: anywhere; }
+  .inst-alerta { font-size: 15px; font-weight: 700; color: var(--tax); margin: 0 0 6px; }
+  .inst-btn { width: 100%; margin-top: 14px; }

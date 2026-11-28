@@ -8,7 +8,7 @@
 
   // Versão que aparece no fim do menu "Mais". Troque a cada atualização publicada:
   // quando alguém disser que "deu erro", dá para saber qual versão a pessoa está usando.
-  const APP_VERSAO = '2026.11.28.4';
+  const APP_VERSAO = '2026.11.28.5';
 
   // ================= confirmação e avisos =================
   // Dentro do Claude o app roda num quadro protegido, e o navegador IGNORA
@@ -3659,7 +3659,8 @@
     const instalado = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
     let dispensada = false;
     try { dispensada = localStorage.getItem('auriverde_ios_hint_off') === '1'; } catch (e) {}
-    if (isIOS && !instalado && !dispensada) $('ios-hint').hidden = false;
+    // a dica do iPhone agora fica na janela "Instalar no celular" (Mais e o aviso de uma vez só)
+    if (isIOS && !instalado && !dispensada) $('ios-hint').hidden = true;
     $('ios-hint-close').addEventListener('click', () => {
       $('ios-hint').hidden = true;
       try { localStorage.setItem('auriverde_ios_hint_off', '1'); } catch (e) {}
@@ -10811,19 +10812,47 @@
     sb.functions.invoke('enviar-avisos', { body: { modo: 'chamado', pid, osId } }).catch(() => {});
   }
 
-  // ---------- toque no aviso: abre a tela certa ----------
+  // ---------- toque no aviso e atalhos do ícone: abre a tela certa ----------
+  // tela: 'ordens', 'hoje', 'anotar', 'agendar', 'venda-rapida', 'os:<produtor>:<OS>', 'chamado:<produtor>:<OS>' ou 'p-inicio'
   function avAbrirTela(tela) {
-    if (tela === 'ordens' && acesso.estado === 'ativo' && podeVer('visitas')) { if (currentProdutorId) closeProdutorDetail(); showView('ordens'); }
-    else if (tela === 'p-inicio' && document.body.classList.contains('modo-produtor')) pdIr('inicio');
+    tela = String(tela || '');
+    if (tela === 'p-inicio') { if (document.body.classList.contains('modo-produtor')) pdIr('inicio'); return; }
+    if (acesso.estado !== 'ativo') return;
+    const m = /^(os|chamado):([\w-]+):([\w-]+)$/.exec(tela);
+    if (m) {
+      if (!produtores.some(p => p.id === m[2])) { avisar('Esta OS não está na lista (o produtor pode ter sido arquivado).'); return; }
+      const o = ordensIndice.find(x => x.id === m[3]) || { id: m[3] };
+      abrirOSDoIndice({ ...o, produtorId: m[2] }, 'home');
+      return;
+    }
+    if (tela === 'agendar') { abrirAgendar({}); return; }
+    if (tela === 'venda-rapida') { abrirVendaRapida({}); return; }
+    if (currentProdutorId) closeProdutorDetail();
+    if (tela === 'ordens' && podeVer('visitas')) showView('ordens');
+    else if (tela === 'hoje' || tela === 'anotar') {
+      showView('home');
+      setTimeout(() => {
+        const alvo = tela === 'anotar' ? $('an-card') : $('hm-sec-hoje');
+        if (alvo && !alvo.hidden) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (tela === 'anotar' && !$('an-card').hidden) $('an-texto').focus();
+      }, 250);
+    }
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { const d = e.data || {}; if (d.tipo === 'abrir') avAbrirTela(d.tela); });
   (function abrirPeloAviso() {
-    const tela = new URLSearchParams(location.search).get('abrir');
-    if (!tela) return;
+    const q = new URLSearchParams(location.search);
+    const tela = q.get('abrir');
+    // "Compartilhar → Ordenha360": o Chrome manda titulo, texto e link (às vezes sem o compartilhado=1)
+    const compartilhado = q.get('compartilhado') || q.has('texto') || q.has('titulo') || q.has('link')
+      ? ['titulo', 'texto', 'link'].map(k => String(q.get(k) || '').trim()).filter(Boolean) : null;
+    if (!tela && !compartilhado) return;
     try { history.replaceState(history.state, '', location.pathname); } catch (e) {}
     let n = 0;
     // espera o app terminar de entrar (login e escolha de setor) e chegar no Início
-    const tentar = () => { if (acesso.estado === 'ativo' && document.body.dataset.view === 'home') { setTimeout(() => avAbrirTela(tela), 300); return; } if (++n < 120) setTimeout(tentar, 500); };
+    const tentar = () => {
+      if (acesso.estado === 'ativo' && document.body.dataset.view === 'home') { setTimeout(() => (compartilhado ? receberCompartilhado(compartilhado) : avAbrirTela(tela)), 300); return; }
+      if (++n < 120) setTimeout(tentar, 500);
+    };
     setTimeout(tentar, 800);
   })();
 
@@ -13562,6 +13591,116 @@
   }
   $('produtor-levei').addEventListener('click', () => { if (currentProdutorId) abrirLevei({ produtorId: currentProdutorId }); });
   var osLevar = [];
+
+  // =====================================================
+  // INSTALAR NO CELULAR: Android (Chrome: o pedido "Instalar app") e iPhone (Safari: Compartilhar → Adicionar à Tela de Início)
+  // Em Mais → "Instalar no celular" e num aviso que aparece UMA vez depois do login. Já instalado: não mostra nada.
+  // =====================================================
+  const instEhIPhone = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const instEhAndroid = () => /android/i.test(navigator.userAgent);
+  // no iPhone, só o Safari instala: Chrome, Firefox, Edge e os navegadores de dentro de outros apps não
+  const instForaDoSafari = () => instEhIPhone() && /CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Line\/|WhatsApp|YaBrowser|DuckDuckGo/i.test(navigator.userAgent);
+  const instInstalado = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const INST_VISTO = DEMO_ATIVO ? 'auriverde_demo_instalar_visto' : 'auriverde_instalar_visto';
+  const instLink = () => location.origin + location.pathname;
+  function instPasso(icone, html) {
+    const d = document.createElement('div');
+    d.className = 'inst-passo';
+    d.innerHTML = '<span class="inst-ico"></span><span class="inst-txt"></span>';
+    d.querySelector('.inst-ico').innerHTML = icone.startsWith('#') ? '<svg class="ic" aria-hidden="true"><use href="' + icone + '"/></svg>' : icone;
+    d.querySelector('.inst-txt').innerHTML = html;
+    return d;
+  }
+  function instBotao(txt, cls, fn) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = cls; b.textContent = txt;
+    b.addEventListener('click', fn);
+    return b;
+  }
+  async function instCopiarLink() {
+    try { await navigator.clipboard.writeText(instLink()); avisoRapido('Link copiado. Abra o Safari e cole na barra de endereço.'); }
+    catch (e) { avisar('Copie este link e abra no Safari:\n\n' + instLink()); }
+  }
+  function abrirInstalar(primeiraVez) {
+    if (instInstalado()) return;
+    const box = $('inst-corpo');
+    box.innerHTML = '';
+    const dica = t => { const d = document.createElement('div'); d.className = 'campo-dica'; d.textContent = t; box.appendChild(d); };
+    if (instForaDoSafari()) {
+      const a = document.createElement('div'); a.className = 'inst-alerta'; a.textContent = 'No iPhone, abra este link no Safari para instalar.'; box.appendChild(a);
+      box.appendChild(instPasso('#i-link', 'Toque em <b>Copiar link</b>, abra o <b>Safari</b> e cole o endereço.'));
+      box.appendChild(instPasso('#i-share', 'No Safari, siga os passos de <b>Compartilhar</b> → <b>Adicionar à Tela de Início</b>.'));
+      box.appendChild(instBotao('Copiar link', 'add-record-btn inst-btn', instCopiarLink));
+    } else if (instEhIPhone()) {
+      box.appendChild(instPasso('#i-share', 'Toque em <b>Compartilhar</b> (o quadrado com a seta para cima, embaixo da tela).'));
+      box.appendChild(instPasso('#i-circle-plus', 'Role a lista e toque em <b>Adicionar à Tela de Início</b>.'));
+      box.appendChild(instPasso('#i-check', 'Toque em <b>Adicionar</b>. O Ordenha360 aparece na tela do celular, como os outros aplicativos.'));
+      dica('Com o app instalado, os avisos também funcionam no iPhone (iOS 16.4 ou mais novo).');
+    } else if (deferredPrompt) {
+      box.appendChild(instPasso('#i-smartphone', 'O Ordenha360 fica na tela do celular, abre direto e funciona sem internet.'));
+      box.appendChild(instBotao('Instalar app', 'add-record-btn inst-btn', async () => {
+        const p = deferredPrompt;
+        if (!p) return;
+        p.prompt();
+        try { await p.userChoice; } catch (e) {}
+        deferredPrompt = null;
+        $('install-btn').hidden = true;
+        $('modal-instalar').hidden = true;
+      }));
+    } else if (instEhAndroid()) {
+      box.appendChild(instPasso('<b class="inst-menu">⋮</b>', 'No Chrome, toque no menu <b>⋮</b> (no canto de cima, à direita).'));
+      box.appendChild(instPasso('#i-smartphone', 'Toque em <b>Instalar app</b> (ou <b>Adicionar à tela inicial</b>).'));
+      box.appendChild(instPasso('#i-check', 'Confirme. O Ordenha360 aparece na tela do celular, como os outros aplicativos.'));
+      dica('Se não aparecer, abra este link no Chrome.');
+    } else {
+      box.appendChild(instPasso('#i-smartphone', 'Abra este endereço no celular: <b class="inst-link"></b>'));
+      box.querySelector('.inst-link').textContent = instLink();
+      dica('No Android, use o Chrome. No iPhone, use o Safari.');
+    }
+    $('inst-fechar').textContent = primeiraVez ? 'Agora não' : 'Fechar';
+    $('modal-instalar').hidden = false;
+  }
+  $('inst-fechar').addEventListener('click', () => { $('modal-instalar').hidden = true; });
+  $('mais-instalar').addEventListener('click', () => abrirInstalar(false));
+  $('mais-instalar').hidden = instInstalado();
+  window.addEventListener('appinstalled', () => { $('mais-instalar').hidden = true; $('modal-instalar').hidden = true; });
+  // o aviso de uma vez só: depois que a pessoa entra e chega no Início (no celular, sem o app instalado)
+  var instAbertoPorLink = /[?&](abrir|compartilhado)=/.test(location.search);
+  (function oferecerInstalarUmaVez() {
+    if (instInstalado() || instAbertoPorLink || !(instEhIPhone() || instEhAndroid())) return;
+    if (lerLS(INST_VISTO, null)) return;
+    let n = 0;
+    const tentar = () => {
+      if (acesso.estado === 'ativo' && document.body.dataset.view === 'home' && !document.querySelector('.modal-backdrop:not([hidden])')) {
+        setTimeout(() => {
+          if (lerLS(INST_VISTO, null) || instInstalado()) return;
+          gravarLS(INST_VISTO, Date.now());
+          abrirInstalar(true);
+        }, 1500);
+        return;
+      }
+      if (++n < 240) setTimeout(tentar, 1000);
+    };
+    setTimeout(tentar, 2000);
+  })();
+
+  // ---------- atalhos do ícone (segurar o ícone no Android) e "Compartilhar → Ordenha360" ----------
+  // o texto compartilhado (ex.: a mensagem do produtor no WhatsApp) entra no "Anotar" e já mostra o que foi entendido
+  function receberCompartilhado(partes) {
+    const vistos = [];
+    partes.forEach(s => { if (!vistos.some(v => v.includes(s))) vistos.push(s); });
+    const texto = vistos.join(' ').replace(/\s+/g, ' ').trim();
+    if (!texto) return;
+    if (currentProdutorId) closeProdutorDetail();
+    showView('home');
+    if (!podeAnotar()) { avisar('Para anotar, entre com uma conta que agenda visitas.\n\nO texto recebido:\n' + texto); return; }
+    setTimeout(() => {
+      $('an-texto').value = texto;
+      anAjustarAltura();
+      anInterpretar();
+      $('an-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }
 
   // ---------- Orçamento a partir do PDF da Ordemax (Configmax) ----------
   // Lê no próprio aparelho o PDF que o Configmax gera (grupos com valor; peças com código e quantidade),
