@@ -22,7 +22,9 @@
 // Inscrição que o celular não aceita mais (o aparelho desinstalou ou trocou) é apagada sozinha.
 //
 // Segredos (Supabase → Edge Functions → Secrets), nunca no config.js nem no GitHub:
-//   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (ex.: mailto:seu-email) e AVISOS_SEGREDO.
+//   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (ex.: mailto:seu-email) e, se quiser, AVISOS_SEGREDO.
+// A senha do agendador vale se bater com o AVISOS_SEGREDO daqui OU com o "avisos_segredo" do Vault do banco
+// (o mesmo que o agendamento manda), conferido pela função do banco avisos_segredo_confere (README).
 // SUPABASE_URL, SUPABASE_ANON_KEY e SUPABASE_SERVICE_ROLE_KEY o próprio Supabase entrega para a função.
 // =====================================================================
 import webpush from 'npm:web-push@3.6.7';
@@ -76,7 +78,21 @@ async function marcarEnviado(chave, dados) {
   if (error) console.error('não gravou avisos-enviados/' + chave, error.message);
 }
 
+// ---------- senha do agendador ----------
+// vale o AVISOS_SEGREDO da função ou o avisos_segredo do Vault (a função do banco só responde sim ou não,
+// e só para a chave de serviço: quem usa o app não consegue perguntar)
+async function segredoOk(veio) {
+  if (!veio) return false;
+  const s = env('AVISOS_SEGREDO');
+  if (s && veio === s) return true;
+  const { data, error } = await banco.rpc('avisos_segredo_confere', { t: veio });
+  if (error) { console.error('não conferiu a senha no Vault', error.message); return false; }
+  return data === true;
+}
+
 // ---------- envio ----------
+// para conferir de fora se as chaves estão lá (nunca devolve a chave privada; a pública já está no config.js)
+const vapidSituacao = () => ({ vapid: !!(env('VAPID_PUBLIC_KEY') && env('VAPID_PRIVATE_KEY') && env('VAPID_SUBJECT')), vapidPublica: env('VAPID_PUBLIC_KEY').slice(0, 12) });
 let vapidPronto = false;
 function prepararVapid() {
   if (vapidPronto) return;
@@ -194,9 +210,9 @@ async function lembretes() {
   const porPessoa = {};
   inscricoes.forEach((s) => { const uid = s.path.split('/')[1]; (porPessoa[uid] = porPessoa[uid] || []).push(s); });
   const uids = Object.keys(porPessoa);
-  if (!uids.length) return { hoje, inscritos: 0, enviados: 0 };
+  if (!uids.length) return { hoje, agora: Math.floor(agora.min / 60) + 'h' + String(agora.min % 60).padStart(2, '0'), inscritos: 0, enviados: 0, ...vapidSituacao() };
   const ordens = (await lerColecao({ eq: 'ordens' })).filter((o) => !o.arquivado);
-  const produtores = (await lerColecao({ eq: 'produtores' })).filter((p) => !p.arquivado && p.situacao !== 'inativo');
+  const produtores =(await lerColecao({ eq: 'produtores' })).filter((p) => !p.arquivado && p.situacao !== 'inativo');
   const prodPorId = {};
   produtores.forEach((p) => { prodPorId[p.id] = p; });
   const ultimaPorProd = {};
@@ -253,7 +269,7 @@ async function lembretes() {
       if (partes.length) await mandar('manha_' + uid + '_' + hoje, { titulo: admin ? 'Resumo do dia (todos)' : 'Resumo do dia', texto: 'Hoje: ' + partes.join(' · '), tela: 'hoje', tag: 'manha-' + hoje }, 6 * 3600);
     }
   }
-  return { hoje, agora: Math.floor(agora.min / 60) + 'h' + String(agora.min % 60).padStart(2, '0'), inscritos: uids.length, enviados: enviados.length, chaves: enviados };
+  return { hoje, agora: Math.floor(agora.min / 60) + 'h' + String(agora.min % 60).padStart(2, '0'), inscritos: uids.length, enviados: enviados.length, chaves: enviados, ...vapidSituacao() };
 }
 
 // ---------- chamado novo aberto pelo produtor: avisa os técnicos ----------
@@ -294,9 +310,8 @@ Deno.serve(async (req) => {
   try {
     if (corpo.modo === 'chamado') return await chamado(req, corpo);
     if (corpo.modo === 'lembretes' || corpo.modo === 'diario') {
-      const segredo = env('AVISOS_SEGREDO');
       const veio = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-      if (!segredo || veio !== segredo) return resposta(401, { erro: 'segredo errado' });
+      if (!(await segredoOk(veio))) return resposta(401, { erro: 'segredo errado' });
       return resposta(200, corpo.modo === 'lembretes' ? await lembretes() : await diario());
     }
     return resposta(400, { erro: 'modo deve ser "lembretes", "chamado" ou "diario"' });

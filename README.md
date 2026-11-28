@@ -91,23 +91,35 @@ em `avisos-tecnicos/<id>/prefs/avisos` = `{ hora, vespera, manha, chamados }`)
    npx supabase login
    npx supabase link --project-ref <ref>
    ```
-3. Guarde os segredos da função (troque os valores; o `AVISOS_SEGREDO` é uma senha longa que você inventa):
+3. Guarde os segredos da função (troque os valores):
    ```
-   npx supabase secrets set VAPID_PUBLIC_KEY="<public key>" VAPID_PRIVATE_KEY="<private key>" VAPID_SUBJECT="mailto:<seu e-mail>" AVISOS_SEGREDO="<senha longa>"
+   npx supabase secrets set VAPID_PUBLIC_KEY="<public key>" VAPID_PRIVATE_KEY="<private key>" VAPID_SUBJECT="mailto:<seu e-mail>"
    ```
+   A senha do agendador (uma senha longa que você inventa) fica no **Vault** (passo 6). Se quiser, ela também pode ir aqui
+   como `AVISOS_SEGREDO="<senha longa>"`: a função aceita a senha que bater com qualquer um dos dois.
    O `SUPABASE_URL`, a `SUPABASE_ANON_KEY` e a `SUPABASE_SERVICE_ROLE_KEY` o Supabase já entrega para a função: não precisa pôr.
 4. Publique a função:
    ```
    npx supabase functions deploy enviar-avisos --no-verify-jwt
    ```
-   (`--no-verify-jwt` porque o agendador entra com o `AVISOS_SEGREDO`; no aviso de chamado a própria função confere o login de quem pediu.)
-5. Teste na mão (deve responder com quantas pessoas estão inscritas e quantos avisos saíram):
+   (`--no-verify-jwt` porque o agendador entra com a senha do Vault; no aviso de chamado a própria função confere o login de quem pediu.)
+5. Depois do passo 6, teste na mão (deve responder com quantas pessoas estão inscritas, quantos avisos saíram e `"vapid":true`):
    ```
    curl -X POST "https://<ref>.supabase.co/functions/v1/enviar-avisos" -H "Authorization: Bearer <senha longa>" -H "Content-Type: application/json" -d "{\"modo\":\"lembretes\"}"
    ```
-6. Guarde a mesma senha no **Vault** (Supabase → Project Settings → Vault → Add new secret), com o nome `avisos_segredo`.
-   Agende o modo "lembretes" a cada 15 minutos (a própria função usa o horário de Brasília). No **SQL Editor**:
+6. Guarde a senha no **Vault** (Supabase → Project Settings → Vault → Add new secret), com o nome `avisos_segredo`.
+   Crie a função do banco que confere a senha (ela só responde sim ou não, e só para a chave de serviço) e
+   agende o modo "lembretes" a cada 15 minutos (a própria função usa o horário de Brasília). No **SQL Editor**:
    ```sql
+   create or replace function public.avisos_segredo_confere(t text) returns boolean
+     language sql security definer set search_path = '' stable
+   as $$
+     select coalesce(length(t) > 0 and exists (
+       select 1 from vault.decrypted_secrets where name = 'avisos_segredo' and decrypted_secret = t), false);
+   $$;
+   revoke all on function public.avisos_segredo_confere(text) from public, anon, authenticated;
+   grant execute on function public.avisos_segredo_confere(text) to service_role;
+
    create extension if not exists pg_cron;
    create extension if not exists pg_net with schema extensions;
    select cron.schedule('enviar-avisos-lembretes', '*/15 * * * *', $$
